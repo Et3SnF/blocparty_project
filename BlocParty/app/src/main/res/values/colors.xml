@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="material_teal_primary">#009688</color>
+    <color name="material_teal_dark">#00796B</color>
+    <color name="material_accent">#FAFAFA</color>
+    <color name="textColorPrimary">@color/black_87</color>
+    <color name="red_10">#19FF0000</color>
+    <color name="red_20">#33FF0000</color>
+    <color name="red_30">#4CFF0000</color>
+    <color name="red_40">#66FF0000</color>
+    <color name="red_50">#80FF0000</color>
+    <color name="black_87">#DE000000</color>
+    <color name="black_26">#42000000</color>
+    <color name="black_60">#99000000</color>
+    <color name="black_70">#B3000000</color>
+    <color name="black_12">#1E000000</color>
+    <color name="blue_50">#800000FF</color>
+    <color name="red_70">#B3FF0000</color>
+    <color name="white_60">#99FFFFFF</color>
+    <color name="material_blue">#FF2196F3</color>
+    <color name="material_red">#FFF44336</color>
+    <color name="material_deep_purple_900">#FF311B92</color>
+    <color name="material_lime_500">#FFCDDC39</color>
+    <color name="material_amber_900">#FFFF6F00</color>
+    <color name="material_orange_500">#FFFF9800</color>
+    <color name="material_blue_grey_300">#FF90A4AE</color>
+    <color name="material_indigo_500">#3F51B5</color>
+    <color name="material_indigo_700">#303F9F</color>
+    <color name="material_indigo_700_50">#80303F9F</color>
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?android:colorControlHighlight">
+
+    <!-- This will give the flat look when doing ripple effect!! -->
+
+    <item android:drawable="?attr/selectableItemBackgroundBorderless"/>
+
+</ripple>
