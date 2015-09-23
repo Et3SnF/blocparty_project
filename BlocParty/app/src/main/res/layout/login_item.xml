@@ -14,7 +14,7 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -22,70 +22,51 @@
             android:padding="16dp">
 
             <ImageView
-                android:id="@+id/v_login_item_logo"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:id="@+id/iv_login_item_logo"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:scaleType="centerCrop"
                 android:layout_marginRight="8dp"/>
 
-            <TextView
-                style="@style/LoginItemName"
-                android:id="@+id/tv_login_item_title"
+            <LinearLayout
+                android:id="@+id/ll_login_item_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/login_item_dummy_item_name"
-                android:layout_alignTop="@+id/v_login_item_logo"
-                android:layout_toRightOf="@+id/v_login_item_logo"
-                android:layout_toEndOf="@+id/v_login_item_logo"
-                android:layout_marginBottom="8dp"/>
+                android:orientation="vertical"
+                android:layout_toRightOf="@+id/iv_login_item_logo"
+                android:layout_alignBottom="@+id/iv_login_item_logo"
+                android:layout_alignTop="@+id/iv_login_item_logo"
+                android:layout_toStartOf="@+id/sw_login"
+                android:layout_toLeftOf="@+id/sw_login"
+                android:layout_marginRight="8dp">
 
-            <TextView
-                style="@style/LoginItemDescription"
-                android:id="@+id/tv_login_item_info"
+                <TextView
+                    style="@style/LoginItemName"
+                    android:id="@+id/tv_login_item_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_item_dummy_item_name"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    style="@style/LoginItemDescription"
+                    android:id="@+id/tv_login_item_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_item_dummy_item_description"/>
+
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/sw_login"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/login_item_dummy_item_description"
-                android:layout_below="@+id/tv_login_item_title"
-                android:layout_toRightOf="@+id/v_login_item_logo"
-                android:layout_toEndOf="@+id/v_login_item_logo" />
+                android:checked="true"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
 
         </RelativeLayout>
-
-        <View
-            android:id="@+id/v_info_btn_border"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/black_26"/>
-
-        <LinearLayout
-            android:id="@+id/ll_login_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal">
-
-            <Button
-                style="@style/LoginBottomButton"
-                android:id="@+id/btn_dismiss_login"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1.0"
-                android:text="Dismiss"/>
-
-            <View
-                android:id="@+id/v_btn_border_center"
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@color/black_26"/>
-
-            <Button
-                style="@style/LoginBottomButton"
-                android:id="@+id/btn_login"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1.0"
-                android:text="Log In"/>
-
-        </LinearLayout>
 
     </LinearLayout>
 
