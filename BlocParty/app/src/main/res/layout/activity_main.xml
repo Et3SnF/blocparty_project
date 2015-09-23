@@ -10,10 +10,25 @@
         android:layout_width="match_parent"
         android:background="@color/material_indigo_500"/>
 
+    <TextView
+        android:id="@+id/fl_login_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/welcome_message"
+        android:textSize="14dp"
+        android:textColor="@color/black_60"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="visible"
+        android:layout_below="@id/tb_activity_blocparty"/>
+
     <FrameLayout
         android:id="@+id/fl_activity_blocparty"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/tb_activity_blocparty"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/fl_login_footer"/>
 
 </RelativeLayout>
