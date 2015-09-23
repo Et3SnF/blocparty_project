@@ -11,7 +11,7 @@
         android:background="@color/material_indigo_500"/>
 
     <TextView
-        android:id="@+id/fl_login_footer"
+        android:id="@+id/tv_login_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
@@ -29,6 +29,6 @@
         android:id="@+id/fl_activity_blocparty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/fl_login_footer"/>
+        android:layout_below="@id/tv_login_message"/>
 
 </RelativeLayout>

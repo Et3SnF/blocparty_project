@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private SimpleFacebook simpleFacebook;
 
+    private TextView welcomeMessage;
+
     // ----- Lifecycle Methods ----- //
 
     @Override
@@ -38,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.tb_activity_blocparty);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
+
+        welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
     }
 
     @Override
