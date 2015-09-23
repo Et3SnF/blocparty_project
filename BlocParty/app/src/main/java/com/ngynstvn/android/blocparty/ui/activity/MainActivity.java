@@ -6,10 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v7.widget.Toolbar;
 
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.LoginAdapter;
@@ -23,7 +23,7 @@ import java.util.List;
  * Created by Ngynstvn on 9/21/15.
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoginAdapter.LoginAdapterDelegate {
 
     private static final String TAG = "(" + MainActivity.class.getSimpleName() + "): ";
 
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
 
         loginAdapter = new LoginAdapter();
+        loginAdapter.setLoginAdapterDelegate(this);
         recyclerView = (RecyclerView) findViewById(R.id.rv_login_items);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -109,9 +110,45 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     *
+     * LoginAdapter.LoginAdapterDelegate implemented methods
+     *
+     */
+
+    @Override
+    public void onFBLoginClicked(LoginAdapter loginAdapter) {
+        fbLogin(simpleFacebook);
+    }
+
+    @Override
+    public void onFBDismissClicked(LoginAdapter loginAdapter) {
+
+    }
+
+    @Override
+    public void onTwitterLoginClicked(LoginAdapter loginAdapter) {
+
+    }
+
+    @Override
+    public void onTwitterDismissClicked(LoginAdapter loginAdapter) {
+
+    }
+
+    @Override
+    public void onIGLoginClicked(LoginAdapter loginAdapter) {
+
+    }
+
+    @Override
+    public void onIGDismissClicked(LoginAdapter loginAdapter) {
+
+    }
+
     // ----- Separate Methods ----- //
 
-    private void fbLogin() {
+    private void fbLogin(SimpleFacebook simpleFacebook) {
         final OnLoginListener onLoginListener = new OnLoginListener() {
             @Override
             public void onLogin(String s, List<Permission> list, List<Permission> list1) {
@@ -133,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "Login Failed");
             }
         };
-    }
 
+        simpleFacebook.login(onLoginListener);
+    }
 }
