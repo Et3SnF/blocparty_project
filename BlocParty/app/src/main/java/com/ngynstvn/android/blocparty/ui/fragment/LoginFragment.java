@@ -26,6 +26,8 @@ import java.util.List;
 
 public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapterDelegate {
 
+    private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
+
     /**
      *
      * Instantiation Method
@@ -39,11 +41,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         return loginFragment;
     }
 
-    private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
-
     private SimpleFacebook simpleFacebook;
     private LoginAdapter loginAdapter;
     private RecyclerView recyclerView;
+
+    // ----- Lifecycle Methods ----- //
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,11 +70,49 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        Log.e(TAG, "onActivityCreated() called");
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
         simpleFacebook = SimpleFacebook.getInstance();
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.e(TAG, "onSaveInstanceState() called");
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onPause() {
+        Log.e(TAG, "onPause() called");
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.e(TAG, "onDestroyView() called");
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(TAG, "onDestroy() called");
+        super.onDestroy();
+    }
+
+    @Override
+    public void onDetach() {
+        Log.e(TAG, "onDetach() called");
+        super.onDetach();
+    }
+
+    // ----- ----- ---- ----- //
 
     /**
      *
@@ -110,7 +150,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     }
 
-    // ----- Separate Methods ----- //
+    // ----- Facebook Methods ----- //
 
     private void fbLogin(SimpleFacebook simpleFacebook) {
         final OnLoginListener onLoginListener = new OnLoginListener() {
@@ -137,4 +177,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         simpleFacebook.login(onLoginListener);
     }
+
+    // ----- Twitter Methods ----- //
+
+
+
+    // ----- Instagram Methods ----- //
 }
