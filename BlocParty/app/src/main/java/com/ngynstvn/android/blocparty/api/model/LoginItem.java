@@ -10,11 +10,6 @@ public class LoginItem {
     private String itemDescription;
     private int itemLogoPath;
 
-    public LoginItem(String itemName, String itemDescription) {
-        this.itemName = itemName;
-        this.itemDescription = itemDescription;
-    }
-
     public LoginItem(String itemName, String itemDescription, int itemLogoPath) {
         this.itemName = itemName;
         this.itemDescription = itemDescription;
