@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -11,12 +12,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.LoginAdapter;
 import com.sromku.simple.fb.Permission;
 import com.sromku.simple.fb.SimpleFacebook;
 import com.sromku.simple.fb.listeners.OnLoginListener;
+import com.sromku.simple.fb.listeners.OnLogoutListener;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -28,6 +31,17 @@ import java.util.List;
 public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapterDelegate {
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
+
+    private static final String LOG_STATES = "log_states";
+    private static final String FB_LOGIN = "isFBLoggedIn";
+    private static final String FB_POSITION = "adapterPosition";
+
+    private static int instance_counter = 0;
+
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
+    private int fbPosition;
+    private boolean isFBLoggedIn;
 
     /**
      *
@@ -47,7 +61,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
      */
 
     public interface LoginFragmentDelegate {
-        void onFBLogin(LoginFragment loginFragment, boolean setCheck);
+        void onFBLogin(LoginFragment loginFragment, int adapterPosition, boolean setCheck);
     }
 
     private WeakReference<LoginFragmentDelegate> loginFragmentDelegate;
@@ -82,6 +96,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         super.onCreate(savedInstanceState);
         simpleFacebook = SimpleFacebook.getInstance();
         loginAdapter = new LoginAdapter();
+
+        if(savedInstanceState != null) {
+            instance_counter = savedInstanceState.getInt("counter");
+        }
     }
 
     @Nullable
@@ -107,6 +125,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         super.onResume();
         simpleFacebook = SimpleFacebook.getInstance();
 
+        // Must place sharedPreference here for it to save states properly
+        sharedPreferences = BPUtils.newSPrefInstance("log_states");
+//        fbPosition = sharedPreferences.getInt("adapterPosition", 0);
+//        isFBLoggedIn = sharedPreferences.getBoolean("isFBLoggedIn", false);
+
         // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
 
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
@@ -118,6 +141,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "onSaveInstanceState() called");
         super.onSaveInstanceState(outState);
+        outState.putInt("counter", instance_counter);
     }
 
     @Override
@@ -153,81 +177,104 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
      */
 
     @Override
-    public void onFBLoginClicked(LoginAdapter loginAdapter) {
-        fbLogin(simpleFacebook);
-    }
-
-    @Override
-    public void onFBLogoutClicked(LoginAdapter loginAdapter) {
-
-    }
-
-    @Override
-    public void onTwitterLoginClicked(LoginAdapter loginAdapter) {
-
-    }
-
-    @Override
-    public void onTwitterLogoutClicked(LoginAdapter loginAdapter) {
-
-    }
-
-    @Override
-    public void onIGLoginClicked(LoginAdapter loginAdapter) {
-
-    }
-
-    @Override
-    public void onIGLogoutClicked(LoginAdapter loginAdapter) {
-
+    public void onLoginSwitchActivated(LoginAdapter loginAdapter, int adapterPosition, boolean isChecked) {
+        switch(adapterPosition) {
+            case 0:
+                if(isChecked) {
+                    Log.v(TAG, "Logged into Facebook");
+                    fbLogin(simpleFacebook, adapterPosition);
+                    break;
+                }
+                else {
+                    Log.v(TAG, "Logged out of Facebook");
+                    fbLogout(simpleFacebook, adapterPosition);
+                    break;
+                }
+            case 1:
+                if(isChecked) {
+                    Log.v(TAG, "Logged into Twitter");
+                    break;
+                }
+                else {
+                    Log.v(TAG, "Logged out of Twitter");
+                    break;
+                }
+            case 2:
+                if(isChecked) {
+                    Log.v(TAG, "Logged into Instagram");
+                    break;
+                }
+                else {
+                    Log.v(TAG, "Logged out of Instagram");
+                    break;
+                }
+        }
     }
 
     // ----- Facebook Methods ----- //
 
-    private void fbLogin(SimpleFacebook simpleFacebook) {
+    private void fbLogin(SimpleFacebook simpleFacebook, final int adapterPosition) {
+
+        editor = BPUtils.sharePrefEditor("log_states");
+
         final OnLoginListener onLoginListener = new OnLoginListener() {
             @Override
             public void onLogin(String s, List<Permission> list, List<Permission> list1) {
                 Log.i(TAG, "Logged in");
-
-                if(getLoginFragmentDelegate() != null) {
-                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, true);
-                }
-
+                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                        FB_LOGIN, true);
+                BPUtils.toast("Logged into Facebook");
             }
 
             @Override
             public void onCancel() {
                 Log.i(TAG, "Login Cancelled");
-
-                if(getLoginFragmentDelegate() != null) {
-                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
-                }
-
+                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                        FB_LOGIN, false);
             }
 
             @Override
             public void onException(Throwable throwable) {
                 Log.i(TAG, "Login Exception");
-
-                if(getLoginFragmentDelegate() != null) {
-                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
-                }
-
+                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                        FB_LOGIN, false);
             }
 
             @Override
             public void onFail(String s) {
                 Log.i(TAG, "Login Failed");
-
-                if(getLoginFragmentDelegate() != null) {
-                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
-                }
-
+                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                        FB_LOGIN, false);
+                BPUtils.toast("Unable to log into Facebook");
             }
         };
 
         simpleFacebook.login(onLoginListener);
+    }
+
+    private void fbLogout(final SimpleFacebook simpleFacebook, final int adapterPosition) {
+
+        instance_counter++;
+        Log.v(TAG, "Instance Counter: " + instance_counter);
+
+        editor = BPUtils.sharePrefEditor("log_states");
+
+        final OnLogoutListener onLogoutListener = new OnLogoutListener() {
+            @Override
+            public void onLogout() {
+
+                Log.i(TAG, "Logged out of Facebook");
+
+                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                        FB_LOGIN, false);
+
+                if(instance_counter > 1) {
+                    BPUtils.toast("Logged out of Facebook");
+                }
+            }
+        };
+
+        simpleFacebook.logout(onLogoutListener);
     }
 
     // ----- Twitter Methods ----- //

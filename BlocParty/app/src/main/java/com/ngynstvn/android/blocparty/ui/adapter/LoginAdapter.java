@@ -1,5 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.adapter;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.LoginItem;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
@@ -24,7 +27,11 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
 
-    private LoginItem[] loginItems = getLoginItems();
+    private LoginItem[] loginItems;
+
+    public LoginAdapter() {
+        Log.v(TAG, "LoginAdapter() called");
+    }
 
     @Override
     public LoginAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
@@ -41,7 +48,7 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
 
     @Override
     public int getItemCount() {
-        return loginItems.length;
+        return getLoginItems().length;
     }
 
     /*
@@ -49,12 +56,7 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
      */
 
     public interface LoginAdapterDelegate {
-        void onFBLoginClicked(LoginAdapter loginAdapter);
-        void onFBLogoutClicked(LoginAdapter loginAdapter);
-        void onTwitterLoginClicked(LoginAdapter loginAdapter);
-        void onTwitterLogoutClicked(LoginAdapter loginAdapter);
-        void onIGLoginClicked(LoginAdapter loginAdapter);
-        void onIGLogoutClicked(LoginAdapter loginAdapter);
+        void onLoginSwitchActivated(LoginAdapter loginAdapter, int adapterPosition, boolean isChecked);
     }
 
     private WeakReference<LoginAdapterDelegate> loginAdapterDelegate;
@@ -76,7 +78,7 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
 
     // ----- Inner Class ----- //
 
-    class LoginAdapterViewHolder extends RecyclerView.ViewHolder implements LoginFragment.LoginFragmentDelegate {
+    class LoginAdapterViewHolder extends RecyclerView.ViewHolder {
 
         private final String TAG = "(" + LoginAdapterViewHolder.class.getSimpleName() + "): ";
 
@@ -89,36 +91,21 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
 
         public LoginAdapterViewHolder(View itemView) {
             super(itemView);
+
+            Log.v(TAG, "LoginAdapterViewHolder() called");
+
+            loginItems = getLoginItems();
+
             loginItemName = (TextView) itemView.findViewById(R.id.tv_login_item_title);
             loginItemDescription = (TextView) itemView.findViewById(R.id.tv_login_item_info);
             loginItemLogo = (ImageView) itemView.findViewById(R.id.iv_login_item_logo);
             loginSwitch = (Switch) itemView.findViewById(R.id.sw_login);
 
-            new LoginFragment().setLoginFragmentDelegate(this);
-
             loginSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        if (getLoginAdapterDelegate() != null) {
-                            if (getAdapterPosition() == 0) {
-                                getLoginAdapterDelegate().onFBLoginClicked(LoginAdapter.this);
-                            } else if (getAdapterPosition() == 1) {
-                                getLoginAdapterDelegate().onTwitterLoginClicked(LoginAdapter.this);
-                            } else if (getAdapterPosition() == 2) {
-                                getLoginAdapterDelegate().onIGLoginClicked(LoginAdapter.this);
-                            }
-                        }
-                    } else {
-                        if (getLoginAdapterDelegate() != null) {
-                            if (getAdapterPosition() == 0) {
-                                getLoginAdapterDelegate().onFBLogoutClicked(LoginAdapter.this);
-                            } else if (getAdapterPosition() == 1) {
-                                getLoginAdapterDelegate().onTwitterLogoutClicked(LoginAdapter.this);
-                            } else if (getAdapterPosition() == 2) {
-                                getLoginAdapterDelegate().onIGLogoutClicked(LoginAdapter.this);
-                            }
-                        }
+                    if (getLoginAdapterDelegate() != null) {
+                        getLoginAdapterDelegate().onLoginSwitchActivated(LoginAdapter.this, getAdapterPosition(), isChecked);
                     }
                 }
             });
@@ -131,32 +118,27 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
             loginItemLogo.setBackgroundResource(loginItem.getItemLogoPath());
             loginSwitch.setChecked(loginItem.isLoggedIn());
         }
-
-        /**
-         *
-         * LoginFragment.LoginFragmentDelegate methods
-         *
-         */
-
-        @Override
-        public void onFBLogin(LoginFragment loginFragment, boolean setCheck) {
-            Log.v(LoginAdapter.TAG, "onFBLogin() called");
-            loginItem.setIsLoggedIn(setCheck);
-        }
     }
 
     // Method to add any additional social media items
 
     private LoginItem[] getLoginItems() {
+
         LoginItem[] loginItems = new LoginItem[3];
-        loginItems[0] = new LoginItem("Facebook", "See all of the photos your Facebook friends post!",
-                R.drawable.fb_logo, false);
+
+        SharedPreferences sharedPreferences = BlocpartyApplication.getSharedInstance()
+                .getSharedPreferences("log_states", Context.MODE_PRIVATE);
+
+        int fbPosition = sharedPreferences.getInt("adapterPosition", 0);
+        boolean isFBLoggedIn = sharedPreferences.getBoolean("isFBLoggedIn", false);
+
+        loginItems[fbPosition] = new LoginItem("Facebook", "See all of the photos your Facebook friends post!",
+                R.drawable.fb_logo, isFBLoggedIn);
         loginItems[1] = new LoginItem("Twitter", "View all photos on your Twitter feed.",
                 R.drawable.twitter_logo, false);
         loginItems[2] = new LoginItem("Instagram", "Browse your Instagram feed.", R.drawable.ig_logo,
                 false);
         return loginItems;
     }
-
 
 }
