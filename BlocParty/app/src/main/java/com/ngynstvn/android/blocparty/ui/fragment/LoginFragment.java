@@ -18,6 +18,7 @@ import com.sromku.simple.fb.Permission;
 import com.sromku.simple.fb.SimpleFacebook;
 import com.sromku.simple.fb.listeners.OnLoginListener;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -41,6 +42,34 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         return loginFragment;
     }
 
+    /*
+     * Interface Material
+     */
+
+    public interface LoginFragmentDelegate {
+        void onFBLogin(LoginFragment loginFragment, boolean setCheck);
+    }
+
+    private WeakReference<LoginFragmentDelegate> loginFragmentDelegate;
+
+    public void setLoginFragmentDelegate(LoginFragmentDelegate loginFragmentDelegate) {
+        this.loginFragmentDelegate = new WeakReference<LoginFragmentDelegate>(loginFragmentDelegate);
+    }
+
+    public LoginFragmentDelegate getLoginFragmentDelegate() {
+
+        // Delegate #1: MainActivity (Placed to prevent circular communication between LoginFragment
+        // and LoginAdapter)
+
+        if(loginFragmentDelegate == null) {
+            return null;
+        }
+
+        return loginFragmentDelegate.get();
+    }
+
+    // --------------------- //
+
     private SimpleFacebook simpleFacebook;
     private LoginAdapter loginAdapter;
     private RecyclerView recyclerView;
@@ -63,9 +92,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         loginAdapter = new LoginAdapter();
         loginAdapter.setLoginAdapterDelegate(this);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_login_items);
-        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(loginAdapter);
         return view;
     }
 
@@ -80,6 +106,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         Log.e(TAG, "onResume() called");
         super.onResume();
         simpleFacebook = SimpleFacebook.getInstance();
+
+        // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(loginAdapter);
     }
 
     @Override
@@ -126,7 +158,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     @Override
-    public void onFBDismissClicked(LoginAdapter loginAdapter) {
+    public void onFBLogoutClicked(LoginAdapter loginAdapter) {
 
     }
 
@@ -136,7 +168,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     @Override
-    public void onTwitterDismissClicked(LoginAdapter loginAdapter) {
+    public void onTwitterLogoutClicked(LoginAdapter loginAdapter) {
 
     }
 
@@ -146,7 +178,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     @Override
-    public void onIGDismissClicked(LoginAdapter loginAdapter) {
+    public void onIGLogoutClicked(LoginAdapter loginAdapter) {
 
     }
 
@@ -157,21 +189,41 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             public void onLogin(String s, List<Permission> list, List<Permission> list1) {
                 Log.i(TAG, "Logged in");
+
+                if(getLoginFragmentDelegate() != null) {
+                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, true);
+                }
+
             }
 
             @Override
             public void onCancel() {
                 Log.i(TAG, "Login Cancelled");
+
+                if(getLoginFragmentDelegate() != null) {
+                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
+                }
+
             }
 
             @Override
             public void onException(Throwable throwable) {
                 Log.i(TAG, "Login Exception");
+
+                if(getLoginFragmentDelegate() != null) {
+                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
+                }
+
             }
 
             @Override
             public void onFail(String s) {
                 Log.i(TAG, "Login Failed");
+
+                if(getLoginFragmentDelegate() != null) {
+                    getLoginFragmentDelegate().onFBLogin(LoginFragment.this, false);
+                }
+
             }
         };
 

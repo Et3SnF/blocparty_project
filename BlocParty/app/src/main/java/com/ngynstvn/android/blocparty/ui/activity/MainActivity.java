@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.tb_activity_blocparty);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
-
         welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
     }
 
