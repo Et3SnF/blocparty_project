@@ -29,9 +29,15 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.0.1'
     compile 'com.sromku:simple-fb:4.0.8'
     compile project('libs:ToggleButtonLib')
-    compile files('libs/twitter4j-core-4.0.4.jar')
-    compile files('libs/twitter4j-async-4.0.4.jar')
-    compile files('libs/twitter4j-examples-4.0.4.jar')
-    compile files('libs/twitter4j-media-support-4.0.4.jar')
-    compile files('libs/twitter4j-stream-4.0.4.jar')
+    compile files('libs/Twitter4J/twitter4j-async-4.0.4.jar')
+    compile files('libs/Twitter4J/twitter4j-core-4.0.4.jar')
+    compile files('libs/Twitter4J/twitter4j-examples-4.0.4.jar')
+    compile files('libs/Twitter4J/twitter4j-media-support-4.0.4.jar')
+    compile files('libs/Twitter4J/twitter4j-stream-4.0.4.jar')
+    compile files('libs/jInstagram/commons-codec-1.8.jar')
+    compile files('libs/jInstagram/commons-lang3-3.1.jar')
+    compile files('libs/jInstagram/gson-2.2.2.jar')
+    compile files('libs/jInstagram/jInstagram-1.1.4.jar')
+    compile files('libs/jInstagram/junit-4.11.jar')
+    compile files('libs/jInstagram/mockito-all-1.8.4.jar')
 }
