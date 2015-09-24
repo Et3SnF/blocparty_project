@@ -7,15 +7,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.LoginItem;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
+import com.zcw.togglebutton.ToggleButton;
 
 import java.lang.ref.WeakReference;
 
@@ -85,7 +84,7 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
         TextView loginItemName;
         TextView loginItemDescription;
         ImageView loginItemLogo;
-        Switch loginSwitch;
+        ToggleButton loginSwitch;
 
         LoginItem loginItem;
 
@@ -99,13 +98,13 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
             loginItemName = (TextView) itemView.findViewById(R.id.tv_login_item_title);
             loginItemDescription = (TextView) itemView.findViewById(R.id.tv_login_item_info);
             loginItemLogo = (ImageView) itemView.findViewById(R.id.iv_login_item_logo);
-            loginSwitch = (Switch) itemView.findViewById(R.id.sw_login);
+            loginSwitch = (ToggleButton) itemView.findViewById(R.id.tog_login);
 
-            loginSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            loginSwitch.setOnToggleChanged(new ToggleButton.OnToggleChanged() {
                 @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                public void onToggle(boolean on) {
                     if (getLoginAdapterDelegate() != null) {
-                        getLoginAdapterDelegate().onLoginSwitchActivated(LoginAdapter.this, getAdapterPosition(), isChecked);
+                        getLoginAdapterDelegate().onLoginSwitchActivated(LoginAdapter.this, getAdapterPosition(), on);
                     }
                 }
             });
@@ -116,7 +115,13 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
             loginItemName.setText(loginItem.getItemName());
             loginItemDescription.setText(loginItem.getItemDescription());
             loginItemLogo.setBackgroundResource(loginItem.getItemLogoPath());
-            loginSwitch.setChecked(loginItem.isLoggedIn());
+
+            if(loginItem.isLoggedIn()) {
+                loginSwitch.toggleOn();
+            }
+            else {
+                loginSwitch.toggleOff();
+            }
         }
     }
 

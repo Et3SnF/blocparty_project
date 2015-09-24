@@ -32,16 +32,15 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
 
-    private static final String LOG_STATES = "log_states";
+    private static final String FILE_NAME = "log_states";
     private static final String FB_LOGIN = "isFBLoggedIn";
     private static final String FB_POSITION = "adapterPosition";
+    private static final String COUNTER = "counter";
 
     private static int instance_counter = 0;
 
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
-    private int fbPosition;
-    private boolean isFBLoggedIn;
 
     /**
      *
@@ -127,8 +126,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         // Must place sharedPreference here for it to save states properly
         sharedPreferences = BPUtils.newSPrefInstance("log_states");
-//        fbPosition = sharedPreferences.getInt("adapterPosition", 0);
-//        isFBLoggedIn = sharedPreferences.getBoolean("isFBLoggedIn", false);
+
+        // Keeping track of counter
+        if(sharedPreferences != null) {
+            instance_counter = sharedPreferences.getInt(COUNTER, 0);
+        }
 
         // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
 
@@ -154,6 +156,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onDestroyView() {
         Log.e(TAG, "onDestroyView() called");
         super.onDestroyView();
+        BPUtils.putSharedPrefCounter(sharedPreferences, FILE_NAME, COUNTER, instance_counter);
     }
 
     @Override
@@ -221,7 +224,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             public void onLogin(String s, List<Permission> list, List<Permission> list1) {
                 Log.i(TAG, "Logged in");
-                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, true);
                 BPUtils.toast("Logged into Facebook");
             }
@@ -229,21 +232,21 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             public void onCancel() {
                 Log.i(TAG, "Login Cancelled");
-                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
             }
 
             @Override
             public void onException(Throwable throwable) {
                 Log.i(TAG, "Login Exception");
-                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
             }
 
             @Override
             public void onFail(String s) {
                 Log.i(TAG, "Login Failed");
-                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
                 BPUtils.toast("Unable to log into Facebook");
             }
@@ -265,7 +268,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                 Log.i(TAG, "Logged out of Facebook");
 
-                BPUtils.putSharedPrefValues(sharedPreferences, LOG_STATES, FB_POSITION, adapterPosition,
+                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
 
                 if(instance_counter > 1) {

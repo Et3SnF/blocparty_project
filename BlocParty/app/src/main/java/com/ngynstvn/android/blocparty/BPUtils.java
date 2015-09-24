@@ -27,12 +27,19 @@ public class BPUtils {
         return BlocpartyApplication.getSharedInstance().getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
-    public static void putSharedPrefValues(SharedPreferences sharedPreferences, String name, String posKeyName,
+    public static void putSharedPrefValues(SharedPreferences sharedPreferences, String fileName, String posKeyName,
                                            int adapterPosition, String stateKeyName, boolean state) {
-        sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(name, Context.MODE_PRIVATE);
+        sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(posKeyName, adapterPosition);
         editor.putBoolean(stateKeyName, state);
+        editor.commit();
+    }
+
+    public static void putSharedPrefCounter(SharedPreferences sharedPreferences, String fileName, String key, int value) {
+        sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(key, value);
         editor.commit();
     }
 
