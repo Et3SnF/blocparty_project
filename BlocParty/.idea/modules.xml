@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BlocParty.iml" filepath="$PROJECT_DIR$/BlocParty.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/libraries/ToggleButtonLib/ToggleButtonLib.iml" filepath="$PROJECT_DIR$/app/libraries/ToggleButtonLib/ToggleButtonLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/libs/libs.iml" filepath="$PROJECT_DIR$/app/libs/libs.iml" />
     </modules>
   </component>
 </project>
