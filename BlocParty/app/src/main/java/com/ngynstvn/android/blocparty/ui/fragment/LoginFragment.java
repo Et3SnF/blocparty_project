@@ -127,11 +127,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         // Must place sharedPreference here for it to save states properly
         sharedPreferences = BPUtils.newSPrefInstance("log_states");
 
-        // Keeping track of counter
-        if(sharedPreferences != null) {
-            instance_counter = sharedPreferences.getInt(COUNTER, 0);
-        }
-
         // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
 
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
@@ -156,7 +151,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onDestroyView() {
         Log.e(TAG, "onDestroyView() called");
         super.onDestroyView();
-        BPUtils.putSharedPrefCounter(sharedPreferences, FILE_NAME, COUNTER, instance_counter);
     }
 
     @Override
@@ -226,7 +220,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 Log.i(TAG, "Logged in");
                 BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, true);
-                BPUtils.toast("Logged into Facebook");
             }
 
             @Override
@@ -248,7 +241,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 Log.i(TAG, "Login Failed");
                 BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
-                BPUtils.toast("Unable to log into Facebook");
             }
         };
 
@@ -256,9 +248,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     private void fbLogout(final SimpleFacebook simpleFacebook, final int adapterPosition) {
-
-        instance_counter++;
-        Log.v(TAG, "Instance Counter: " + instance_counter);
 
         editor = BPUtils.sharePrefEditor("log_states");
 
@@ -270,10 +259,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                 BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
                         FB_LOGIN, false);
-
-                if(instance_counter > 1) {
-                    BPUtils.toast("Logged out of Facebook");
-                }
             }
         };
 
