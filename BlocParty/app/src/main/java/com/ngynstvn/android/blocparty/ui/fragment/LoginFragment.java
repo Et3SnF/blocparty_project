@@ -1,7 +1,10 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -24,6 +27,13 @@ import com.sromku.simple.fb.listeners.OnLogoutListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.RequestToken;
+import twitter4j.conf.Configuration;
+import twitter4j.conf.ConfigurationBuilder;
+
 /**
  * Created by Ngynstvn on 9/23/15.
  */
@@ -32,15 +42,29 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
 
-    private static final String FILE_NAME = "log_states";
-    private static final String FB_LOGIN = "isFBLoggedIn";
-    private static final String FB_POSITION = "adapterPosition";
     private static final String COUNTER = "counter";
-
     private static int instance_counter = 0;
+
+    // Shared Preferences Variable
 
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
+
+    // Facebook Static Variables
+
+    private static SimpleFacebook simpleFacebook;
+
+    // Twitter Static Variables
+
+    private static Twitter twitter;
+    private static RequestToken requestToken;
+    private static ConfigurationBuilder configurationBuilder;
+    private static Configuration configuration;
+
+    // Fields
+
+    private LoginAdapter loginAdapter;
+    private RecyclerView recyclerView;
 
     /**
      *
@@ -81,11 +105,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         return loginFragmentDelegate.get();
     }
 
-    // --------------------- //
+    // Twitter callback interface
 
-    private SimpleFacebook simpleFacebook;
-    private LoginAdapter loginAdapter;
-    private RecyclerView recyclerView;
+    private interface Authoritative {
+        void onSuccess();
+        void onFailure();
+    }
 
     // ----- Lifecycle Methods ----- //
 
@@ -99,6 +124,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         if(savedInstanceState != null) {
             instance_counter = savedInstanceState.getInt("counter");
         }
+
+        configurationBuilder = new ConfigurationBuilder();
     }
 
     @Nullable
@@ -125,7 +152,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         simpleFacebook = SimpleFacebook.getInstance();
 
         // Must place sharedPreference here for it to save states properly
-        sharedPreferences = BPUtils.newSPrefInstance("log_states");
+        sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
 
         // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
 
@@ -174,22 +201,80 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
      */
 
     @Override
-    public void onLoginSwitchActivated(LoginAdapter loginAdapter, int adapterPosition, boolean isChecked) {
+    public void onLoginSwitchActivated(LoginAdapter loginAdapter, final int adapterPosition, final boolean isChecked) {
         switch(adapterPosition) {
             case 0:
                 if(isChecked) {
-                    Log.v(TAG, "Logged into Facebook");
-                    fbLogin(simpleFacebook, adapterPosition);
+
+                    fbLogin(simpleFacebook, adapterPosition, new OnLoginListener() {
+                        @Override
+                        public void onLogin(String s, List<Permission> list, List<Permission> list1) {
+                            Log.i(TAG, "Logged into Facebook");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, true);
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            Log.i(TAG, "Facebook login Cancelled");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
+                        }
+
+                        @Override
+                        public void onException(Throwable throwable) {
+                            Log.i(TAG, "Facebook Login Exception!");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
+                        }
+
+                        @Override
+                        public void onFail(String s) {
+                            Log.i(TAG, "Facebook Login Failed");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
+                        }
+                    });
                     break;
                 }
                 else {
-                    Log.v(TAG, "Logged out of Facebook");
-                    fbLogout(simpleFacebook, adapterPosition);
+
+                    fbLogout(simpleFacebook, adapterPosition, new OnLogoutListener() {
+                        @Override
+                        public void onLogout() {
+                            Log.i(TAG, "Logged out of Facebook");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
+                        }
+                    });
                     break;
                 }
             case 1:
                 if(isChecked) {
-                    Log.v(TAG, "Logged into Twitter");
+
+                    authTwitter(adapterPosition, new Authoritative() {
+                        @Override
+                        public void onSuccess() {
+                            Log.i(TAG, "Logged in to Twitter");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            Log.i(TAG, "Unable to log into Twitter");
+
+                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
+                        }
+                    });
+
                     break;
                 }
                 else {
@@ -210,64 +295,90 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     // ----- Facebook Methods ----- //
 
-    private void fbLogin(SimpleFacebook simpleFacebook, final int adapterPosition) {
-
-        editor = BPUtils.sharePrefEditor("log_states");
-
-        final OnLoginListener onLoginListener = new OnLoginListener() {
-            @Override
-            public void onLogin(String s, List<Permission> list, List<Permission> list1) {
-                Log.i(TAG, "Logged in");
-                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
-                        FB_LOGIN, true);
-            }
-
-            @Override
-            public void onCancel() {
-                Log.i(TAG, "Login Cancelled");
-                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
-                        FB_LOGIN, false);
-            }
-
-            @Override
-            public void onException(Throwable throwable) {
-                Log.i(TAG, "Login Exception");
-                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
-                        FB_LOGIN, false);
-            }
-
-            @Override
-            public void onFail(String s) {
-                Log.i(TAG, "Login Failed");
-                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
-                        FB_LOGIN, false);
-            }
-        };
-
+    private void fbLogin(SimpleFacebook simpleFacebook, int adapterPosition, OnLoginListener onLoginListener) {
         simpleFacebook.login(onLoginListener);
     }
 
-    private void fbLogout(final SimpleFacebook simpleFacebook, final int adapterPosition) {
-
-        editor = BPUtils.sharePrefEditor("log_states");
-
-        final OnLogoutListener onLogoutListener = new OnLogoutListener() {
-            @Override
-            public void onLogout() {
-
-                Log.i(TAG, "Logged out of Facebook");
-
-                BPUtils.putSharedPrefValues(sharedPreferences, FILE_NAME, FB_POSITION, adapterPosition,
-                        FB_LOGIN, false);
-            }
-        };
-
+    private void fbLogout(SimpleFacebook simpleFacebook, int adapterPosition, OnLogoutListener onLogoutListener) {
         simpleFacebook.logout(onLogoutListener);
     }
 
     // ----- Twitter Methods ----- //
 
+    private void authTwitter(final int adapterPosition, final Authoritative authoritative) {
 
+        new AsyncTask<Void, Void, Boolean>() {
+
+            @Override
+            protected void onPreExecute() {
+
+                configuration = configurationBuilder
+                        .setDebugEnabled(true)
+                        .setOAuthConsumerKey(getString(R.string.tck))
+                        .setOAuthConsumerSecret(getString(R.string.tcs))
+                        .setOAuthAccessToken(getString(R.string.tac))
+                        .setOAuthAccessTokenSecret(getString(R.string.tas))
+                        .build();
+
+                twitter = new TwitterFactory(configuration).getInstance();
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                try {
+
+                    if(configuration.getOAuthAccessToken().equals(getString(R.string.tac)) &&
+                            configuration.getOAuthAccessTokenSecret().equals(getString(R.string.tas))) {
+                        Log.v(TAG, "Tokens match.");
+                        return true;
+                    }
+                    else if(!configuration.getOAuthAccessToken().equals(getString(R.string.tac)) &&
+                            !configuration.getOAuthAccessTokenSecret().equals(getString(R.string.tas))) {
+                        Log.v(TAG, "Tokens do not match.");
+                        return false;
+                    }
+                    else {
+                        Log.v(TAG, "Getting Twitter request token...");
+                        requestToken = twitter.getOAuthRequestToken("http://www.placeholder.com/");
+                        Log.v(TAG, "Twitter RequestToken Processed");
+
+                        Log.v(TAG, "Twitter Intent Started");
+                        LoginFragment.this.startActivity(new Intent(Intent.ACTION_VIEW,
+                                Uri.parse(requestToken.getAuthenticationURL())));
+                    }
+
+                    return true;
+                }
+                catch (TwitterException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                catch (IllegalStateException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if(aBoolean) {
+                    authoritative.onSuccess();
+                }
+                else {
+                    authoritative.onFailure();
+                }
+            }
+        }.execute();
+
+    }
+
+    private boolean isTwitterConnected() {
+        return sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null;
+    }
+
+    private void twLogout() {
+
+    }
 
     // ----- Instagram Methods ----- //
 }

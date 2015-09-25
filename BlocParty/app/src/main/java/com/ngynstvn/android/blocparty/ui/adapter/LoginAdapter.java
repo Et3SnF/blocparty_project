@@ -1,6 +1,5 @@
 package com.ngynstvn.android.blocparty.ui.adapter;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.ngynstvn.android.blocparty.BlocpartyApplication;
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.LoginItem;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
@@ -131,16 +130,24 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
 
         LoginItem[] loginItems = new LoginItem[3];
 
-        SharedPreferences sharedPreferences = BlocpartyApplication.getSharedInstance()
-                .getSharedPreferences("log_states", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
 
-        int fbPosition = sharedPreferences.getInt("adapterPosition", 0);
-        boolean isFBLoggedIn = sharedPreferences.getBoolean("isFBLoggedIn", false);
+        int fbPosition = sharedPreferences.getInt(BPUtils.FB_POSITION, 0);
+        boolean isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
+
+        int twPosition = sharedPreferences.getInt(BPUtils.TW_POSITION, 1);
+        boolean isTWLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
+
+//        int igPosition = sharedPreferences.getInt(BPUtils.FB_POSITION, 0);
+//        boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
 
         loginItems[fbPosition] = new LoginItem("Facebook", "See all of the photos your Facebook friends post!",
                 R.drawable.fb_logo, isFBLoggedIn);
-        loginItems[1] = new LoginItem("Twitter", "View all photos on your Twitter feed.",
-                R.drawable.twitter_logo, false);
+        loginItems[twPosition] = new LoginItem("Twitter", "View all photos on your Twitter feed.",
+                R.drawable.twitter_logo, isTWLoggedIn);
+
+        // Will be activated soon
+
         loginItems[2] = new LoginItem("Instagram", "Browse your Instagram feed.", R.drawable.ig_logo,
                 false);
         return loginItems;
