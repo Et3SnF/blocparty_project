@@ -6,9 +6,8 @@
     <string name="login_item_dummy_item_name">Dummy Item Name Blarg</string>
     <string name="login_item_dummy_item_description">This is a headline you would like to give about your login item!</string>
     <string name="camera_mode_text">Camera</string>
-    <string name="welcome_message">Welcome to BlocParty! To get started, toggle at least one switch to log in and use this application.</string>
-    <string name="tck">tslua6l97tAI18hSImlY0WdeK</string>
-    <string name="tcs">dxy12uUrALFeaaNJmkdAD3Csc2J4q7c5HQXQjTbTKVqtVb5sJN</string>
-    <string name="tac">3646501040-76Cgmtt1I89suDWxMJ2kG1SZsjUrJFlNBA7xMvG</string>
-    <string name="tas">IKaJ7Y0OEq3BVtxXnXvyRjmYClnPsY0EVFJjG2fHbnFSA</string>
+    <string name="welcome_message">Welcome to BlocParty! To get started, toggle at least one switch to log in.</string>
+    <string name="tck">dbrn7UcYRBACbXJqR3jO1Jn8u</string>
+    <string name="tcs">A9RYEYjy9XXTv3YMYLqGseg2LB47Lox6gyb5cZvbLq5LHqAiO0</string>
+    <string name="twitter_authentication_instruction">Enter the authentication code below:</string>
 </resources>
