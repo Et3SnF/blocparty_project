@@ -1,9 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -30,6 +28,9 @@ import java.util.List;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
@@ -57,9 +58,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     // Twitter Static Variables
 
     private static Twitter twitter;
+    private static TwitterStream twitterStream;
     private static RequestToken requestToken;
     private static ConfigurationBuilder configurationBuilder;
     private static Configuration configuration;
+    private static String token;
+    private static String tokenSecret;
 
     // Fields
 
@@ -159,6 +163,23 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(loginAdapter);
+
+        // Put something twitter related here to prevent crashes during build configurations.
+
+        if(isTwitterConnected()) {
+            token = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+            tokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+
+            configuration = configurationBuilder
+                    .setDebugEnabled(true)
+                    .setOAuthConsumerKey(getString(R.string.tck))
+                    .setOAuthConsumerSecret(getString(R.string.tcs))
+                    .setOAuthAccessToken(token)
+                    .setOAuthAccessTokenSecret(tokenSecret)
+                    .build();
+
+            twitterStream = new TwitterStreamFactory(configuration).getInstance();
+        }
     }
 
     @Override
@@ -211,7 +232,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         public void onLogin(String s, List<Permission> list, List<Permission> list1) {
                             Log.i(TAG, "Logged into Facebook");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, true);
                         }
 
@@ -219,7 +240,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         public void onCancel() {
                             Log.i(TAG, "Facebook login Cancelled");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
                         }
 
@@ -227,7 +248,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         public void onException(Throwable throwable) {
                             Log.i(TAG, "Facebook Login Exception!");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
                         }
 
@@ -235,7 +256,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         public void onFail(String s) {
                             Log.i(TAG, "Facebook Login Failed");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
                         }
                     });
@@ -248,7 +269,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         public void onLogout() {
                             Log.i(TAG, "Logged out of Facebook");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
                         }
                     });
@@ -257,27 +278,33 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             case 1:
                 if(isChecked) {
 
-                    authTwitter(adapterPosition, new Authoritative() {
-                        @Override
-                        public void onSuccess() {
-                            Log.i(TAG, "Logged in to Twitter");
+                    if (isTwitterConnected()) {
+                        twLogin();
+                    }
+                    else {
+                        authTwitter(adapterPosition, new Authoritative() {
+                            @Override
+                            public void onSuccess() {
+                                Log.i(TAG, "Logged in to Twitter");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
-                                    BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-                        }
+                                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
+                                        BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
+                            }
 
-                        @Override
-                        public void onFailure() {
-                            Log.i(TAG, "Unable to log into Twitter");
+                            @Override
+                            public void onFailure() {
+                                Log.i(TAG, "Unable to log into Twitter");
 
-                            BPUtils.putSharedPrefValues(sharedPreferences, BPUtils.FILE_NAME,
-                                    BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
-                        }
-                    });
+                                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
+                                        BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
+                            }
+                        });
+                    }
 
                     break;
                 }
                 else {
+                    twLogout();
                     Log.v(TAG, "Logged out of Twitter");
                     break;
                 }
@@ -312,12 +339,14 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             protected void onPreExecute() {
 
+                if(configurationBuilder == null) {
+                    configurationBuilder = new ConfigurationBuilder();
+                }
+
                 configuration = configurationBuilder
                         .setDebugEnabled(true)
                         .setOAuthConsumerKey(getString(R.string.tck))
                         .setOAuthConsumerSecret(getString(R.string.tcs))
-                        .setOAuthAccessToken(getString(R.string.tac))
-                        .setOAuthAccessTokenSecret(getString(R.string.tas))
                         .build();
 
                 twitter = new TwitterFactory(configuration).getInstance();
@@ -326,26 +355,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
+                    Log.v(TAG, "Getting token....");
+                    requestToken = twitter.getOAuthRequestToken();
 
-                    if(configuration.getOAuthAccessToken().equals(getString(R.string.tac)) &&
-                            configuration.getOAuthAccessTokenSecret().equals(getString(R.string.tas))) {
-                        Log.v(TAG, "Tokens match.");
-                        return true;
-                    }
-                    else if(!configuration.getOAuthAccessToken().equals(getString(R.string.tac)) &&
-                            !configuration.getOAuthAccessTokenSecret().equals(getString(R.string.tas))) {
-                        Log.v(TAG, "Tokens do not match.");
-                        return false;
-                    }
-                    else {
-                        Log.v(TAG, "Getting Twitter request token...");
-                        requestToken = twitter.getOAuthRequestToken("http://www.placeholder.com/");
-                        Log.v(TAG, "Twitter RequestToken Processed");
-
-                        Log.v(TAG, "Twitter Intent Started");
-                        LoginFragment.this.startActivity(new Intent(Intent.ACTION_VIEW,
-                                Uri.parse(requestToken.getAuthenticationURL())));
-                    }
+                    String token = requestToken.getToken();
+                    String tokenSecret = requestToken.getTokenSecret();
+                    twitter.setOAuthAccessToken(new AccessToken(token, tokenSecret));
 
                     return true;
                 }
@@ -362,7 +377,13 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 if(aBoolean) {
+                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN,
+                            requestToken.getToken());
+                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.TW_ACCESS_TOKEN_SECRET, requestToken.getTokenSecret());
                     authoritative.onSuccess();
+                    configuration = null;
+                    configurationBuilder = null;
                 }
                 else {
                     authoritative.onFailure();
@@ -377,7 +398,21 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     private void twLogout() {
+        BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+        BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+    }
 
+    private void twLogin() {
+        String token = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+        String tokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+
+        if(token == null || tokenSecret == null) {
+            Log.v(TAG, "Unable to log into Twitter (authentication issues)");
+            return;
+        }
+
+        twitter.setOAuthAccessToken(new AccessToken(token, tokenSecret));
+        Log.v(TAG, "You are logged into Twitter");
     }
 
     // ----- Instagram Methods ----- //

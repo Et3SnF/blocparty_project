@@ -10,4 +10,6 @@
     <string name="tck">dbrn7UcYRBACbXJqR3jO1Jn8u</string>
     <string name="tcs">A9RYEYjy9XXTv3YMYLqGseg2LB47Lox6gyb5cZvbLq5LHqAiO0</string>
     <string name="twitter_authentication_instruction">Enter the authentication code below:</string>
+    <string name="btn_authentication_text">Authenticate</string>
+
 </resources>
