@@ -23,10 +23,14 @@ public class BPUtils {
 
     public static final String TW_LOGIN = "isTWLoggedIn";
     public static final String TW_POSITION = "twAdapterPosition";
-    public static final String TW_CONSUMER_KEY = "twConsumerKey";
-    public static final String TW_CONSUMER_SECRET = "twConsumerSecret";
     public static final String TW_ACCESS_TOKEN = "twAccessToken";
     public static final String TW_ACCESS_TOKEN_SECRET = "twAccessTokenSecret";
+
+    // Instagram Variables
+
+    public static final String IG_LOGIN = "isIGLoggedIn";
+    public static final String IG_POSITION ="igAdapterPosition";
+    public static final String IG_TOKEN = "ig_token";
 
     // ----- Static Methods ----- //
 

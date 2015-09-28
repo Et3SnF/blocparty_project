@@ -22,6 +22,10 @@ import com.sromku.simple.fb.SimpleFacebook;
 import com.sromku.simple.fb.listeners.OnLoginListener;
 import com.sromku.simple.fb.listeners.OnLogoutListener;
 
+import org.jinstagram.Instagram;
+import org.jinstagram.auth.model.Token;
+import org.jinstagram.auth.oauth.InstagramService;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -65,6 +69,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     private static String token;
     private static String tokenSecret;
 
+    // Instagram Static Variables
+
+    private static final Token EMPTY_TOKEN = null;
+    private static InstagramService instagramService;
+    private static Instagram instagram;
+
     // Fields
 
     private LoginAdapter loginAdapter;
@@ -78,8 +88,13 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     public static LoginFragment newInstance() {
         LoginFragment loginFragment = new LoginFragment();
+        return loginFragment;
+    }
+
+    public static LoginFragment newInstance(String igValue) {
+        LoginFragment loginFragment = new LoginFragment();
         Bundle bundle = new Bundle();
-        // nothing to put in here for now
+        bundle.putString(BPUtils.IG_TOKEN, igValue);
         return loginFragment;
     }
 
@@ -127,9 +142,13 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         if(savedInstanceState != null) {
             instance_counter = savedInstanceState.getInt("counter");
+            String token = getArguments().getString(BPUtils.IG_TOKEN);
+            instagram = new Instagram(token);
+            Log.v(TAG, instagram.getClientId());
         }
 
         configurationBuilder = new ConfigurationBuilder();
+        instagramService = BlocpartyApplication.getSharedInstagramService();
     }
 
     @Nullable
@@ -311,10 +330,25 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             case 2:
                 if(isChecked) {
                     Log.v(TAG, "Logged into Instagram");
+                    authInstagram(instagramService, new Authoritative() {
+                        @Override
+                        public void onSuccess() {
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
+                                    BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
+                        }
+                    });
                     break;
                 }
                 else {
                     Log.v(TAG, "Logged out of Instagram");
+                    BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
                     break;
                 }
         }
@@ -360,7 +394,9 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     String token = requestToken.getToken();
                     String tokenSecret = requestToken.getTokenSecret();
-                    twitter.setOAuthAccessToken(new AccessToken(token, tokenSecret));
+
+                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                            TwitterAuthFragment.newInstance(requestToken.getAuthenticationURL())).commit();
 
                     return true;
                 }
@@ -416,4 +452,40 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     }
 
     // ----- Instagram Methods ----- //
+
+    private void authInstagram(final InstagramService instagramService, final Authoritative authoritative) {
+
+        final String authorizationURL = instagramService.getAuthorizationUrl(EMPTY_TOKEN);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fl_activity_blocparty, IGAuthFragment.newInstance(authorizationURL)).commit();
+
+        new AsyncTask<String, Void, Boolean>() {
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                getFragmentManager().beginTransaction().add(R.id.fl_activity_blocparty,
+                        IGAuthFragment.newInstance(params[0])).addToBackStack("ig_auth_fragment").commit();
+
+                Bundle bundle = getArguments();
+
+                if(bundle == null) {
+                    return false;
+                }
+                else {
+                    bundle.getString(BPUtils.IG_TOKEN);
+                    return true;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if(aBoolean) {
+                    authoritative.onSuccess();
+                }
+                else {
+                    authoritative.onFailure();
+                }
+            }
+        }.execute(authorizationURL);
+    }
 }

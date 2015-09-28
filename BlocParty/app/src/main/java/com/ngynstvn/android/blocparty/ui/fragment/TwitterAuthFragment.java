@@ -2,16 +2,24 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 /**
  * Created by Ngynstvn on 9/26/15.
@@ -25,12 +33,11 @@ public class TwitterAuthFragment extends Fragment {
     private static final String TOKEN = "request_token";
 
     private WebView webView;
-    private Button button;
 
     public static TwitterAuthFragment newInstance(String value) {
         TwitterAuthFragment twitterAuthFragment = new TwitterAuthFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(TOKEN, value);
+        bundle.putString(TOKEN_URL, value);
         twitterAuthFragment.setArguments(bundle);
         return twitterAuthFragment;
     }
@@ -52,7 +59,7 @@ public class TwitterAuthFragment extends Fragment {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        webView.loadUrl("https://api.twitter.com/oauth/authorize?force_login=true&oauth_token=" + getArguments().get(TOKEN));
+        webView.loadUrl(getArguments().getString(TOKEN_URL));
 
         return view;
     }
@@ -64,13 +71,16 @@ public class TwitterAuthFragment extends Fragment {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            if (url.equals("https://api.twitter.com/oauth/authorize")) {
-                webView.loadUrl("javascript:window.HTMLOUT.obtain(document.body.innerHTML);");
+            Log.v(TAG, "Current URL: " + url);
+            if (url.equals("https://api.twitter.com/oauth/authenticate")) {
+                // Parse the HTML code of this website
+                Log.v(TAG, url);
+                parseHTML(url);
             }
         }
     }
 
-    public class MyJavaScriptClient {
+    private class MyJavaScriptClient {
 
         public void obtain(String html) {
             int i = html.indexOf("<code>");
@@ -80,5 +90,37 @@ public class TwitterAuthFragment extends Fragment {
                 html = html.substring(0, i);
             }
         }
+    }
+
+    private void parseHTML(final String url) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    URL yahoo = new URL(url);
+
+                    URLConnection yc = yahoo.openConnection();
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(
+                            yc.getInputStream(), "UTF-8"));
+
+                    String inputLine;
+
+                    StringBuilder a = new StringBuilder();
+
+                    while ((inputLine = in.readLine()) != null)
+                        a.append(inputLine);
+
+                    in.close();
+                    Log.v(TAG, a.toString());
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
     }
 }

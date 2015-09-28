@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     private void displayLoginFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fl_activity_blocparty, LoginFragment.newInstance());
+        fragmentTransaction.addToBackStack("login_fragment").replace(R.id.fl_activity_blocparty, LoginFragment.newInstance());
         fragmentTransaction.commit();
 
         /*

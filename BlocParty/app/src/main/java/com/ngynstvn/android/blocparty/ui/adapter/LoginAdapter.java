@@ -138,18 +138,15 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
         int twPosition = sharedPreferences.getInt(BPUtils.TW_POSITION, 1);
         boolean isTWLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
 
-//        int igPosition = sharedPreferences.getInt(BPUtils.FB_POSITION, 0);
-//        boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
+        int igPosition = sharedPreferences.getInt(BPUtils.IG_POSITION, 2);
+        boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false);
 
         loginItems[fbPosition] = new LoginItem("Facebook", "See all of the photos your Facebook friends post!",
                 R.drawable.fb_logo, isFBLoggedIn);
         loginItems[twPosition] = new LoginItem("Twitter", "View all photos on your Twitter feed.",
                 R.drawable.twitter_logo, isTWLoggedIn);
-
-        // Will be activated soon
-
-        loginItems[2] = new LoginItem("Instagram", "Browse your Instagram feed.", R.drawable.ig_logo,
-                false);
+        loginItems[igPosition] = new LoginItem("Instagram", "Browse your Instagram feed.", R.drawable.ig_logo,
+                isIGLoggedIn);
         return loginItems;
     }
 
