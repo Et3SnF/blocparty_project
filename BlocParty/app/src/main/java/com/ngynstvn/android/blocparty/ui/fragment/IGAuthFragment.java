@@ -2,8 +2,7 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -80,10 +79,19 @@ public class IGAuthFragment extends Fragment {
 
                     @Override
                     protected void onPostExecute(Token token) {
-                        FragmentManager fragmentManager = getFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.fl_activity_blocparty, LoginFragment.newInstance(token.getToken()));
-                        fragmentTransaction.commit();
+                        SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
+                        if(token.getToken() != null) {
+                            BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN, token.getToken());
+                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN_VALID, true);
+                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                                    LoginFragment.newInstance(token.getToken())).commit();
+                        }
+                        else {
+                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN_VALID, false);
+                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                                    LoginFragment.newInstance()).commit();
+                        }
                     }
                 }.execute();
             }
