@@ -25,6 +25,8 @@ public class BPUtils {
     public static final String TW_POSITION = "twAdapterPosition";
     public static final String TW_ACCESS_TOKEN = "twAccessToken";
     public static final String TW_ACCESS_TOKEN_SECRET = "twAccessTokenSecret";
+    public static final String TW_CONSUMER_KEY = "twConsumerKey";
+    public static final String TW_CONSUMER_SECRET = "twConsumerSecret";
 
     // Instagram Variables
 

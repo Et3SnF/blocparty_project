@@ -53,7 +53,7 @@ public class BlocpartyApplication extends Application {
         // Facebook
 
         SimpleFacebookConfiguration configuration = new SimpleFacebookConfiguration.Builder()
-                .setAppId(APP_ID)
+                .setAppId(getString(R.string.fbai))
                 .setNamespace(APP_NAMESPACE)
                 .setPermissions(permissions)
                 .setDefaultAudience(DefaultAudience.FRIENDS)

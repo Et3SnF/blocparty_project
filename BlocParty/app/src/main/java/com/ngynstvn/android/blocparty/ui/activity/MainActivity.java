@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.tb_activity_blocparty);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
-        welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
 
         if(savedInstanceState != null) {
             savedInstanceState.getInt("counter");
@@ -72,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         simpleFacebook = SimpleFacebook.getInstance(this);
 
         instance_counter++;
+
+        welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
 
         if(instance_counter > 1) {
             welcomeMessage.setVisibility(View.GONE);
