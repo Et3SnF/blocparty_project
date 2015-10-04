@@ -48,9 +48,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
 
-    private static final String COUNTER = "counter";
-    private static int instance_counter = 0;
-
     // Shared Preferences Variable
 
     private static SharedPreferences sharedPreferences;
@@ -62,8 +59,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     // Twitter Static Variables
 
     private static Twitter twitter;
-    private static TwitterStream twitterStream;
-    private static RequestToken requestToken;
     private static ConfigurationBuilder configurationBuilder;
     private static Configuration configuration;
     private static String twConsumerKey;
@@ -144,7 +139,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         loginAdapter = new LoginAdapter();
 
         if(savedInstanceState != null) {
-            instance_counter = savedInstanceState.getInt("counter");
             String token = getArguments().getString(BPUtils.IG_TOKEN);
             instagram = new Instagram(token);
             Log.v(TAG, instagram.getClientId());
@@ -205,7 +199,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "onSaveInstanceState() called");
         super.onSaveInstanceState(outState);
-        outState.putInt("counter", instance_counter);
     }
 
     @Override
@@ -413,13 +406,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         new AsyncTask<Void, Void, RequestToken>() {
 
             @Override
-            protected void onPreExecute() {
-                // Erase any current tokens (if they do exist) first before creating new ones
-                BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-                BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
-            }
-
-            @Override
             protected RequestToken doInBackground(Void... params) {
 
                 if(sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null) == null) {
@@ -434,9 +420,14 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                     twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
                     twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
 
-                    twitter = TwitterFactory.getSingleton();
+                    ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
-                    twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
+                    Configuration configuration = configurationBuilder
+                            .setOAuthConsumerKey(twConsumerKey)
+                            .setOAuthConsumerSecret(twConsumerSecret)
+                            .build();
+
+                      twitter = new TwitterFactory(configuration).getInstance();
 
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
 
