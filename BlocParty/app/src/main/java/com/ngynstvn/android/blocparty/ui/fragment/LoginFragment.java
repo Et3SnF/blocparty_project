@@ -182,14 +182,24 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         // Resume any Twitter activity when back to this fragment
 
+        if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
+                sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
+
+            twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+            twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+
+            twitter = new TwitterFactory().getInstance();
+            twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
+            twitter.setOAuthAccessToken(new AccessToken(twToken, twTokenSecret));
+        }
+
         if(isTwitterConnected()) {
             ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
             configurationBuilder.setOAuthConsumerKey(twConsumerKey)
                     .setOAuthConsumerSecret(twConsumerSecret);
-            Configuration configuration = configurationBuilder.build();
 
-            twitter = new TwitterFactory(configuration).getInstance();
+            twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
         }
 
         isIGTokenValid = sharedPreferences.getBoolean(BPUtils.IG_TOKEN_VALID, false);
@@ -205,6 +215,20 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onPause() {
         Log.e(TAG, "onPause() called");
         super.onPause();
+
+        // Store anything in the event the user goes to home screen
+
+        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                BPUtils.TW_CONSUMER_KEY, twConsumerKey);
+        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                BPUtils.TW_CONSUMER_SECRET, twConsumerSecret);
+
+        if(twToken != null && twConsumerSecret!= null) {
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                    BPUtils.TW_ACCESS_TOKEN, twToken);
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                    BPUtils.TW_ACCESS_TOKEN_SECRET, twTokenSecret);
+        }
     }
 
     @Override
@@ -374,7 +398,15 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         AccessToken accessToken = loadAccessToken();
 
         if(accessToken != null) {
-            twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
+
+            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+
+            configuration = configurationBuilder
+                    .setOAuthConsumerKey(twConsumerKey)
+                    .setOAuthConsumerSecret(twConsumerSecret)
+                    .build();
+
+            twitter = new TwitterFactory(configuration).getInstance();
             twitter.setOAuthAccessToken(accessToken);
             twitter = twitterFactory.getInstance();
             authoritative.onSuccess();
@@ -403,12 +435,12 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     private void getAccessToken() {
         Log.v(TAG, "getAccessToken() called");
 
-        new AsyncTask<Void, Void, RequestToken>() {
+        new AsyncTask<Void, Void, Void>() {
 
             @Override
-            protected RequestToken doInBackground(Void... params) {
+            protected Void doInBackground(Void... params) {
 
-                if(sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null) == null) {
+                if (sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null) == null) {
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_KEY,
                             getString(R.string.tck));
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
@@ -427,39 +459,29 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             .setOAuthConsumerSecret(twConsumerSecret)
                             .build();
 
-                      twitter = new TwitterFactory(configuration).getInstance();
+                    Twitter twitter = new TwitterFactory(configuration).getInstance();
 
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
+
+                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.TW_ACCESS_TOKEN, requestToken.getToken());
+
+                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
+                            BPUtils.TW_ACCESS_TOKEN_SECRET, requestToken.getTokenSecret());
+
+
 
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                             TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL())).commit();
 
-                    return requestToken;
+                    return null;
                 }
                 catch (TwitterException e) {
                     e.printStackTrace();
                     return null;
-                }
-                catch (NullPointerException e) {
+                } catch (NullPointerException e) {
                     Log.v(TAG, "Unable to activate Twitter");
                     return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(RequestToken requestToken) {
-                try {
-                    twitter.setOAuthAccessToken(new AccessToken(requestToken.getToken(), requestToken.getTokenSecret()));
-
-                    if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
-                        BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                                BPUtils.TW_ACCESS_TOKEN, requestToken.getToken());
-                        BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                                BPUtils.TW_ACCESS_TOKEN_SECRET, requestToken.getTokenSecret());
-                    }
-                }
-                catch (NullPointerException e) {
-                    Log.v(TAG, "Unable to get an access token for Twitter.");
                 }
             }
         }.execute();
@@ -467,7 +489,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private boolean isTwitterConnected() {
         Log.v(TAG, "isTwitterConnected() called");
-        return sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null;
+        return sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
     }
 
     // ----- Instagram Methods ----- //
