@@ -185,6 +185,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
                 sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
 
+            twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
+            twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
             twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
             twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
