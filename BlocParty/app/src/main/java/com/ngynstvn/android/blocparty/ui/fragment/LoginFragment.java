@@ -529,38 +529,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             instagram = new Instagram(accessToken);
             authoritative.onSuccess();
         }
-        else {
-            authInstagram(instagramService, new Authoritative() {
-                @Override
-                public void onSuccess() {
-                    igLogin(sharedPreferences, new Authoritative() {
-                        @Override
-                        public void onSuccess() {
-                            Log.v(TAG, "Logged into Instagram");
-                            Token accessToken = instagramService.getAccessToken(EMPTY_TOKEN, new Verifier(sharedPreferences.getString(BPUtils.IG_TOKEN, null)));
-                            instagram = new Instagram(accessToken);
-                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, true);
-                        }
-
-                        @Override
-                        public void onFailure() {
-                            // Delete any stored token value
-                            Log.v(TAG, "Unable to log into Instagram again...1");
-                            BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN);
-                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-                        }
-                    });
-                }
-
-                @Override
-                public void onFailure() {
-                    // Delete any stored token value
-                    Log.v(TAG, "Unable to log into Instagram again...2");
-                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN);
-                    BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-                }
-            });
-        }
     }
 
     private void igLogout(SharedPreferences sharedPreferences) {
