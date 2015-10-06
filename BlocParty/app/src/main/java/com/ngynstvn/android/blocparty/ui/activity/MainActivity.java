@@ -14,17 +14,20 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.fragment.IGAuthFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
+import com.ngynstvn.android.blocparty.ui.fragment.TwitterAuthFragment;
 import com.sromku.simple.fb.SimpleFacebook;
 
 /**
  * Created by Ngynstvn on 9/21/15.
  */
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements TwitterAuthFragment.TwitterAuthFragDelegate {
     private static final String TAG = "(" + MainActivity.class.getSimpleName() + "): ";
     private static int instance_counter = 0;
+
+    private TwitterAuthFragment twitterAuthFragment;
 
     private Toolbar toolbar;
     private Menu menu;
@@ -55,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         if(sharedPreferences != null) {
             sharedPreferences.getInt("counter", 0);
         }
+
+        twitterAuthFragment = new TwitterAuthFragment();
+        twitterAuthFragment.setTwitterAuthFragDelegate(this);
     }
 
     @Override

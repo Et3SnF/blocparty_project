@@ -33,7 +33,7 @@ public class BPUtils {
     public static final String IG_LOGIN = "isIGLoggedIn";
     public static final String IG_POSITION ="igAdapterPosition";
     public static final String IG_TOKEN = "ig_token";
-    public static final String IG_TOKEN_VALID = "ig_token_valid";
+    public static final String IG_AUTH_CODE = "ig_auth_code";
 
     // ----- Static Methods ----- //
 

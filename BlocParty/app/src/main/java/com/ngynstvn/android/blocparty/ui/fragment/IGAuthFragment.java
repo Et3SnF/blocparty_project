@@ -2,9 +2,11 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.webkit.WebViewClient;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.activity.MainActivity;
 
 import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.model.Verifier;
@@ -26,6 +29,8 @@ public class IGAuthFragment extends Fragment {
     private static final String TAG = BPUtils.classTag(IGAuthFragment.class);
 
     private static final String AUTH_URL = "ig_auth_url";
+
+    private Token accessToken;
 
     // Instagram Static Variables
 
@@ -49,7 +54,7 @@ public class IGAuthFragment extends Fragment {
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.twitter_auth_webview, container, false);
+        View view = inflater.inflate(R.layout.auth_webview, container, false);
 
         webView = (WebView) view.findViewById(R.id.wv_twitter_auth);
         webView.setWebViewClient(new MyWebViewClient());
@@ -64,37 +69,28 @@ public class IGAuthFragment extends Fragment {
     private class MyWebViewClient extends WebViewClient {
         @Override
         public void onPageFinished(WebView view, String url) {
+            Log.v(TAG, "onPageFinished() called");
+
             super.onPageFinished(view, url);
+
+            String authCode = url.substring(getString(R.string.igcu).length() + 6);
+
             if (url.contains(getString(R.string.igcu) + "?code=")) {
 
-                final String token = url.substring(getString(R.string.igcu).length() + 6);
-                final Verifier verifier = new Verifier(token);
+                Log.v(TAG, "Current URL: " + url);
 
-                new AsyncTask<Boolean, Void, Token>() {
-                    @Override
-                    protected Token doInBackground(Boolean... params) {
-                        Token token = BlocpartyApplication.getSharedInstagramService().getAccessToken(EMPTY_TOKEN, verifier);
-                        return token;
-                    }
+                BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                        BPUtils.IG_AUTH_CODE, authCode);
 
-                    @Override
-                    protected void onPostExecute(Token token) {
-                        SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+                Log.v(TAG, "Code: " + authCode);
 
-                        if(token.getToken() != null) {
-                            BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN, token.getToken());
-                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN_VALID, true);
-                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-                                    LoginFragment.newInstance(token.getToken())).commit();
-                        }
-                        else {
-                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_TOKEN_VALID, false);
-                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-                                    LoginFragment.newInstance()).commit();
-                        }
-                    }
-                }.execute();
+                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                        BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
+
+                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                        LoginFragment.newInstance(authCode)).commit();
             }
+
         }
     }
 }

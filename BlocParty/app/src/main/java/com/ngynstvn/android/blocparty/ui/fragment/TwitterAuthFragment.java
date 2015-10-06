@@ -2,6 +2,7 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.webkit.WebViewClient;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by Ngynstvn on 9/26/15.
@@ -34,6 +37,34 @@ public class TwitterAuthFragment extends Fragment {
         return twitterAuthFragment;
     }
 
+    // ---- Interface Material ----- //
+
+    public interface TwitterAuthFragDelegate {
+
+    }
+
+    private WeakReference<TwitterAuthFragDelegate> twitterAuthFragDelegate;
+
+    public WeakReference<TwitterAuthFragDelegate> setTwitterAuthFragDelegate(TwitterAuthFragDelegate twitterAuthFragDelegate) {
+        return this.twitterAuthFragDelegate = new WeakReference<TwitterAuthFragDelegate>(twitterAuthFragDelegate);
+    }
+
+    public TwitterAuthFragDelegate getTwitterAuthFragDelegate() {
+        if(twitterAuthFragDelegate == null) {
+            return null;
+        }
+
+        return twitterAuthFragDelegate.get();
+    }
+
+    // ----- Lifecycle Methods ----- //
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        twitterAuthFragDelegate = new WeakReference<TwitterAuthFragDelegate>((TwitterAuthFragDelegate) getActivity());
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +73,7 @@ public class TwitterAuthFragment extends Fragment {
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.twitter_auth_webview, container, false);
+        View view = inflater.inflate(R.layout.auth_webview, container, false);
 
         webView = (WebView) view.findViewById(R.id.wv_twitter_auth);
 
