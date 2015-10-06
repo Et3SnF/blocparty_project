@@ -73,22 +73,37 @@ public class IGAuthFragment extends Fragment {
 
             super.onPageFinished(view, url);
 
-            String authCode = url.substring(getString(R.string.igcu).length() + 6);
+            final String authCode = url.substring(getString(R.string.igcu).length() + 6);
 
             if (url.contains(getString(R.string.igcu) + "?code=")) {
 
                 Log.v(TAG, "Current URL: " + url);
 
-                BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.IG_AUTH_CODE, authCode);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                BPUtils.IG_AUTH_CODE, authCode);
 
-                Log.v(TAG, "Code: " + authCode);
+                        Log.v(TAG, "Code: " + authCode);
 
-                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
+                        BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
 
-                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-                        LoginFragment.newInstance(authCode)).commit();
+                        return null;
+
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        Log.v(TAG, "Fragment attach status: " + isAdded());
+
+                        if(isAdded()) {
+                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                                    LoginFragment.newInstance(authCode)).commit();
+                        }
+                    }
+                }.execute();
             }
 
         }

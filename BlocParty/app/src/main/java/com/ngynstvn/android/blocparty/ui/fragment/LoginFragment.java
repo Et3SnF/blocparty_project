@@ -515,12 +515,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 return;
             }
 
-            final Verifier verifier = new Verifier(igAuthCode);
-
             new AsyncTask<Void, Void, Token>() {
                 @Override
                 protected Token doInBackground(Void... params) {
                     Log.v(TAG, "igLogin's doInBackground() called");
+                    Verifier verifier = new Verifier(igAuthCode);
                     Token accessToken = instagramService.getAccessToken(EMPTY_TOKEN, verifier);
                     Log.v(TAG, "SOMETHING HAPPENED!!!");
                     return accessToken;
