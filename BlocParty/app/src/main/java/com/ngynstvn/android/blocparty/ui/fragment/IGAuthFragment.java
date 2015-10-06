@@ -48,12 +48,14 @@ public class IGAuthFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.v(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
     }
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.v(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.auth_webview, container, false);
 
         webView = (WebView) view.findViewById(R.id.wv_twitter_auth);
@@ -70,42 +72,32 @@ public class IGAuthFragment extends Fragment {
         @Override
         public void onPageFinished(WebView view, String url) {
             Log.v(TAG, "onPageFinished() called");
-
             super.onPageFinished(view, url);
 
-            final String authCode = url.substring(getString(R.string.igcu).length() + 6);
+            try {
+                final String authCode = url.substring(getString(R.string.igcu).length() + 6);
 
-            if (url.contains(getString(R.string.igcu) + "?code=")) {
+                if (url.contains(getString(R.string.igcu) + "?code=")) {
 
-                Log.v(TAG, "Current URL: " + url);
+                    Log.v(TAG, "Current URL: " + url);
 
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                                BPUtils.IG_AUTH_CODE, authCode);
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.IG_AUTH_CODE, authCode);
 
-                        Log.v(TAG, "Code: " + authCode);
+                    Log.v(TAG, "Code: " + authCode);
 
-                        BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                                BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
+                    BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
 
-                        return null;
+                    Log.v(TAG, "Fragment attach status: " + isAdded());
 
-                    }
-
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        Log.v(TAG, "Fragment attach status: " + isAdded());
-
-                        if(isAdded()) {
-                            getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-                                    LoginFragment.newInstance(authCode)).commit();
-                        }
-                    }
-                }.execute();
+                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                            LoginFragment.newInstance(authCode)).commit();
+                }
             }
-
+            catch(IllegalStateException e) {
+                Log.v(TAG, "IGAuthFragment is not attached to MainActivity. Exception suppressed.");
+            }
         }
     }
 }
