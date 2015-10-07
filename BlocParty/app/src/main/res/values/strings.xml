@@ -15,5 +15,10 @@
     <string name="tcu">https://mobile.twitter.com/</string>
     <string name="twitter_authentication_instruction">Enter the authentication code below:</string>
     <string name="btn_authentication_text">Authenticate</string>
+    <string name="post_item_test_message">This is a test to see how this is going to work.
+        I don\'t know what I am writing here but this is just a test blah blah blah to see the limits of
+        this box. DO do do dodo do dod blah blah blah blah blah blah robo boogie</string>
+    <string name="dummy_op_name">Richard M.</string>
+    <string name="publish_text">Published:</string>
 
 </resources>
