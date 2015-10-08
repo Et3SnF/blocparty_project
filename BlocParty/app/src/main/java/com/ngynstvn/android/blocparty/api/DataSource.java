@@ -369,7 +369,7 @@ public class DataSource {
 
     public void getInstagramInformation(final Instagram instagram) {
 
-        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IG_LOGIN, false)) {
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
             Log.v(TAG, "Instagram is logged in. Getting profile info.");
 
             new AsyncTask<Void, Void, UserInfo>() {
@@ -386,12 +386,9 @@ public class DataSource {
                 @Override
                 protected void onPostExecute(UserInfo userInfo) {
                     try {
-                        Log.v(TAG, userInfo.getData().getFirstName());
-                        Log.v(TAG, userInfo.getData().getLastName());
-                        Log.v(TAG, userInfo.getData().getBio());
-                        Log.v(TAG, userInfo.getData().getId());
-                        Log.v(TAG, userInfo.getData().getProfilePicture());
                         Log.v(TAG, userInfo.getData().getUsername());
+                        Log.v(TAG, userInfo.getData().getProfilePicture());
+                        Log.v(TAG, userInfo.getData().getFullName());
                     }
                     catch(NullPointerException e) {
                         Log.v(TAG, "Something is null;");

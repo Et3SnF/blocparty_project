@@ -73,7 +73,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     private static final Token EMPTY_TOKEN = null;
     private static InstagramService instagramService;
     private static Instagram instagram;
-    private static String igToken;
     private static String igAuthCode;
 
     // Fields
@@ -210,26 +209,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         // Resume any Instagram activity
 
         if(isIGLoggedIn()) {
-            igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
-
-            new AsyncTask<Void, Void, Token>() {
-                @Override
-                protected Token doInBackground(Void... params) {
-                    try {
-                        Verifier verifier = new Verifier(igAuthCode);
-                        return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
-                    }
-                    catch(OAuthException e) {
-                        Log.e(TAG, "There was an issue re-authenticating the access token.");
-                        return null;
-                    }
-                }
-
-                @Override
-                protected void onPostExecute(Token accessToken) {
-                    instagram = new Instagram(accessToken);
-                }
-            }.execute();
+            instagram = new Instagram(getString(R.string.igc));
         }
     }
 
@@ -261,6 +241,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         // Store anything related to instagram here.
 
         if(igAuthCode != null) {
+            Log.v(TAG, "igAuthCode stored: " + igAuthCode);
             BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                     BPUtils.IG_AUTH_CODE, igAuthCode);
         }
@@ -277,7 +258,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
 
-        BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
+//        BPUtils.delSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+//                BPUtils.IG_AUTH_CODE);
     }
 
     @Override
@@ -409,7 +391,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                         @Override
                         public void onFailure() {
                             Log.v(TAG, "Unable to log into Instagram");
-                            BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
                             BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
                         }
                     });
@@ -546,30 +527,32 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         Log.v(TAG, "Current code: " + igAuthCode);
 
-        if(igAuthCode == null || igAuthCode.length() == 0) {
+        if(igAuthCode == null) {
             getIGAccessToken();
-//            return;
+            return;
         }
 
-//        new AsyncTask<Void, Void, Token>() {
-//            @Override
-//            protected Token doInBackground(Void... params) {
-//                try {
-//                    Verifier verifier = new Verifier(igAuthCode);
-//                    return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
-//                }
-//                catch(OAuthException e) {
-//                    Log.e(TAG, "There was an issue extracting the access token.");
-//                    return null;
-//                }
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Token accessToken) {
-//                instagram = new Instagram(accessToken);
-//                authoritative.onSuccess();
-//            }
-//        }.execute();
+        new AsyncTask<Void, Void, Token>() {
+            @Override
+            protected Token doInBackground(Void... params) {
+                try {
+                    Verifier verifier = new Verifier(igAuthCode);
+                    return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
+                }
+                catch(OAuthException e) {
+                    Log.e(TAG, "There was an issue extracting the access token.");
+                    authoritative.onFailure();
+                    getIGAccessToken();
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Token accessToken) {
+                instagram = new Instagram(accessToken);
+                authoritative.onSuccess();
+            }
+        }.execute();
     }
 
     private void getIGAccessToken() {
