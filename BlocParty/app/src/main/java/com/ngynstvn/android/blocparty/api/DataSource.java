@@ -2,6 +2,7 @@ package com.ngynstvn.android.blocparty.api;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.ngynstvn.android.blocparty.BPUtils;
@@ -22,7 +23,28 @@ import com.sromku.simple.fb.listeners.OnPostsListener;
 import com.sromku.simple.fb.listeners.OnProfileListener;
 import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
+
+import org.jinstagram.Instagram;
+import org.jinstagram.entity.users.basicinfo.UserInfo;
+import org.jinstagram.exceptions.InstagramException;
+
+import java.util.Date;
 import java.util.List;
+
+import twitter4j.ExtendedMediaEntity;
+import twitter4j.GeoLocation;
+import twitter4j.HashtagEntity;
+import twitter4j.MediaEntity;
+import twitter4j.Place;
+import twitter4j.RateLimitStatus;
+import twitter4j.Scopes;
+import twitter4j.Status;
+import twitter4j.SymbolEntity;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.URLEntity;
+import twitter4j.User;
+import twitter4j.UserMentionEntity;
 
 /**
  * Created by Ngynstvn on 10/7/15.
@@ -150,5 +172,236 @@ public class DataSource {
         else {
             Log.v(TAG, "Facebook is not logged in. Unable to get information.");
         }
+    }
+
+    public void getTwitterInformation() {
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
+            Log.v(TAG, "Twitter is logged in. Getting photos.");
+
+            Status status = new Status() {
+                @Override
+                public Date getCreatedAt() {
+                    return null;
+                }
+
+                @Override
+                public long getId() {
+                    return 0;
+                }
+
+                @Override
+                public String getText() {
+                    return null;
+                }
+
+                @Override
+                public String getSource() {
+                    return null;
+                }
+
+                @Override
+                public boolean isTruncated() {
+                    return false;
+                }
+
+                @Override
+                public long getInReplyToStatusId() {
+                    return 0;
+                }
+
+                @Override
+                public long getInReplyToUserId() {
+                    return 0;
+                }
+
+                @Override
+                public String getInReplyToScreenName() {
+                    return null;
+                }
+
+                @Override
+                public GeoLocation getGeoLocation() {
+                    return null;
+                }
+
+                @Override
+                public Place getPlace() {
+                    return null;
+                }
+
+                @Override
+                public boolean isFavorited() {
+                    return false;
+                }
+
+                @Override
+                public boolean isRetweeted() {
+                    return false;
+                }
+
+                @Override
+                public int getFavoriteCount() {
+                    return 0;
+                }
+
+                @Override
+                public User getUser() {
+                    return null;
+                }
+
+                @Override
+                public boolean isRetweet() {
+                    return false;
+                }
+
+                @Override
+                public Status getRetweetedStatus() {
+                    return null;
+                }
+
+                @Override
+                public long[] getContributors() {
+                    return new long[0];
+                }
+
+                @Override
+                public int getRetweetCount() {
+                    return 0;
+                }
+
+                @Override
+                public boolean isRetweetedByMe() {
+                    return false;
+                }
+
+                @Override
+                public long getCurrentUserRetweetId() {
+                    return 0;
+                }
+
+                @Override
+                public boolean isPossiblySensitive() {
+                    return false;
+                }
+
+                @Override
+                public String getLang() {
+                    return null;
+                }
+
+                @Override
+                public Scopes getScopes() {
+                    return null;
+                }
+
+                @Override
+                public String[] getWithheldInCountries() {
+                    return new String[0];
+                }
+
+                @Override
+                public long getQuotedStatusId() {
+                    return 0;
+                }
+
+                @Override
+                public Status getQuotedStatus() {
+                    return null;
+                }
+
+                @Override
+                public int compareTo(Status another) {
+                    return 0;
+                }
+
+                @Override
+                public UserMentionEntity[] getUserMentionEntities() {
+                    return new UserMentionEntity[0];
+                }
+
+                @Override
+                public URLEntity[] getURLEntities() {
+                    return new URLEntity[0];
+                }
+
+                @Override
+                public HashtagEntity[] getHashtagEntities() {
+                    return new HashtagEntity[0];
+                }
+
+                @Override
+                public MediaEntity[] getMediaEntities() {
+                    return new MediaEntity[0];
+                }
+
+                @Override
+                public ExtendedMediaEntity[] getExtendedMediaEntities() {
+                    return new ExtendedMediaEntity[0];
+                }
+
+                @Override
+                public SymbolEntity[] getSymbolEntities() {
+                    return new SymbolEntity[0];
+                }
+
+                @Override
+                public RateLimitStatus getRateLimitStatus() {
+                    return null;
+                }
+
+                @Override
+                public int getAccessLevel() {
+                    return 0;
+                }
+            };
+
+            MediaEntity[] media = status.getMediaEntities();
+
+            for(MediaEntity medium : media) {
+                Log.v(TAG, medium.getMediaURL());
+            }
+        }
+        else {
+            Log.v(TAG, "Something went wrong on retrieving Twitter photos");
+        }
+    }
+
+    public void getInstagramInformation(final Instagram instagram) {
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IG_LOGIN, false)) {
+            Log.v(TAG, "Instagram is logged in. Getting profile info.");
+
+            new AsyncTask<Void, Void, UserInfo>() {
+                @Override
+                protected UserInfo doInBackground(Void... params) {
+                    try {
+                        return instagram.getCurrentUserInfo();
+                    } catch (InstagramException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(UserInfo userInfo) {
+                    try {
+                        Log.v(TAG, userInfo.getData().getFirstName());
+                        Log.v(TAG, userInfo.getData().getLastName());
+                        Log.v(TAG, userInfo.getData().getBio());
+                        Log.v(TAG, userInfo.getData().getId());
+                        Log.v(TAG, userInfo.getData().getProfilePicture());
+                        Log.v(TAG, userInfo.getData().getUsername());
+                    }
+                    catch(NullPointerException e) {
+                        Log.v(TAG, "Something is null;");
+                    }
+                }
+            }.execute();
+        }
+        else {
+            Log.v(TAG, "Something went wrong in retrieving Instagram data");
+        }
+
     }
 }

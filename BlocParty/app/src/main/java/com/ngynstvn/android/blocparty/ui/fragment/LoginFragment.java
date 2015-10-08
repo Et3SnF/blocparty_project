@@ -203,6 +203,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
             twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
         }
+
+        if(sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null) != null) {
+            igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
+        }
     }
 
     @Override
@@ -232,9 +236,9 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         // Store anything related to instagram here.
 
-        if(igToken != null) {
+        if(igAuthCode != null) {
             BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                    BPUtils.IG_LOGIN, igToken);
+                    BPUtils.IG_AUTH_CODE, igAuthCode);
         }
     }
 
@@ -248,6 +252,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onDestroy() {
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
+
+        BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
     }
 
     @Override
@@ -335,6 +341,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             Log.v(TAG, "Logged into Twitter");
                             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
+                            BlocpartyApplication.getSharedDataSource().getTwitterInformation();
                         }
 
                         @Override
@@ -371,6 +378,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
+
+                            BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
                         }
 
                         @Override
