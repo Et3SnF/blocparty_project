@@ -24,9 +24,12 @@ import com.sromku.simple.fb.listeners.OnLoginListener;
 import com.sromku.simple.fb.listeners.OnLogoutListener;
 
 import org.jinstagram.Instagram;
+import org.jinstagram.auth.exceptions.OAuthException;
 import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.model.Verifier;
 import org.jinstagram.auth.oauth.InstagramService;
+import org.jinstagram.entity.users.basicinfo.UserInfo;
+import org.jinstagram.exceptions.InstagramException;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -204,8 +207,29 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
         }
 
-        if(sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null) != null) {
+        // Resume any Instagram activity
+
+        if(isIGLoggedIn()) {
             igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
+
+            new AsyncTask<Void, Void, Token>() {
+                @Override
+                protected Token doInBackground(Void... params) {
+                    try {
+                        Verifier verifier = new Verifier(igAuthCode);
+                        return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
+                    }
+                    catch(OAuthException e) {
+                        Log.e(TAG, "There was an issue re-authenticating the access token.");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(Token accessToken) {
+                    instagram = new Instagram(accessToken);
+                }
+            }.execute();
         }
     }
 
@@ -517,45 +541,41 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private void igLogin(final Authoritative authoritative) {
         Log.v(TAG, "igLogin() called");
-        try {
 
-            igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
+        igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
 
-            Log.v(TAG, "Current code: " + igAuthCode);
+        Log.v(TAG, "Current code: " + igAuthCode);
 
-            if(igAuthCode == null) {
-                getIGAccessToken();
-                return;
-            }
-
-            new AsyncTask<Void, Void, Token>() {
-                @Override
-                protected Token doInBackground(Void... params) {
-                    Log.v(TAG, "igLogin's doInBackground() called");
-                    Verifier verifier = new Verifier(igAuthCode);
-                    Token accessToken = instagramService.getAccessToken(EMPTY_TOKEN, verifier);
-                    Log.v(TAG, "SOMETHING HAPPENED!!!");
-                    return accessToken;
-                }
-
-                @Override
-                protected void onPostExecute(Token accessToken) {
-                    Log.v(TAG, "igLogin's onPostExecute() called");
-                    instagram = new Instagram(accessToken);
-                    Log.v(TAG, "WHAT ABOUT NOW??!!!");
-                    authoritative.onSuccess();
-                }
-            }.execute();
+        if(igAuthCode == null || igAuthCode.length() == 0) {
+            getIGAccessToken();
+//            return;
         }
-        catch(NullPointerException e) {
-            Log.v(TAG, "Something went wrong on retrieving the IG Token.");
-            authoritative.onFailure();
-        }
+
+//        new AsyncTask<Void, Void, Token>() {
+//            @Override
+//            protected Token doInBackground(Void... params) {
+//                try {
+//                    Verifier verifier = new Verifier(igAuthCode);
+//                    return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
+//                }
+//                catch(OAuthException e) {
+//                    Log.e(TAG, "There was an issue extracting the access token.");
+//                    return null;
+//                }
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Token accessToken) {
+//                instagram = new Instagram(accessToken);
+//                authoritative.onSuccess();
+//            }
+//        }.execute();
     }
 
     private void getIGAccessToken() {
         Log.v(TAG, "getIGAccessToken() called");
         final String authorizationURL = instagramService.getAuthorizationUrl(EMPTY_TOKEN);
+        Log.v(TAG, authorizationURL);
 
         new AsyncTask<Void, Void, Void>() {
             @Override
