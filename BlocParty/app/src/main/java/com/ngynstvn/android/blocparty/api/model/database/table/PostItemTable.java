@@ -18,9 +18,9 @@ public class PostItemTable extends Table {
     private static final String COLUMN_OP_LAST_NAME = "op_last_name";
     private static final String COLUMN_OP_PROFILE_PIC_URL = "op_profile_pic_url";
     private static final String COLUMN_POST_IMAGE_URL = "post_image_url";
-    private static final String COLUMN_POST_IMAGE_CAPTION = "post_imag_caption";
+    private static final String COLUMN_POST_IMAGE_CAPTION = "post_image_caption";
     private static final String COLUMN_POST_PUBLISH_DATE = "publish_date";
-    private static final String COLUMN_IS_LIKED = "is_liked";
+    private static final String COLUMN_IS_LIKED = "is_post_liked";
 
     @Override
     public String getName() {

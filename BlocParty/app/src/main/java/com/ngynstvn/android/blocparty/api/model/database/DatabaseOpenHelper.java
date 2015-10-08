@@ -16,7 +16,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     private static final String TAG = BPUtils.classTag(DatabaseOpenHelper.class);
 
-    private static final String dbName = "blocparty_db";
+    private static final String dbName = BPUtils.DB_NAME;
     private static final int DB_VERSION = 1;
 
     // Member variables

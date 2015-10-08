@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.facebook.login.DefaultAudience;
+import com.ngynstvn.android.blocparty.api.DataSource;
 import com.sromku.simple.fb.Permission;
 import com.sromku.simple.fb.SimpleFacebook;
 import com.sromku.simple.fb.SimpleFacebookConfiguration;
@@ -25,6 +26,7 @@ public class BlocpartyApplication extends Application {
     private InstagramService instagramService;
 
     private static BlocpartyApplication sharedInstance;
+    private DataSource dataSource;
 
     public static BlocpartyApplication getSharedInstance() {
         return sharedInstance;
@@ -36,6 +38,15 @@ public class BlocpartyApplication extends Application {
 
     private InstagramService getInstagramService() {
         return instagramService;
+    }
+
+    public static DataSource getSharedDataSource() {
+        Log.v(TAG, "getSharedDataSource called");
+        return BlocpartyApplication.getSharedInstance().getDataSource();
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     @Override
@@ -69,5 +80,8 @@ public class BlocpartyApplication extends Application {
                 .callback(getString(R.string.igcu))
                 .scope("basic relationships likes")
                 .build();
+
+        dataSource = new DataSource(this);
     }
+
 }
