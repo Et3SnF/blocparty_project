@@ -35,6 +35,11 @@ public class BPUtils {
     public static final String IG_TOKEN = "ig_token";
     public static final String IG_AUTH_CODE = "ig_auth_code";
 
+    // Table Related
+
+    public static final String DB_NAME = "blocparty_db";
+    public static final String POST_ITEM_TABLE = "post_item_table";
+
     // ----- Static Methods ----- //
 
     public static String classTag(Class className) {

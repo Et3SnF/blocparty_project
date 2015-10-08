@@ -266,6 +266,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     @Override
     public void onLoginSwitchActivated(LoginAdapter loginAdapter, final int adapterPosition, final boolean isChecked) {
+
         switch(adapterPosition) {
             case 0:
                 if(isChecked) {
@@ -358,6 +359,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                     }
                     break;
                 }
+
             case 2:
                 if(isChecked) {
                     igLogin(new Authoritative() {

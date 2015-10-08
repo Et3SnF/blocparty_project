@@ -93,6 +93,7 @@ public class TwitterAuthFragment extends Fragment {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             Log.v(TAG, "Current URL: " + url);
+
             if (url.equals("https://api.twitter.com/oauth/authorize")) {
                 getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                         LoginFragment.newInstance()).commit();
