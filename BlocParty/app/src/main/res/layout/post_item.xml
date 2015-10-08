@@ -79,6 +79,12 @@
             android:layout_height="300dp"
             android:background="@color/post_img_border">
 
+            <ProgressBar
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="18dp"
+                android:indeterminate="false"/>
+
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

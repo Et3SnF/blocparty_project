@@ -58,7 +58,8 @@ public class BlocpartyApplication extends Application {
         Permission[] permissions = new Permission[] {
                 Permission.USER_PHOTOS,
                 Permission.EMAIL,
-                Permission.PUBLISH_ACTION
+                Permission.PUBLISH_ACTION,
+                Permission.USER_FRIENDS
         };
 
         // Facebook
@@ -67,6 +68,7 @@ public class BlocpartyApplication extends Application {
                 .setAppId(getString(R.string.fbai))
                 .setNamespace(APP_NAMESPACE)
                 .setPermissions(permissions)
+                .setAskForAllPermissionsAtOnce(false)
                 .setDefaultAudience(DefaultAudience.FRIENDS)
                 .build();
 
