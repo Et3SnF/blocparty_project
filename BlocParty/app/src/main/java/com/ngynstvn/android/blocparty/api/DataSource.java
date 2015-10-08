@@ -25,7 +25,10 @@ import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
 
 import org.jinstagram.Instagram;
+import org.jinstagram.entity.common.Caption;
 import org.jinstagram.entity.users.basicinfo.UserInfo;
+import org.jinstagram.entity.users.feed.MediaFeed;
+import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 
 import java.util.Date;
@@ -370,29 +373,45 @@ public class DataSource {
     public void getInstagramInformation(final Instagram instagram) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
-            Log.v(TAG, "Instagram is logged in. Getting profile info.");
+            Log.e(TAG, "Instagram is logged in. Getting profile info.");
 
-            new AsyncTask<Void, Void, UserInfo>() {
+            new AsyncTask<Void, Void, Void>() {
                 @Override
-                protected UserInfo doInBackground(Void... params) {
+                protected Void doInBackground(Void... params) {
                     try {
-                        return instagram.getCurrentUserInfo();
-                    } catch (InstagramException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
+                        UserInfo userInfo = instagram.getCurrentUserInfo();
 
-                @Override
-                protected void onPostExecute(UserInfo userInfo) {
-                    try {
                         Log.v(TAG, userInfo.getData().getUsername());
                         Log.v(TAG, userInfo.getData().getProfilePicture());
                         Log.v(TAG, userInfo.getData().getFullName());
+
+                        MediaFeed mediaFeed = instagram.getUserFeeds();
+                        List<MediaFeedData> mediaFeeds = mediaFeed.getData();
+
+                        for (MediaFeedData mediaFeedData : mediaFeeds) {
+                            Log.e(TAG, "User: " + mediaFeedData.getUser().getFullName());
+                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
+                            Log.v(TAG, "Link: " + mediaFeedData.getLink());
+
+                            try {
+                                Log.e(TAG, "Text: " + mediaFeedData.getCaption().getText());
+                            }
+                            catch (NullPointerException e) {
+                                Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
+                            }
+
+                            try {
+                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
+                            }
+                            catch (NullPointerException e) {
+                                Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
+                            }
+                        }
+
+                    } catch (InstagramException e) {
+                        e.printStackTrace();
                     }
-                    catch(NullPointerException e) {
-                        Log.v(TAG, "Something is null;");
-                    }
+                    return null;
                 }
             }.execute();
         }
