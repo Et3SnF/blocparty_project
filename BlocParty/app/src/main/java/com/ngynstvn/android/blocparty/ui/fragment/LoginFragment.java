@@ -348,10 +348,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                     break;
                 }
                 else {
-                    fbLogout(simpleFacebook, adapterPosition, new OnLogoutListener() {
-                        @Override
-                        public void onLogout() {
-                            if(simpleFacebook.isLogin()) {
+                    if(simpleFacebook.isLogin()) {
+                        fbLogout(simpleFacebook, adapterPosition, new OnLogoutListener() {
+                            @Override
+                            public void onLogout() {
                                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
                                 Log.i(TAG, "Logged out of Facebook");
@@ -359,8 +359,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged out of Facebook",
                                         Toast.LENGTH_SHORT).show();
                             }
-                        }
-                    });
+                        });
+                    }
                     break;
                 }
             case 1:
@@ -371,7 +371,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             Log.v(TAG, "Logged into Twitter");
                             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-                            BlocpartyApplication.getSharedDataSource().getTwitterInformation();
+                            BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
                         }
 
                         @Override
