@@ -28,8 +28,6 @@ import org.jinstagram.auth.exceptions.OAuthException;
 import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.model.Verifier;
 import org.jinstagram.auth.oauth.InstagramService;
-import org.jinstagram.entity.users.basicinfo.UserInfo;
-import org.jinstagram.exceptions.InstagramException;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -39,7 +37,6 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
-import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 /**
@@ -63,11 +60,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     private static Twitter twitter;
     private static TwitterFactory twitterFactory;
     private static ConfigurationBuilder configurationBuilder;
-    private static Configuration configuration;
     private static String twConsumerKey;
     private static String twConsumerSecret;
     private static String twToken;
     private static String twTokenSecret;
+    private boolean isTWAcctRegistered;
 
     // Instagram Static Variables
 
@@ -147,6 +144,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             Log.v(TAG, instagram.getClientId());
         }
 
+        isTWAcctRegistered = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IS_TW_ACCT_REG, false);
+
         configurationBuilder = new ConfigurationBuilder();
         instagramService = BlocpartyApplication.getSharedInstagramService();
     }
@@ -185,7 +184,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         // Resume any Twitter activity when back to this fragment
 
-        if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
+        if(!isTWAcctRegistered && sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
             sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
 
             twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
@@ -200,22 +199,24 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
             twitterFactory = new TwitterFactory(configurationBuilder.build());
             twitter = twitterFactory.getInstance();
-
-//            twitter = new TwitterFactory().getInstance();
-//            twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
-//            twitter.setOAuthAccessToken(new AccessToken(twToken, twTokenSecret));
+            isTWAcctRegistered = true;
+            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IS_TW_ACCT_REG, isTWAcctRegistered);
         }
 
-        if(isTwitterConnected()) {
+        if(isTwitterConnected() && isTWAcctRegistered) {
+            if(twitter == null) {
+                twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
+                twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
+                twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+                twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
+                configurationBuilder.setOAuthConsumerKey(twConsumerKey)
+                        .setOAuthConsumerSecret(twConsumerSecret);
 
-//            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-//
-//            configurationBuilder.setOAuthConsumerKey(twConsumerKey)
-//                    .setOAuthConsumerSecret(twConsumerSecret);
-
-
-            twitter = twitterFactory.getInstance();
+                twitterFactory = new TwitterFactory(configurationBuilder.build());
+                twitter = twitterFactory.getInstance();
+                twitter.setOAuthAccessToken(new AccessToken(twToken, twTokenSecret));
+            }
         }
 
         // Resume any Instagram activity
@@ -229,6 +230,17 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "onSaveInstanceState() called");
         super.onSaveInstanceState(outState);
+
+        if(twConsumerKey != null && twConsumerSecret != null && twToken != null && twTokenSecret != null) {
+            outState.putString("twConsumerKey", twConsumerKey);
+            outState.putString("twConsumerSecret", twConsumerSecret);
+            outState.putString("twToken", twToken);
+            outState.putString("twTokenSecret", twTokenSecret);
+        }
+
+        if(igAuthCode != null) {
+            outState.putString("igAuthCode", igAuthCode);
+        }
     }
 
     @Override
@@ -359,7 +371,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             Log.v(TAG, "Logged into Twitter");
                             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-                            BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
+                            BlocpartyApplication.getSharedDataSource().getTwitterInformation();
                         }
 
                         @Override
@@ -441,14 +453,14 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
             ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
-            configuration = configurationBuilder
+            configurationBuilder
                     .setOAuthConsumerKey(twConsumerKey)
-                    .setOAuthConsumerSecret(twConsumerSecret)
-                    .build();
+                    .setOAuthConsumerSecret(twConsumerSecret);
 
-            twitter = new TwitterFactory(configuration).getInstance();
+            twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
             twitter.setOAuthAccessToken(accessToken);
             twitter = twitterFactory.getInstance();
+
             authoritative.onSuccess();
             Log.v(TAG, "Twitter Login Complete");
 
@@ -494,12 +506,11 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
-                    Configuration configuration = configurationBuilder
+                    configurationBuilder
                             .setOAuthConsumerKey(twConsumerKey)
-                            .setOAuthConsumerSecret(twConsumerSecret)
-                            .build();
+                            .setOAuthConsumerSecret(twConsumerSecret);
 
-                    Twitter twitter = new TwitterFactory(configuration).getInstance();
+                    Twitter twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
 
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
 
