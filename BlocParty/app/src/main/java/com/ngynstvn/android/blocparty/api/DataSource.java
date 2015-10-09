@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.api;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -25,7 +26,6 @@ import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
 
 import org.jinstagram.Instagram;
-import org.jinstagram.entity.common.Caption;
 import org.jinstagram.entity.users.basicinfo.UserInfo;
 import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
@@ -44,10 +44,12 @@ import twitter4j.Scopes;
 import twitter4j.Status;
 import twitter4j.SymbolEntity;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.URLEntity;
 import twitter4j.User;
 import twitter4j.UserMentionEntity;
+import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Created by Ngynstvn on 10/7/15.
@@ -177,196 +179,26 @@ public class DataSource {
         }
     }
 
-    public void getTwitterInformation() {
+    public void getTwitterInformation(Twitter twitter) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
-            Log.v(TAG, "Twitter is logged in. Getting photos.");
+            try {
+                List<Status> statuses = twitter.getHomeTimeline();
 
-            Status status = new Status() {
-                @Override
-                public Date getCreatedAt() {
-                    return null;
+                Log.e(TAG, "Getting timeline...see if this works");
+
+                for(Status status : statuses) {
+                    Log.v(TAG, status.getUser().getName() + " | Status: " + status.getText());
                 }
 
-                @Override
-                public long getId() {
-                    return 0;
-                }
-
-                @Override
-                public String getText() {
-                    return null;
-                }
-
-                @Override
-                public String getSource() {
-                    return null;
-                }
-
-                @Override
-                public boolean isTruncated() {
-                    return false;
-                }
-
-                @Override
-                public long getInReplyToStatusId() {
-                    return 0;
-                }
-
-                @Override
-                public long getInReplyToUserId() {
-                    return 0;
-                }
-
-                @Override
-                public String getInReplyToScreenName() {
-                    return null;
-                }
-
-                @Override
-                public GeoLocation getGeoLocation() {
-                    return null;
-                }
-
-                @Override
-                public Place getPlace() {
-                    return null;
-                }
-
-                @Override
-                public boolean isFavorited() {
-                    return false;
-                }
-
-                @Override
-                public boolean isRetweeted() {
-                    return false;
-                }
-
-                @Override
-                public int getFavoriteCount() {
-                    return 0;
-                }
-
-                @Override
-                public User getUser() {
-                    return null;
-                }
-
-                @Override
-                public boolean isRetweet() {
-                    return false;
-                }
-
-                @Override
-                public Status getRetweetedStatus() {
-                    return null;
-                }
-
-                @Override
-                public long[] getContributors() {
-                    return new long[0];
-                }
-
-                @Override
-                public int getRetweetCount() {
-                    return 0;
-                }
-
-                @Override
-                public boolean isRetweetedByMe() {
-                    return false;
-                }
-
-                @Override
-                public long getCurrentUserRetweetId() {
-                    return 0;
-                }
-
-                @Override
-                public boolean isPossiblySensitive() {
-                    return false;
-                }
-
-                @Override
-                public String getLang() {
-                    return null;
-                }
-
-                @Override
-                public Scopes getScopes() {
-                    return null;
-                }
-
-                @Override
-                public String[] getWithheldInCountries() {
-                    return new String[0];
-                }
-
-                @Override
-                public long getQuotedStatusId() {
-                    return 0;
-                }
-
-                @Override
-                public Status getQuotedStatus() {
-                    return null;
-                }
-
-                @Override
-                public int compareTo(Status another) {
-                    return 0;
-                }
-
-                @Override
-                public UserMentionEntity[] getUserMentionEntities() {
-                    return new UserMentionEntity[0];
-                }
-
-                @Override
-                public URLEntity[] getURLEntities() {
-                    return new URLEntity[0];
-                }
-
-                @Override
-                public HashtagEntity[] getHashtagEntities() {
-                    return new HashtagEntity[0];
-                }
-
-                @Override
-                public MediaEntity[] getMediaEntities() {
-                    return new MediaEntity[0];
-                }
-
-                @Override
-                public ExtendedMediaEntity[] getExtendedMediaEntities() {
-                    return new ExtendedMediaEntity[0];
-                }
-
-                @Override
-                public SymbolEntity[] getSymbolEntities() {
-                    return new SymbolEntity[0];
-                }
-
-                @Override
-                public RateLimitStatus getRateLimitStatus() {
-                    return null;
-                }
-
-                @Override
-                public int getAccessLevel() {
-                    return 0;
-                }
-            };
-
-            MediaEntity[] media = status.getMediaEntities();
-
-            for(MediaEntity medium : media) {
-                Log.v(TAG, medium.getMediaURL());
+            } catch (TwitterException e) {
+                Log.v(TAG, "There was an issue getting the timeline");
+                e.printStackTrace();
             }
-        }
-        else {
-            Log.v(TAG, "Something went wrong on retrieving Twitter photos");
+            catch(IllegalStateException e) {
+                Log.v(TAG, "Twitter is not properly authenticated");
+                e.printStackTrace();
+            }
         }
     }
 

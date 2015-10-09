@@ -258,8 +258,8 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
 
-//        BPUtils.delSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-//                BPUtils.IG_AUTH_CODE);
+        BPUtils.delSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                BPUtils.IG_AUTH_CODE);
     }
 
     @Override
@@ -347,7 +347,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             Log.v(TAG, "Logged into Twitter");
                             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-                            BlocpartyApplication.getSharedDataSource().getTwitterInformation();
+                            BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
                         }
 
                         @Override
