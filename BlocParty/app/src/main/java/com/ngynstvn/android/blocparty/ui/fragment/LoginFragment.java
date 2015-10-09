@@ -61,6 +61,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     // Twitter Static Variables
 
     private static Twitter twitter;
+    private static TwitterFactory twitterFactory;
     private static ConfigurationBuilder configurationBuilder;
     private static Configuration configuration;
     private static String twConsumerKey;
@@ -192,18 +193,29 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
             twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
-            twitter = new TwitterFactory().getInstance();
-            twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
-            twitter.setOAuthAccessToken(new AccessToken(twToken, twTokenSecret));
+            configurationBuilder.setOAuthConsumerKey(twConsumerKey)
+                    .setOAuthConsumerSecret(twConsumerSecret)
+                    .setOAuthAccessToken(twToken)
+                    .setOAuthConsumerSecret(twTokenSecret);
+
+            twitterFactory = new TwitterFactory(configurationBuilder.build());
+            twitter = twitterFactory.getInstance();
+
+//            twitter = new TwitterFactory().getInstance();
+//            twitter.setOAuthConsumer(twConsumerKey, twConsumerSecret);
+//            twitter.setOAuthAccessToken(new AccessToken(twToken, twTokenSecret));
         }
 
         if(isTwitterConnected()) {
-            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
-            configurationBuilder.setOAuthConsumerKey(twConsumerKey)
-                    .setOAuthConsumerSecret(twConsumerSecret);
 
-            twitter = new TwitterFactory(configurationBuilder.build()).getInstance();
+//            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+//
+//            configurationBuilder.setOAuthConsumerKey(twConsumerKey)
+//                    .setOAuthConsumerSecret(twConsumerSecret);
+
+
+            twitter = twitterFactory.getInstance();
         }
 
         // Resume any Instagram activity

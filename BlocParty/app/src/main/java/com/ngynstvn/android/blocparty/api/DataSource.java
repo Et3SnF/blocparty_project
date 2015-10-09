@@ -181,11 +181,13 @@ public class DataSource {
 
     public void getTwitterInformation(Twitter twitter) {
 
+        Log.v(TAG, "getTwitterInformation() called");
+
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
             try {
                 List<Status> statuses = twitter.getHomeTimeline();
 
-                Log.e(TAG, "Getting timeline...see if this works");
+                Log.e(TAG, "Getting timeline...information");
 
                 for(Status status : statuses) {
                     Log.v(TAG, status.getUser().getName() + " | Status: " + status.getText());
