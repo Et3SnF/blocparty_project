@@ -49,6 +49,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.URLEntity;
 import twitter4j.User;
 import twitter4j.UserMentionEntity;
+import twitter4j.auth.AccessToken;
 import twitter4j.conf.ConfigurationBuilder;
 
 /**
@@ -179,28 +180,45 @@ public class DataSource {
         }
     }
 
-    public void getTwitterInformation(Twitter twitter) {
+    public void getTwitterInformation(final Twitter twitter) {
 
         Log.v(TAG, "getTwitterInformation() called");
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
-            try {
-                List<Status> statuses = twitter.getHomeTimeline();
 
-                Log.e(TAG, "Getting timeline...information");
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    try {
+                        List<twitter4j.Status> statuses = twitter.getHomeTimeline();
 
-                for(Status status : statuses) {
-                    Log.v(TAG, status.getUser().getName() + " | Status: " + status.getText());
+                        if(statuses == null) {
+                            cancel(true);
+                            Log.e(TAG, "Fetching timeline cancelled");
+                            return null;
+                        }
+
+                        Log.e(TAG, "Getting timeline...information");
+
+                        for(twitter4j.Status status : statuses) {
+                            Log.v(TAG, status.getUser().getName() + " | Status: " + status.getText());
+                        }
+
+                        return null;
+                    }
+                    catch (TwitterException e) {
+                        Log.v(TAG, "There was an issue getting the timeline");
+                        e.printStackTrace();
+                        return null;
+                    }
+                    catch(IllegalStateException e) {
+                        Log.v(TAG, "Twitter is not properly authenticated");
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
 
-            } catch (TwitterException e) {
-                Log.v(TAG, "There was an issue getting the timeline");
-                e.printStackTrace();
-            }
-            catch(IllegalStateException e) {
-                Log.v(TAG, "Twitter is not properly authenticated");
-                e.printStackTrace();
-            }
+            }.execute();
         }
     }
 
