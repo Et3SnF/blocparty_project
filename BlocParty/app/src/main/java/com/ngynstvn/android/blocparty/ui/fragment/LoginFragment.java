@@ -448,41 +448,9 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         if(isTwitterConnected()) {
             authoritative.onSuccess();
         }
-//
-//        AccessToken accessToken = loadAccessToken();
-//
-//        if(accessToken != null) {
-//
-//            String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
-//            String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
-//
-//            twitter = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret, twToken,
-//                    twTokenSecret)).getInstance();
-//
-//            twitter.setOAuthAccessToken(accessToken);
-//
-//            authoritative.onSuccess();
-//
-//            Log.v(TAG, "Twitter Login Complete");
-//
-//            Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Twitter",
-//                    Toast.LENGTH_SHORT).show();
-//        }
         else {
             getAccessToken();
         }
-    }
-
-    private AccessToken loadAccessToken() {
-        Log.v(TAG, "loadAccessToken() called");
-        twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
-        twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
-
-        if(twToken != null && twTokenSecret != null) {
-            return new AccessToken(twToken, twTokenSecret);
-        }
-
-        return null;
     }
 
     private void getAccessToken() {
@@ -511,10 +479,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
 
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN, "3646501040-p9bxgenZQ4vP3xZe87aF77B2m4E7KmEpxUeT1j6");
+                            BPUtils.TW_ACCESS_TOKEN, getString(R.string.tat));
 
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN_SECRET, "OQPNP9AFWcFmoJbCU6MDzzcvf9qyIEOUIPdgbGWPxxkwW");
+                            BPUtils.TW_ACCESS_TOKEN_SECRET, getString(R.string.tats));
 
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                             TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL())).commit();
