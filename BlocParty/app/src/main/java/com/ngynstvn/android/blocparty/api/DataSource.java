@@ -5,6 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
@@ -106,7 +109,7 @@ public class DataSource {
 
             // Get photos
 
-            simpleFacebook.getPhotos("112400152449929", new OnPhotosListener() {
+            simpleFacebook.getPhotos(new OnPhotosListener() {
 
                 @Override
                 public void onComplete(List<Photo> response) {
@@ -116,7 +119,8 @@ public class DataSource {
 
                     try {
                         for (Photo photo : photos) {
-                            Log.v(TAG, "Source: " + photo.getPicture());
+                            Log.v(TAG, "Photo ID: " + photo.getId());
+                            Log.v(TAG, "Picture: " + photo.getPicture());
                         }
                     } catch (NullPointerException e) {
                         Log.e(TAG, "Something went wrong on capturing photos");
@@ -131,6 +135,10 @@ public class DataSource {
                 @Override
                 public void onComplete(List<Post> response) {
                     Log.v(TAG, "Number of posts: " + response.size());
+
+                    for(Post post : response) {
+                        Log.v(TAG, "Posts: " + post.getId());
+                    }
                 }
             });
         }
