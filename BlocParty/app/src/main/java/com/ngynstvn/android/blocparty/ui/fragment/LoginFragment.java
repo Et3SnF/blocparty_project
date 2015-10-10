@@ -186,15 +186,15 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         // Resume any Twitter activity when back to this fragment
 
         if(!isTWAcctRegistered && sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
-            sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
+                sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
 
             String twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
             String twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
             String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
             String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
-            TwitterFactory twitterFactory = new TwitterFactory(getConfiguration(twConsumerKey,
-                    twConsumerSecret, twToken, twTokenSecret));
+            TwitterFactory twitterFactory = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret,
+                    twToken, twTokenSecret));
 
             twitter = twitterFactory.getInstance();
 
@@ -447,26 +447,27 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
         if(isTwitterConnected()) {
             authoritative.onSuccess();
-            return;
         }
-
-        AccessToken accessToken = loadAccessToken();
-
-        if(accessToken != null) {
-
-            String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
-            String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
-
-            twitter = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret, twToken,
-                    twTokenSecret)).getInstance();
-
-            authoritative.onSuccess();
-
-            Log.v(TAG, "Twitter Login Complete");
-
-            Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Twitter",
-                    Toast.LENGTH_SHORT).show();
-        }
+//
+//        AccessToken accessToken = loadAccessToken();
+//
+//        if(accessToken != null) {
+//
+//            String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+//            String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+//
+//            twitter = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret, twToken,
+//                    twTokenSecret)).getInstance();
+//
+//            twitter.setOAuthAccessToken(accessToken);
+//
+//            authoritative.onSuccess();
+//
+//            Log.v(TAG, "Twitter Login Complete");
+//
+//            Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Twitter",
+//                    Toast.LENGTH_SHORT).show();
+//        }
         else {
             getAccessToken();
         }
@@ -510,10 +511,10 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
 
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN, requestToken.getToken());
+                            BPUtils.TW_ACCESS_TOKEN, "3646501040-p9bxgenZQ4vP3xZe87aF77B2m4E7KmEpxUeT1j6");
 
                     BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN_SECRET, requestToken.getTokenSecret());
+                            BPUtils.TW_ACCESS_TOKEN_SECRET, "OQPNP9AFWcFmoJbCU6MDzzcvf9qyIEOUIPdgbGWPxxkwW");
 
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                             TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL())).commit();
