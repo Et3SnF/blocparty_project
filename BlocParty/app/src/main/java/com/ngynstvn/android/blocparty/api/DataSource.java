@@ -1,7 +1,6 @@
 package com.ngynstvn.android.blocparty.api;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -11,14 +10,9 @@ import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
 import com.sromku.simple.fb.SimpleFacebook;
-import com.sromku.simple.fb.entities.Account;
-import com.sromku.simple.fb.entities.Album;
 import com.sromku.simple.fb.entities.Photo;
 import com.sromku.simple.fb.entities.Post;
 import com.sromku.simple.fb.entities.Profile;
-import com.sromku.simple.fb.listeners.OnAccountsListener;
-import com.sromku.simple.fb.listeners.OnAlbumsListener;
-import com.sromku.simple.fb.listeners.OnFriendsListener;
 import com.sromku.simple.fb.listeners.OnPhotosListener;
 import com.sromku.simple.fb.listeners.OnPostsListener;
 import com.sromku.simple.fb.listeners.OnProfileListener;
@@ -31,6 +25,7 @@ import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 
+import java.util.ArrayList;
 import java.util.List;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -77,7 +72,7 @@ public class DataSource {
                 .insert(database);
     }
 
-    public void getFacebookInformation(SimpleFacebook simpleFacebook) {
+    public void getFacebookInformation() {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
             Log.v(TAG, "Facebook is logged in. Getting photos.");
@@ -96,6 +91,8 @@ public class DataSource {
                     .add(Profile.Properties.PICTURE, pictureAttributes)
                     .build();
 
+            SimpleFacebook simpleFacebook = SimpleFacebook.getInstance();
+
             simpleFacebook.getProfile(properties, new OnProfileListener() {
                 @Override
                 public void onComplete(Profile response) {
@@ -109,36 +106,22 @@ public class DataSource {
 
             // Get photos
 
-            simpleFacebook.getPhotos(new OnPhotosListener() {
+            simpleFacebook.getPhotos("112400152449929", new OnPhotosListener() {
+
                 @Override
                 public void onComplete(List<Photo> response) {
                     Log.v(TAG, "Number of photos: " + response.size());
 
-                    for(Photo photo : response) {
-                        Log.v(TAG, photo.getLink());
+                    ArrayList<Photo> photos = (ArrayList<Photo>) response;
+
+                    try {
+                        for (Photo photo : photos) {
+                            Log.v(TAG, "Source: " + photo.getPicture());
+                        }
+                    } catch (NullPointerException e) {
+                        Log.e(TAG, "Something went wrong on capturing photos");
+                        e.printStackTrace();
                     }
-                }
-            });
-
-            // Get Albums
-
-            simpleFacebook.getAlbums(new OnAlbumsListener() {
-                @Override
-                public void onComplete(List<Album> response) {
-                    Log.v(TAG, "Number of albums: " + response.size());
-
-                    for(Album album : response) {
-                        Log.v(TAG, album.getName());
-                    }
-                }
-            });
-
-            // Get Accounts
-
-            simpleFacebook.getAccounts(new OnAccountsListener() {
-                @Override
-                public void onComplete(List<Account> response) {
-                    Log.v(TAG, "Number of accounts: " + response.size());
                 }
             });
 
@@ -148,13 +131,6 @@ public class DataSource {
                 @Override
                 public void onComplete(List<Post> response) {
                     Log.v(TAG, "Number of posts: " + response.size());
-                }
-            });
-
-            simpleFacebook.getFriends(new OnFriendsListener() {
-                @Override
-                public void onComplete(List<Profile> response) {
-                    Log.v(TAG, "Number of friends: " + response.size());
                 }
             });
         }

@@ -316,7 +316,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                             Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Facebook",
                                     Toast.LENGTH_SHORT).show();
 
-                            BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
+                            BlocpartyApplication.getSharedDataSource().getFacebookInformation();
                         }
 
                         @Override
