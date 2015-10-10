@@ -31,26 +31,9 @@ import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 
-import java.util.Date;
 import java.util.List;
-
-import twitter4j.ExtendedMediaEntity;
-import twitter4j.GeoLocation;
-import twitter4j.HashtagEntity;
-import twitter4j.MediaEntity;
-import twitter4j.Place;
-import twitter4j.RateLimitStatus;
-import twitter4j.Scopes;
-import twitter4j.Status;
-import twitter4j.SymbolEntity;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.URLEntity;
-import twitter4j.User;
-import twitter4j.UserMentionEntity;
-import twitter4j.auth.AccessToken;
-import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Created by Ngynstvn on 10/7/15.
@@ -190,6 +173,9 @@ public class DataSource {
                 @Override
                 protected Void doInBackground(Void... params) {
                     try {
+
+                        // Timeline information
+
                         List<twitter4j.Status> statuses = twitter.getHomeTimeline();
 
                         if(statuses == null) {
@@ -201,7 +187,15 @@ public class DataSource {
                         Log.e(TAG, "Getting timeline...information");
 
                         for(twitter4j.Status status : statuses) {
-                            Log.v(TAG, status.getUser().getName() + " | Status: " + status.getText());
+                            Log.v(TAG, "User: " + status.getUser().getName());
+                            Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
+                            Log.v(TAG, "Status: " + status.getText());
+
+                            if(status.getMediaEntities().length != 0) {
+                                Log.e(TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
+                            }
+
+                            Log.v(TAG, "Created At: " + status.getCreatedAt());
                         }
 
                         return null;
