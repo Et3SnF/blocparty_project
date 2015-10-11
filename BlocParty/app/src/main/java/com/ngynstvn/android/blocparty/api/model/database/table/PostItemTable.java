@@ -71,7 +71,7 @@ public class PostItemTable extends Table {
             return this;
         }
 
-        public Builder setPostPublishDate(int value) {
+        public Builder setPostPublishDate(long value) {
             contentValues.put(COLUMN_POST_PUBLISH_DATE, value);
             return this;
         }
