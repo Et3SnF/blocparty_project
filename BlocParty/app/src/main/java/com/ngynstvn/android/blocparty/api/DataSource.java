@@ -214,11 +214,6 @@ public class DataSource {
                     return null;
 
                 }
-
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    fetchAllPostItems();
-                }
             }.execute();
 
         }
@@ -294,12 +289,6 @@ public class DataSource {
                         return null;
                     }
                 }
-
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    fetchAllPostItems();
-                }
-
             }.execute();
         }
     }
@@ -365,12 +354,6 @@ public class DataSource {
                     }
                     return null;
                 }
-
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    fetchAllPostItems();
-                }
-
             }.execute();
         }
         else {
@@ -381,8 +364,8 @@ public class DataSource {
 
     public void fetchAllPostItems() {
 
-        Cursor cursor = databaseOpenHelper.getWritableDatabase().query(true, BPUtils.POST_ITEM_TABLE,
-                null, null, null, null, null, null, null);
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + ";", null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -390,6 +373,8 @@ public class DataSource {
             }
             while (cursor.moveToNext());
         }
+
+        cursor.close();
 
         Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
     }

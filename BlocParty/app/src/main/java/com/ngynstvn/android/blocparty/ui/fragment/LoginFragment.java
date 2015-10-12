@@ -1,6 +1,8 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,7 +37,6 @@ import java.util.List;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
@@ -577,5 +578,16 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     private boolean isIGLoggedIn() {
         Log.v(TAG, "isIGLoggedIn() called");
         return BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null;
+    }
+
+    /**
+     * Display Main Fragment
+     */
+
+    private void displayMainFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty, MainFragment.newInstance());
+        fragmentTransaction.commit();
     }
 }
