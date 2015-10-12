@@ -212,6 +212,12 @@ public class DataSource {
             });
 
                     return null;
+
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    fetchAllPostItems();
                 }
             }.execute();
 
@@ -289,6 +295,11 @@ public class DataSource {
                     }
                 }
 
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    fetchAllPostItems();
+                }
+
             }.execute();
         }
     }
@@ -354,12 +365,33 @@ public class DataSource {
                     }
                     return null;
                 }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    fetchAllPostItems();
+                }
+
             }.execute();
         }
         else {
             Log.v(TAG, "Something went wrong in retrieving Instagram data");
         }
 
+    }
+
+    public void fetchAllPostItems() {
+
+        Cursor cursor = databaseOpenHelper.getWritableDatabase().query(true, BPUtils.POST_ITEM_TABLE,
+                null, null, null, null, null, null, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                postItemArrayList.add(itemFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
+        }
+
+        Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
     }
 
     static PostItem itemFromCursor(Cursor cursor) {
