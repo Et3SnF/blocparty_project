@@ -1,7 +1,5 @@
 package com.ngynstvn.android.blocparty.ui.adapter;
 
-import android.content.SharedPreferences;
-import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,14 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.api.model.LoginItem;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
-import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
 import com.squareup.picasso.Picasso;
-import com.zcw.togglebutton.ToggleButton;
 
 import java.lang.ref.WeakReference;
 
@@ -41,37 +35,37 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
     }
 
     @Override
-    public void onBindViewHolder(PostItemAdapterViewHolder loginAdapterViewHolder, int i) {
-//        loginAdapterViewHolder.updateViewHolder(loginItem);
+    public void onBindViewHolder(PostItemAdapterViewHolder postItemAdapterViewHolder, int i) {
+        PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(i);
+        postItemAdapterViewHolder.updateViewHolder(postItem);
     }
 
     @Override
     public int getItemCount() {
-//        return getLoginItems().length;
-        return 0;
+        return BlocpartyApplication.getSharedDataSource().getPostItemArrayList().size();
     }
 
     /*
      * Interface Material
      */
 
-    public interface LoginAdapterDelegate {
-        void onLoginSwitchActivated(PostItemAdapter loginAdapter, int adapterPosition, boolean isChecked);
+    public interface PostItemAdapterDelegate {
+        void onLoginSwitchActivated(PostItemAdapter postItemAdapter, int adapterPosition);
     }
 
-    private WeakReference<LoginAdapterDelegate> loginAdapterDelegate;
+    private WeakReference<PostItemAdapterDelegate> postItemAdapterDelegate;
 
-    public void setLoginAdapterDelegate(LoginAdapterDelegate loginAdapterDelegate) {
-        this.loginAdapterDelegate = new WeakReference<LoginAdapterDelegate>(loginAdapterDelegate);
+    public void setPostItemAdapterDelegate(PostItemAdapterDelegate postItemAdapterDelegate) {
+        this.postItemAdapterDelegate = new WeakReference<PostItemAdapterDelegate>(postItemAdapterDelegate);
     }
 
-    public LoginAdapterDelegate getLoginAdapterDelegate() {
+    public PostItemAdapterDelegate getLoginAdapterDelegate() {
 
-        if(loginAdapterDelegate == null) {
+        if(postItemAdapterDelegate == null) {
             return null;
         }
 
-        return loginAdapterDelegate.get();
+        return postItemAdapterDelegate.get();
     }
 
     // --------------------- //
@@ -108,7 +102,6 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postFirstName.setText(postItem.getOpFirstName());
             postImageCaption.setText(postItem.getPostCaption());
             postPublishDate.setText((int) postItem.getPostPublishDate());
-
             Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getOpProfilePicUrl()).into(postProfileImage);
             Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
         }

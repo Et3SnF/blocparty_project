@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.api;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,11 +12,13 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
-import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.api.model.PostItem;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
 import com.sromku.simple.fb.SimpleFacebook;
+import com.sromku.simple.fb.entities.Post;
 import com.sromku.simple.fb.entities.Profile;
+import com.sromku.simple.fb.listeners.OnPostsListener;
 import com.sromku.simple.fb.listeners.OnProfileListener;
 import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
@@ -29,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import twitter4j.Twitter;
@@ -50,6 +54,7 @@ public class DataSource {
     private static String fbPostCaption = "";
     private static long fbPostPublishDate = 0L;
     private static AccessToken accessToken;
+    private Profile profile;
 
     private static String twFirstName = "";
     private static String twLastName = "";
@@ -69,6 +74,8 @@ public class DataSource {
     private SQLiteDatabase database;
     private PostItemTable postItemTable;
 
+    private ArrayList<PostItem> postItemArrayList;
+
     // Instantiate the database
 
     public DataSource(Context context) {
@@ -77,10 +84,16 @@ public class DataSource {
         context.deleteDatabase(BPUtils.DB_NAME);
         postItemTable = new PostItemTable();
 
+        postItemArrayList = new ArrayList<>();
+
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(), postItemTable);
 
         database = databaseOpenHelper.getWritableDatabase();
+    }
+
+    public ArrayList<PostItem> getPostItemArrayList() {
+        return postItemArrayList;
     }
 
     public void getFacebookInformation(final SimpleFacebook simpleFacebook) {
@@ -93,7 +106,8 @@ public class DataSource {
             new AsyncTask<Void, Void, Void>() {
 
                 @Override
-                protected void onPreExecute() {
+                protected Void doInBackground(final Void... params) {
+
                     PictureAttributes pictureAttributes = Attributes.createPictureAttributes();
                     pictureAttributes.setHeight(300);
                     pictureAttributes.setWidth(300);
@@ -116,21 +130,12 @@ public class DataSource {
                                     + "Last Name: " + response.getLastName() + " | \n"
                                     + "Picture: " + response.getPicture());
 
-                            fbUserId = response.getId();
-                            fbFirstName = response.getFirstName();
-                            fbLastName = response.getLastName();
-                            fbProfilePicUrl = response.getPicture();
+                            profile = response;
                         }
                     });
 
-                    accessToken = new AccessToken(
-                            BlocpartyApplication.getSharedInstance().getString(R.string.fbat),
-                            BlocpartyApplication.getSharedInstance().getString(R.string.fbai),
-                            fbUserId, null, null, null, null, null);
-                }
-
-                @Override
-                protected Void doInBackground(final Void... params) {
+                    AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                    Log.v(TAG, "Current ID: " + accessToken.getUserId());
 
                     // Get photos
 
@@ -150,12 +155,19 @@ public class DataSource {
 
                                         for(int i = 0; i < jsonArray.length(); i++) {
 
-                                            fbFirstName = object.getString("name");
+                                            fbFirstName = object.optString("name");
                                             fbUserId = object.getString("id");
                                             fbPostImageUrl = jsonArray.getJSONObject(0).getJSONArray("images")
                                                     .getJSONObject(0).getString("source");
 
-                                            fbPostCaption = jsonArray.getJSONObject(0).getString("name");
+//                                            if(jsonArray.getJSONObject(0).getString("name") != null ||
+//                                                    jsonArray.getJSONObject(0).getString("name").length() == 0) {
+//                                                fbPostCaption = jsonArray.getJSONObject(0).getString("name");
+//                                            }
+//                                            else if(jsonArray.getJSONObject(0).getString("name") == null){
+//                                                fbPostCaption = "";
+//                                            }
+
                                             String rawDate = jsonArray.getJSONObject(0).getString("created_time");
 
                                             fbPostPublishDate = 0L;
@@ -188,18 +200,16 @@ public class DataSource {
                     request.setParameters(parameters);
                     request.executeAsync();
 
-                    // Get Posts
+            simpleFacebook.getPosts(new OnPostsListener() {
+                @Override
+                public void onComplete(List<Post> response) {
+                    Log.v(TAG, "Number of posts: " + response.size());
 
-//            simpleFacebook.getPosts(new OnPostsListener() {
-//                @Override
-//                public void onComplete(List<Post> response) {
-//                    Log.v(TAG, "Number of posts: " + response.size());
-//
-//                    for(Post post : response) {
-//                        Log.v(TAG, "Posts: " + post.getId());
-//                    }
-//                }
-//            });
+                    for(Post post : response) {
+                        Log.v(TAG, "Posts: " + post.getId());
+                    }
+                }
+            });
 
                     return null;
                 }
@@ -350,5 +360,15 @@ public class DataSource {
             Log.v(TAG, "Something went wrong in retrieving Instagram data");
         }
 
+    }
+
+    static PostItem itemFromCursor(Cursor cursor) {
+
+        boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;
+
+        return new PostItem(PostItemTable.getRowId(cursor), PostItemTable.getColumnOpFirstName(cursor),
+                PostItemTable.getColumnOpLastName(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
+                PostItemTable.getColumnPostImageUrl(cursor), PostItemTable.getColumnPostImageCaption(cursor),
+                PostItemTable.getPostPublishDate(cursor), isLiked);
     }
 }

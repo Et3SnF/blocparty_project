@@ -13,9 +13,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.fragment.IGAuthFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
+import com.ngynstvn.android.blocparty.ui.fragment.MainFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.TwitterAuthFragment;
 import com.sromku.simple.fb.SimpleFacebook;
 
@@ -61,20 +62,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
         twitterAuthFragment = new TwitterAuthFragment();
         twitterAuthFragment.setTwitterAuthFragDelegate(this);
-    }
-
-    @Override
-    protected void onStart() {
-        Log.e(TAG, "onStart() called");
-        super.onStart();
-        displayLoginFragment();
-    }
-
-    @Override
-    protected void onResume() {
-        Log.e(TAG, "onResume() called");
-        super.onResume();
-        simpleFacebook = SimpleFacebook.getInstance(this);
 
         instance_counter++;
 
@@ -83,6 +70,29 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         if(instance_counter > 1) {
             welcomeMessage.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        Log.e(TAG, "onStart() called");
+        super.onStart();
+
+        SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
+        if(sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false) || sharedPreferences
+                .getBoolean(BPUtils.TW_LOGIN, false) || sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false)) {
+            displayMainFragment();
+            return;
+        }
+
+        displayLoginFragment();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.e(TAG, "onResume() called");
+        super.onResume();
+        simpleFacebook = SimpleFacebook.getInstance(this);
     }
 
     @Override
@@ -146,5 +156,16 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
          * LoginFragment.newInstance()).commit();
          *
          */
+    }
+
+    /**
+     * Display Main Fragment
+     */
+
+    private void displayMainFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty, MainFragment.newInstance());
+        fragmentTransaction.commit();
     }
 }
