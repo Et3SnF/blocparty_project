@@ -6,17 +6,12 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
 import com.sromku.simple.fb.SimpleFacebook;
-import com.sromku.simple.fb.entities.Photo;
 import com.sromku.simple.fb.entities.Profile;
-import com.sromku.simple.fb.listeners.OnPhotosListener;
 import com.sromku.simple.fb.listeners.OnProfileListener;
 import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
@@ -27,8 +22,8 @@ import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 
-import java.util.ArrayList;
 import java.util.List;
+
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
@@ -47,6 +42,7 @@ public class DataSource {
     private static String fbPostImageUrl = "";
     private static String fbPostCaption = "";
     private static long fbPostPublishDate = 0L;
+    private static AccessToken accessToken;
 
     private static String twFirstName = "";
     private static String twLastName = "";
@@ -77,23 +73,7 @@ public class DataSource {
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(), postItemTable);
 
-        // Test data
-        testData();
-    }
-
-    private void testData() {
-
         database = databaseOpenHelper.getWritableDatabase();
-
-        new PostItemTable.Builder()
-                .setOPFirstName("Richard")
-                .setOPLastName("Matthews")
-                .setProfilePicUrl("https://www.google.com.")
-                .setPostImageUrl("https://www.google.com/")
-                .setPostCaption("This is just a test to see if database works.")
-                .setPostPublishDate(10115)
-                .setIsPostLiked(0)
-                .insert(database);
     }
 
     public void getFacebookInformation(final SimpleFacebook simpleFacebook) {
@@ -101,12 +81,12 @@ public class DataSource {
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
             Log.v(TAG, "Facebook is logged in. Getting photos.");
 
-            // Get Profile
+            // Get Profile Information
 
             new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
 
+                @Override
+                protected void onPreExecute() {
                     PictureAttributes pictureAttributes = Attributes.createPictureAttributes();
                     pictureAttributes.setHeight(300);
                     pictureAttributes.setWidth(300);
@@ -136,43 +116,70 @@ public class DataSource {
                         }
                     });
 
+                    accessToken = new AccessToken(
+                            BlocpartyApplication.getSharedInstance().getString(R.string.fbat),
+                            BlocpartyApplication.getSharedInstance().getString(R.string.fbai),
+                            fbUserId, null, null, null, null, null);
+                }
+
+                @Override
+                protected Void doInBackground(final Void... params) {
+
                     // Get photos
 
-                    new GraphRequest(
-                            AccessToken.getCurrentAccessToken(),
-                            "/" + fbUserId +"/photos",
-                            null,
-                            HttpMethod.GET,
-                            new GraphRequest.Callback() {
+                    // Get access to Graph API and get the GraphRequest
+                    // Decided to just get photo information from this JSON
+
+                    GraphRequest request = GraphRequest.newMeRequest(
+                            accessToken,
+                            new GraphRequest.GraphJSONObjectCallback() {
                                 @Override
-                                public void onCompleted(GraphResponse response) {
-                                    Log.v(TAG, "Response: " + response.getConnection());
+                                public void onCompleted(JSONObject object, GraphResponse response) {
+                                    Log.v(TAG, "Raw response: " + response.getRawResponse());
+
+                                    try {
+
+                                        JSONArray jsonArray = object.optJSONObject("photos").getJSONArray("data");
+
+                                        for(int i = 0; i < jsonArray.length(); i++) {
+
+                                            fbFirstName = object.getString("name");
+                                            fbUserId = object.getString("id");
+                                            fbPostImageUrl = jsonArray.getJSONObject(0).getJSONArray("images")
+                                                    .getJSONObject(0).getString("source");
+
+                                            fbPostCaption = jsonArray.getJSONObject(0).getString("name");
+                                            String rawDate = jsonArray.getJSONObject(0).getString("created_time");
+
+                                            fbPostPublishDate = 0L;
+
+                                            new PostItemTable.Builder()
+                                                    .setOPFirstName(fbFirstName)
+                                                    .setOPLastName(fbLastName)
+                                                    .setProfilePicUrl(fbProfilePicUrl)
+                                                    .setPostImageUrl(fbPostImageUrl)
+                                                    .setPostCaption(fbPostCaption)
+                                                    .setPostPublishDate(fbPostPublishDate)
+                                                    .setIsPostLiked(0)
+                                                    .insert(database);
+                                        }
+
+                                    } catch (JSONException e) {
+                                        Log.e(TAG, "Unable to parse JSON info");
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                    ).executeAsync();
+                            });
 
-                    simpleFacebook.getPhotos(new OnPhotosListener() {
+                    // Bundle the string necessary to perform query
 
-                        @Override
-                        public void onComplete(List<Photo> response) {
-                            Log.v(TAG, "Number of photos: " + response.size());
+                    Bundle parameters = new Bundle();
+                    parameters.putString("fields", "id,name,photos{created_time,picture,name,images}");
 
-                            ArrayList<Photo> photos = (ArrayList<Photo>) response;
+                    // Perform the request
 
-                            try {
-                                for (Photo photo : photos) {
-                                    fbPostImageUrl = photo.getPicture();
-                                    fbPostCaption = photo.getName();
-                                    fbPostPublishDate = photo.getCreatedTime().getTime();
-                                    Log.v(TAG, "Photo ID: " + photo.getId());
-                                    Log.v(TAG, "Picture: " + photo.getPicture());
-                                }
-                            } catch (NullPointerException e) {
-                                Log.e(TAG, "Something went wrong on capturing photos");
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                    request.setParameters(parameters);
+                    request.executeAsync();
 
                     // Get Posts
 
@@ -186,16 +193,6 @@ public class DataSource {
 //                    }
 //                }
 //            });
-
-                    new PostItemTable.Builder()
-                            .setOPFirstName(fbFirstName)
-                            .setOPLastName(fbLastName)
-                            .setProfilePicUrl(fbProfilePicUrl)
-                            .setPostImageUrl(fbPostImageUrl)
-                            .setPostCaption(fbPostCaption)
-                            .setPostPublishDate(fbPostPublishDate)
-                            .setIsPostLiked(0)
-                            .insert(database);
 
                     return null;
                 }
@@ -256,7 +253,7 @@ public class DataSource {
                                     .setPostCaption(twPostCaption)
                                     .setPostPublishDate(twPostPublishDate)
                                     .setIsPostLiked(0)
-                                    .insert(database);
+                                    .insert(databaseOpenHelper.getWritableDatabase());
 
                             Log.v(TAG, "Created At: " + status.getCreatedAt());
                         }
@@ -321,19 +318,19 @@ public class DataSource {
                             catch (NullPointerException e) {
                                 Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
                             }
-                        }
 
-                        // Split the Name later.
-                        
-                        new PostItemTable.Builder()
-                                .setOPFirstName(igFirstName)
-                                .setOPLastName(igLastName)
-                                .setProfilePicUrl(igProfilePicUrl)
-                                .setPostImageUrl(igPostImageUrl)
-                                .setPostCaption(igPostCaption)
-                                .setPostPublishDate(igPostPublishDate)
-                                .setIsPostLiked(0)
-                                .insert(database);
+                            // Split the Name later.
+
+                            new PostItemTable.Builder()
+                                    .setOPFirstName(igFirstName)
+                                    .setOPLastName(igLastName)
+                                    .setProfilePicUrl(igProfilePicUrl)
+                                    .setPostImageUrl(igPostImageUrl)
+                                    .setPostCaption(igPostCaption)
+                                    .setPostPublishDate(igPostPublishDate)
+                                    .setIsPostLiked(0)
+                                    .insert(databaseOpenHelper.getWritableDatabase());
+                        }
 
                     } catch (InstagramException e) {
                         e.printStackTrace();
