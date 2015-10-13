@@ -62,7 +62,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         void onTWLogout(LoginFragment loginFragment, int adapterPosition);
         void onIGLogin(LoginFragment loginFragment, int adapterPosition);
         void onIGLogout(LoginFragment loginFragment, int adapterPosition);
-        void onLoggedIn(LoginFragment loginFragment);
     }
 
     private WeakReference<LoginFragmentDelegate> loginFragmentDelegate;
@@ -129,10 +128,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(loginAdapter);
-
-        if(getLoginFragmentDelegate() != null) {
-            getLoginFragmentDelegate().onLoggedIn(this);
-        }
     }
 
     @Override

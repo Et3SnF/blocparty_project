@@ -272,12 +272,27 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.v(TAG, "onCreateOptionsMenu() called");
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.v(TAG, "onOptionsItemSelected() called");
+
+        if(item.getItemId() == R.id.action_camera_mode) {
+            Log.v(TAG, "Camera button clicked");
+            this.menuItem = item;
+            return true;
+        }
+
+        if(item.getItemId() == R.id.action_login_mode) {
+            Log.v(TAG, "Login button clicked");
+            this.menuItem = item;
+            displayLoginFragment();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -345,13 +360,17 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
     }
 
     @Override
-    public void onTWLogin(LoginFragment loginFragment, final int adapterPosition) {
+    public void onTWLogin(final LoginFragment loginFragment, final int adapterPosition) {
         twitterLogin(new Authoritative() {
             @Override
             public void onSuccess() {
                 Log.v(TAG, "Logged into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
+
+                if(loginFragment.isVisible()) {
+                    displayMainFragment();
+                }
             }
 
             @Override
@@ -408,19 +427,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         }
     }
 
-    @Override
-    public void onLoggedIn(LoginFragment loginFragment) {
-        boolean isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
-        boolean isTWLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
-        boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false);
-
-        if(!isFBLoggedIn && !isTWLoggedIn && !isIGLoggedIn) {
-            return;
-        }
-
-        loadPostItems();
-    }
-
     /**
      *
      * MainFragment.MainFragmentDelegate Implemented Methods
@@ -428,31 +434,8 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
      */
 
     @Override
-    public void onFetchingFacebookInfo(MainFragment mainFragment) {
-        Log.v(TAG, "onFetchingFacebookInfo() called");
-//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-//        }
-
-        BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
-    }
-
-    @Override
-    public void onFetchingTwitterInfo(MainFragment mainFragment) {
-        Log.v(TAG, "onFetchingTwitterInfo() called");
-//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-//        }
-    }
-
-    @Override
-    public void onFetchingInstagramInfo(MainFragment mainFragment) {
-        Log.v(TAG, "onFetchingInstagramInfo() called");
-//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-//        }
-
-        BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
+    public void onPostItemsRefreshed(MainFragment mainFragment) {
+        loadPostItems();
     }
 
     /**
@@ -657,11 +640,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                 BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
                 return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                displayMainFragment();
             }
         }.execute();
     }

@@ -5,8 +5,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
@@ -81,12 +83,13 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
         private final String TAG = "(" + PostItemAdapterViewHolder.class.getSimpleName() + "): ";
 
-        TextView postFirstName;
-//        TextView postLastName;
+        TextView postOPName;
         ImageView postProfileImage;
         ImageView postImage;
         TextView postImageCaption;
         TextView postPublishDate;
+        CheckBox postLikedBtn;
+        CheckBox postMoreSettings;
 
         PostItem postItem;
 
@@ -95,16 +98,40 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
             Log.v(TAG, "LoginAdapterViewHolder() called");
 
-            postFirstName = (TextView) itemView.findViewById(R.id.tv_op_name);
+            postOPName = (TextView) itemView.findViewById(R.id.tv_op_name);
             postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);
             postImage = (ImageView) itemView.findViewById(R.id.iv_post_image);
             postImageCaption = (TextView) itemView.findViewById(R.id.tv_post_caption);
             postPublishDate = (TextView) itemView.findViewById(R.id.tv_publish_date);
+            postLikedBtn = (CheckBox) itemView.findViewById(R.id.btn_like_button);
+            postMoreSettings = (CheckBox) itemView.findViewById(R.id.btn_more_settings);
+
+            postImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.v(TAG, "Post Image clicked");
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Image Clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            postLikedBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Liked Button Clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            postMoreSettings.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "More Settings Clicked", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         void updateViewHolder(PostItem postItem) {
             this.postItem = postItem;
-            postFirstName.setText(postItem.getOpFirstName());
+            postOPName.setText(postItem.getOpFirstName());
             postImageCaption.setText(postItem.getPostCaption());
             postPublishDate.setText(String.format("%d", postItem.getPostPublishDate()));
 

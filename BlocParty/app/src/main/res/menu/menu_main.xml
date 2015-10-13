@@ -3,10 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_list_mode"
+        android:id="@+id/action_camera_mode"
         android:icon="@drawable/camera_selector"
         android:title="@string/camera_mode_text"
         android:orderInCategory="0"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_login_mode"
+        android:icon="@drawable/account_selector"
+        android:title="@string/account_mode_text"
+        android:orderInCategory="1"
         app:showAsAction="ifRoom"/>
 
 </menu>

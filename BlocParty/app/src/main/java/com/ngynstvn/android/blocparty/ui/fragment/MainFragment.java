@@ -48,9 +48,7 @@ public class MainFragment extends Fragment {
      */
 
     public interface MainFragmentDelegate {
-        void onFetchingFacebookInfo(MainFragment mainFragment);
-        void onFetchingTwitterInfo(MainFragment mainFragment);
-        void onFetchingInstagramInfo(MainFragment mainFragment);
+        void onPostItemsRefreshed(MainFragment mainFragment);
     }
 
     private WeakReference<MainFragmentDelegate> mainFragmentDelegate;
@@ -92,22 +90,6 @@ public class MainFragment extends Fragment {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
-
-        if(getMainFragmentDelegate() != null) {
-
-            if(sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false)) {
-                getMainFragmentDelegate().onFetchingFacebookInfo(this);
-            }
-
-            if(sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false)) {
-                getMainFragmentDelegate().onFetchingTwitterInfo(this);
-            }
-
-            if(sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false)) {
-                getMainFragmentDelegate().onFetchingInstagramInfo(this);
-            }
-        }
-
         postItemAdapter = new PostItemAdapter();
     }
 
@@ -118,8 +100,8 @@ public class MainFragment extends Fragment {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_main_fragment);
-//        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_main_fragment);
-//        swipeRefreshLayout.setColorSchemeColors(R.color.material_indigo_500);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_main_fragment);
+        swipeRefreshLayout.setColorSchemeColors(R.color.material_indigo_500);
         return view;
     }
 
@@ -136,6 +118,18 @@ public class MainFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(getMainFragmentDelegate() != null) {
+                    getMainFragmentDelegate().onPostItemsRefreshed(MainFragment.this);
+                    postItemAdapter.notifyDataSetChanged();
+                }
+
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 
     @Override
