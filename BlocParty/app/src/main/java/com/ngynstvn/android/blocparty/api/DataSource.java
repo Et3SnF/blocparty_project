@@ -76,12 +76,23 @@ public class DataSource {
 
     private ArrayList<PostItem> postItemArrayList;
 
+    /**
+     *
+     * CALLBACK INTERFACE
+     *
+     */
+
+    public interface TaskStatus {
+        void onTaskComplete();
+        void onTaskFailed();
+    }
+
     // Instantiate the database
 
     public DataSource(Context context) {
         Log.v(TAG, "DataSource instantiated");
 
-        context.deleteDatabase(BPUtils.DB_NAME);
+//        context.deleteDatabase(BPUtils.DB_NAME);
         postItemTable = new PostItemTable();
 
         postItemArrayList = new ArrayList<>();
@@ -90,6 +101,10 @@ public class DataSource {
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(), postItemTable);
 
         database = databaseOpenHelper.getWritableDatabase();
+    }
+
+    public DatabaseOpenHelper getDatabaseOpenHelper() {
+        return databaseOpenHelper;
     }
 
     public ArrayList<PostItem> getPostItemArrayList() {
@@ -263,17 +278,17 @@ public class DataSource {
 
                             // Split the Name later.
 
-                            new PostItemTable.Builder()
-                                    .setOPFirstName(twFirstName)
-                                    .setOPLastName(twLastName)
-                                    .setProfilePicUrl(twProfilePicUrl)
-                                    .setPostImageUrl(twPostImageUrl)
-                                    .setPostCaption(twPostCaption)
-                                    .setPostPublishDate(twPostPublishDate)
-                                    .setIsPostLiked(0)
-                                    .insert(databaseOpenHelper.getWritableDatabase());
-
-                            Log.v(TAG, "Created At: " + status.getCreatedAt());
+                            if(twPostImageUrl != null && twPostImageUrl.length() > 0) {
+                                new PostItemTable.Builder()
+                                        .setOPFirstName(twFirstName)
+                                        .setOPLastName(twLastName)
+                                        .setProfilePicUrl(twProfilePicUrl)
+                                        .setPostImageUrl(twPostImageUrl)
+                                        .setPostCaption(twPostCaption)
+                                        .setPostPublishDate(twPostPublishDate)
+                                        .setIsPostLiked(0)
+                                        .insert(databaseOpenHelper.getWritableDatabase());
+                            }
                         }
 
                         return null;
@@ -368,6 +383,7 @@ public class DataSource {
     }
 
     public void fetchAllPostItems() {
+        Log.v(TAG, "fetchAllPostItems() called");
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + ";", null);
@@ -392,5 +408,22 @@ public class DataSource {
                 PostItemTable.getColumnOpLastName(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
                 PostItemTable.getColumnPostImageUrl(cursor), PostItemTable.getColumnPostImageCaption(cursor),
                 PostItemTable.getPostPublishDate(cursor), isLiked);
+    }
+
+    public boolean isDBEmpty(String tableName) {
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
+
+        if(cursor.getCount() == 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void clearTable(String tableName) {
+        BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
+                .execSQL("Delete from " + tableName + ";");
     }
 }

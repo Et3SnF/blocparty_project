@@ -29,6 +29,6 @@
     <color name="material_indigo_700">#303F9F</color>
     <color name="material_indigo_700_50">#80303F9F</color>
     <color name="toggle_button_off">#FFDADBDA</color>
-    <color name="post_img_border">#DEEEEEEE</color>
+    <color name="post_img_border">#CCDDDDDD</color>
 
 </resources>

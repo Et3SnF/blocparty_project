@@ -47,7 +47,7 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 
 public class MainActivity extends AppCompatActivity implements TwitterAuthFragment.TwitterAuthFragDelegate,
-        LoginFragment.LoginFragmentDelegate {
+        LoginFragment.LoginFragmentDelegate, MainFragment.MainFragmentDelegate {
 
     private static final String TAG = "(" + MainActivity.class.getSimpleName() + "): ";
     private static int instance_counter = 0;
@@ -299,8 +299,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Facebook",
                         Toast.LENGTH_SHORT).show();
-
-                BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
             }
 
             @Override
@@ -354,7 +352,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
                 Log.v(TAG, "Logged into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-                BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
             }
 
             @Override
@@ -391,8 +388,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
-
-                BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
             }
 
             @Override
@@ -411,6 +406,53 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                     BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
         }
+    }
+
+    @Override
+    public void onLoggedIn(LoginFragment loginFragment) {
+        boolean isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
+        boolean isTWLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
+        boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false);
+
+        if(!isFBLoggedIn && !isTWLoggedIn && !isIGLoggedIn) {
+            return;
+        }
+
+        loadPostItems();
+    }
+
+    /**
+     *
+     * MainFragment.MainFragmentDelegate Implemented Methods
+     *
+     */
+
+    @Override
+    public void onFetchingFacebookInfo(MainFragment mainFragment) {
+        Log.v(TAG, "onFetchingFacebookInfo() called");
+//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+//        }
+
+        BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
+    }
+
+    @Override
+    public void onFetchingTwitterInfo(MainFragment mainFragment) {
+        Log.v(TAG, "onFetchingTwitterInfo() called");
+//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+//        }
+    }
+
+    @Override
+    public void onFetchingInstagramInfo(MainFragment mainFragment) {
+        Log.v(TAG, "onFetchingInstagramInfo() called");
+//        if (!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+//            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+//        }
+
+        BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
     }
 
     /**
@@ -577,12 +619,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack("login_fragment").replace(R.id.fl_activity_blocparty, LoginFragment.newInstance());
         fragmentTransaction.commit();
-
-        /*
-         * getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-         * LoginFragment.newInstance()).commit();
-         *
-         */
     }
 
     /**
@@ -594,5 +630,39 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty, MainFragment.newInstance());
         fragmentTransaction.commit();
+    }
+
+    /**
+     *
+     * Load the Items
+     *
+     */
+
+    public void loadPostItems() {
+        Log.v(TAG, "loadPostItems() called");
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                if(sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false)) {
+                    BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
+                }
+
+                if(sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false)) {
+                    BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
+                }
+
+                if(sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false)) {
+                    BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
+                }
+
+                BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                displayMainFragment();
+            }
+        }.execute();
     }
 }
