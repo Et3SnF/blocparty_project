@@ -2,9 +2,6 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,12 +11,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.ngynstvn.android.blocparty.BPUtils;
-import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.activity.MainActivity;
 
 import org.jinstagram.auth.model.Token;
-import org.jinstagram.auth.model.Verifier;
 
 /**
  * Created by Ngynstvn on 9/27/15.
@@ -90,6 +84,9 @@ public class IGAuthFragment extends Fragment {
                             BPUtils.IG_POSITION, 2, BPUtils.IG_LOGIN, true);
 
                     Log.v(TAG, "Fragment attach status: " + isAdded());
+
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                            BPUtils.FILE_NAME, BPUtils.IG_TOKEN, authCode);
 
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                             LoginFragment.newInstance(authCode)).commit();

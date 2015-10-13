@@ -288,6 +288,11 @@ public class DataSource {
                         e.printStackTrace();
                         return null;
                     }
+                    catch(NullPointerException e) {
+                        Log.v(TAG, "There was an issue getting Twitter information");
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
             }.execute();
         }
