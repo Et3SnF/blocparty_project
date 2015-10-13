@@ -107,8 +107,14 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postFirstName.setText(postItem.getOpFirstName());
             postImageCaption.setText(postItem.getPostCaption());
             postPublishDate.setText(String.format("%d", postItem.getPostPublishDate()));
-            Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getOpProfilePicUrl()).into(postProfileImage);
-            Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
+
+            if(postItem.getOpProfilePicUrl().length() != 0) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getOpProfilePicUrl()).into(postProfileImage);
+            }
+
+            if(postItem.getPostImageUrl().length() != 0) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
+            }
         }
     }
 }

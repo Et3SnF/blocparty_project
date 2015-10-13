@@ -370,6 +370,11 @@ public class DataSource {
                         }
 
                     } catch (InstagramException e) {
+                        Log.v(TAG, "Unable to get something...");
+                        e.printStackTrace();
+                    }
+                    catch (NullPointerException e) {
+                        Log.v(TAG, "Unable to get something...");
                         e.printStackTrace();
                     }
                     return null;
