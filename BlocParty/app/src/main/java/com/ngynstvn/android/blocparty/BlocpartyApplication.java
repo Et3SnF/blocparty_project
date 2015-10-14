@@ -82,7 +82,7 @@ public class BlocpartyApplication extends Application {
                 .apiKey(getString(R.string.igc))
                 .apiSecret(getString(R.string.igcs))
                 .callback(getString(R.string.igcu))
-                .scope("basic relationships likes")
+                .scope("basic")
                 .build();
 
         dataSource = new DataSource(this);

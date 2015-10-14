@@ -18,6 +18,7 @@ import org.jinstagram.auth.model.Token;
 /**
  * Created by Ngynstvn on 9/27/15.
  */
+
 public class IGAuthFragment extends Fragment {
 
     private static final String TAG = BPUtils.classTag(IGAuthFragment.class);
@@ -63,13 +64,13 @@ public class IGAuthFragment extends Fragment {
     // WebClient class that will use JavaScript to do its magic!
 
     private class MyWebViewClient extends WebViewClient {
+
         @Override
-        public void onPageFinished(WebView view, String url) {
-            Log.v(TAG, "onPageFinished() called");
-            super.onPageFinished(view, url);
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.v(TAG, "shouldOverrideUrlLoading() method called");
 
             try {
-                final String authCode = url.substring(getString(R.string.igcu).length() + 6);
+                String authCode = url.substring(getString(R.string.igcu).length() + 6);
 
                 if (url.contains(getString(R.string.igcu) + "?code=")) {
 
@@ -90,11 +91,15 @@ public class IGAuthFragment extends Fragment {
 
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                             LoginFragment.newInstance(authCode)).commit();
+
+                    return true;
                 }
             }
             catch(IllegalStateException e) {
                 Log.v(TAG, "IGAuthFragment is not attached to MainActivity. Exception suppressed.");
             }
+
+            return false;
         }
     }
 }

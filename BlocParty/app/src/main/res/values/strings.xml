@@ -24,5 +24,9 @@
         this box. DO do do dodo do dod blah blah blah blah blah blah robo boogie</string>
     <string name="dummy_op_name">Richard M.</string>
     <string name="publish_text">Published:</string>
+    <string name="social_media">Social Media</string>
+    <string name="instagram_text">Instagram</string>
+    <string name="facebook_text">Facebook</string>
+    <string name="twitter_text">Instagram</string>
 
 </resources>

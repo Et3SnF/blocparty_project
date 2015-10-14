@@ -1,5 +1,6 @@
 package com.ngynstvn.android.blocparty.ui.adapter;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -90,6 +91,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         TextView postPublishDate;
         CheckBox postLikedBtn;
         CheckBox postMoreSettings;
+        TextView postMediaType;
 
         PostItem postItem;
 
@@ -101,6 +103,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postOPName = (TextView) itemView.findViewById(R.id.tv_op_name);
             postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);
             postImage = (ImageView) itemView.findViewById(R.id.iv_post_image);
+            postMediaType = (TextView) itemView.findViewById(R.id.tv_social_media_type);
             postImageCaption = (TextView) itemView.findViewById(R.id.tv_post_caption);
             postPublishDate = (TextView) itemView.findViewById(R.id.tv_publish_date);
             postLikedBtn = (CheckBox) itemView.findViewById(R.id.btn_like_button);
@@ -140,7 +143,23 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             }
 
             if(postItem.getPostImageUrl().length() != 0) {
+                Log.v(TAG, "Post Image URL: " + postItem.getPostImageUrl());
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
+            }
+
+            // For media icon at bottom left corner
+
+            if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+                postMediaType.setText(R.string.instagram_text);
+                postMediaType.setTextColor(Color.parseColor("#FF663300"));
+            }
+            else if(postItem.getPostImageUrl().contains("pbs.twimg.com/profile_images")) {
+                postMediaType.setText(R.string.twitter_text);
+                postMediaType.setTextColor(Color.parseColor("#FF663300"));
+            }
+            else if(postItem.getPostImageUrl().contains("fbcdn.net")) {
+                postMediaType.setText(R.string.facebook_text);
+                postMediaType.setTextColor(Color.parseColor("#FF55ACEE"));
             }
         }
     }

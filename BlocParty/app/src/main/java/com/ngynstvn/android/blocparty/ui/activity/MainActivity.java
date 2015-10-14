@@ -314,6 +314,8 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Facebook",
                         Toast.LENGTH_SHORT).show();
+
+                BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
             }
 
             @Override
@@ -403,6 +405,9 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
+
+                BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
+                displayMainFragment();
             }
 
             @Override

@@ -342,11 +342,11 @@ public class DataSource {
                                         for (MediaFeedData mediaFeedData : mediaFeedDatas) {
                                             Log.e(TAG, "User: " + mediaFeedData.getUser().getFullName());
                                             Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
-                                            Log.v(TAG, "Link: " + mediaFeedData.getLink());
+                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
                                             igOPName = mediaFeedData.getUser().getFullName();
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
-                                            igPostImageUrl = mediaFeedData.getLink();
+                                            igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 
                                             try {
                                                 Log.e(TAG, "Text: " + mediaFeedData.getCaption().getText());

@@ -58,6 +58,9 @@ public class MainFragment extends Fragment {
     }
 
     public MainFragmentDelegate getMainFragmentDelegate() {
+
+        // Delegated to MainActivity.java
+
         if(mainFragmentDelegate == null) {
             return null;
         }
