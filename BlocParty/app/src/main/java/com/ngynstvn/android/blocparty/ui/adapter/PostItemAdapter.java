@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
@@ -136,7 +137,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             this.postItem = postItem;
             postOPName.setText(postItem.getOpFullName());
             postImageCaption.setText(postItem.getPostCaption());
-            postPublishDate.setText(String.format("%d", postItem.getPostPublishDate()));
+            postPublishDate.setText(BPUtils.dateConverter(postItem.getPostPublishDate()));
 
             if(postItem.getOpProfilePicUrl().length() != 0) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getOpProfilePicUrl()).into(postProfileImage);

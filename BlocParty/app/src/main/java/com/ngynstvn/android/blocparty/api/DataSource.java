@@ -357,6 +357,7 @@ public class DataSource {
 
                                             try {
                                                 Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
+                                                igPostPublishDate = Long.parseLong(mediaFeedData.getCaption().getCreatedTime());
                                             }
                                             catch (NullPointerException e) {
                                                 Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());

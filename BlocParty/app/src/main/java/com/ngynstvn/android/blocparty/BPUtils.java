@@ -4,6 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Created by Ngynstvn on 9/23/15.
  */
@@ -108,5 +113,11 @@ public class BPUtils {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(key);
         editor.apply();
+    }
+
+    public static String dateConverter(Long rawDate) {
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH);
+        Date date = new Date(rawDate);
+        return dateFormat.format(date);
     }
 }
