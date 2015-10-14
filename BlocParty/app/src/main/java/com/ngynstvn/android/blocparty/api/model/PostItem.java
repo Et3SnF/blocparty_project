@@ -10,8 +10,7 @@ public class PostItem extends Model {
 
     private static final String TAG = BPUtils.classTag(PostItem.class);
 
-    private String opFirstName;
-    private String opLastName;
+    private String opFullName;
     private String opProfilePicUrl;
     private String postImageUrl;
     private String postCaption;
@@ -22,8 +21,7 @@ public class PostItem extends Model {
 
     public PostItem(long rowId) {
         super(rowId);
-        opFirstName = "";
-        opLastName = "";
+        opFullName = "";
         opProfilePicUrl = "";
         postImageUrl = "";
         postCaption = "";
@@ -31,11 +29,10 @@ public class PostItem extends Model {
         isLiked = false;
     }
 
-    public PostItem(long rowId, String opFirstName, String opLastName, String opProfilePicUrl,
+    public PostItem(long rowId, String opFullName, String opProfilePicUrl,
                     String postImageUrl, String postCaption, long postPublishDate, boolean isLiked) {
         super(rowId);
-        this.opFirstName = opFirstName;
-        this.opLastName = opLastName;
+        this.opFullName = opFullName;
         this.opProfilePicUrl = opProfilePicUrl;
         this.postImageUrl = postImageUrl;
         this.postCaption = postCaption;
@@ -45,20 +42,12 @@ public class PostItem extends Model {
 
     // Setters and Getters
 
-    public void setOpFirstName(String opFirstName) {
-        this.opFirstName = opFirstName;
+    public void setOpFullName(String opFullName) {
+        this.opFullName = opFullName;
     }
 
-    public String getOpFirstName() {
-        return opFirstName;
-    }
-
-    public void setOpLastName(String opLastName) {
-        this.opLastName = opLastName;
-    }
-
-    public String getOpLastName() {
-        return opLastName;
+    public String getOpFullName() {
+        return opFullName;
     }
 
     public void setOpProfilePicUrl(String opProfilePicUrl) {

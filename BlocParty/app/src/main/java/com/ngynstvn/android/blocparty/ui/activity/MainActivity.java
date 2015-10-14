@@ -541,6 +541,7 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         Log.v(TAG, "Current code: " + igAuthCode);
 
         if(igAuthCode == null) {
+            Log.v(TAG, "Current code is null. Getting another IG Access Token");
             getIGAccessToken();
             return;
         }
@@ -553,7 +554,7 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
                     return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
                 }
                 catch(OAuthException e) {
-                    Log.e(TAG, "There was an issue extracting the access token.");
+                    Log.e(TAG, "There was an issue extracting the access token. Trying again...");
                     authoritative.onFailure();
                     getIGAccessToken();
                     return null;

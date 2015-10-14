@@ -47,24 +47,19 @@ public class DataSource {
     private static final String TAG = BPUtils.classTag(DataSource.class);
 
     private static String fbUserId = "";
-    private static String fbFirstName = "";
-    private static String fbLastName = "";
+    private static String fbOPName = "";
     private static String fbProfilePicUrl = "";
     private static String fbPostImageUrl = "";
     private static String fbPostCaption = "";
     private static long fbPostPublishDate = 0L;
-    private static AccessToken accessToken;
-    private Profile profile;
 
-    private static String twFirstName = "";
-    private static String twLastName = "";
+    private static String twOPName = "";
     private static String twProfilePicUrl = "";
     private static String twPostImageUrl = "";
     private static String twPostCaption = "";
     private static long twPostPublishDate = 0L;
 
-    private static String igFirstName = "";
-    private static String igLastName = "";
+    private static String igOPName = "";
     private static String igProfilePicUrl = "";
     private static String igPostImageUrl = "";
     private static String igPostCaption = "";
@@ -76,23 +71,11 @@ public class DataSource {
 
     private ArrayList<PostItem> postItemArrayList;
 
-    /**
-     *
-     * CALLBACK INTERFACE
-     *
-     */
-
-    public interface TaskStatus {
-        void onTaskComplete();
-        void onTaskFailed();
-    }
-
     // Instantiate the database
 
     public DataSource(Context context) {
         Log.v(TAG, "DataSource instantiated");
 
-//        context.deleteDatabase(BPUtils.DB_NAME);
         postItemTable = new PostItemTable();
 
         postItemArrayList = new ArrayList<>();
@@ -144,8 +127,6 @@ public class DataSource {
                                     + "First Name : " + response.getFirstName() + " | \n"
                                     + "Last Name: " + response.getLastName() + " | \n"
                                     + "Picture: " + response.getPicture());
-
-                            profile = response;
                         }
                     });
 
@@ -170,7 +151,7 @@ public class DataSource {
 
                                         for(int i = 0; i < jsonArray.length(); i++) {
 
-                                            fbFirstName = object.optString("name");
+                                            fbOPName = object.optString("name");
                                             fbUserId = object.getString("id");
                                             fbPostImageUrl = jsonArray.getJSONObject(0).getJSONArray("images")
                                                     .getJSONObject(0).getString("source");
@@ -188,8 +169,7 @@ public class DataSource {
                                             fbPostPublishDate = 0L;
 
                                             new PostItemTable.Builder()
-                                                    .setOPFirstName(fbFirstName)
-                                                    .setOPLastName(fbLastName)
+                                                    .setOPFullName(fbOPName)
                                                     .setProfilePicUrl(fbProfilePicUrl)
                                                     .setPostImageUrl(fbPostImageUrl)
                                                     .setPostCaption(fbPostCaption)
@@ -265,8 +245,7 @@ public class DataSource {
                             Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
                             Log.v(TAG, "Status: " + status.getText());
 
-                            twFirstName = status.getUser().getName();
-                            twLastName = status.getUser().getName();
+                            twOPName = status.getUser().getName();
                             twProfilePicUrl = status.getUser().getBiggerProfileImageURL();
                             twPostPublishDate = status.getCreatedAt().getTime();
 
@@ -280,8 +259,7 @@ public class DataSource {
 
                             if(twPostImageUrl != null && twPostImageUrl.length() > 0) {
                                 new PostItemTable.Builder()
-                                        .setOPFirstName(twFirstName)
-                                        .setOPLastName(twLastName)
+                                        .setOPFullName(twOPName)
                                         .setProfilePicUrl(twProfilePicUrl)
                                         .setPostImageUrl(twPostImageUrl)
                                         .setPostCaption(twPostCaption)
@@ -318,67 +296,89 @@ public class DataSource {
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
             Log.e(TAG, "Instagram is logged in. Getting profile info.");
 
-            new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void, Void, UserInfo>() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected UserInfo doInBackground(Void... params) {
                     try {
-                        UserInfo userInfo = instagram.getCurrentUserInfo();
-
-                        Log.v(TAG, userInfo.getData().getUsername());
-                        Log.v(TAG, userInfo.getData().getProfilePicture());
-                        Log.v(TAG, userInfo.getData().getFullName());
-
-                        MediaFeed mediaFeed = instagram.getUserFeeds();
-                        List<MediaFeedData> mediaFeeds = mediaFeed.getData();
-
-                        for (MediaFeedData mediaFeedData : mediaFeeds) {
-                            Log.e(TAG, "User: " + mediaFeedData.getUser().getFullName());
-                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
-                            Log.v(TAG, "Link: " + mediaFeedData.getLink());
-
-                            igFirstName = mediaFeedData.getUser().getFullName();
-                            igLastName = mediaFeedData.getUser().getFullName();
-                            igProfilePicUrl = userInfo.getData().getProfilePicture();
-                            igPostImageUrl = mediaFeedData.getLink();
-
-                            try {
-                                Log.e(TAG, "Text: " + mediaFeedData.getCaption().getText());
-                                igPostCaption = mediaFeedData.getCaption().getText();
-                            }
-                            catch (NullPointerException e) {
-                                Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
-                            }
-
-                            try {
-                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
-                            }
-                            catch (NullPointerException e) {
-                                Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
-                            }
-
-                            // Split the Name later.
-
-                            new PostItemTable.Builder()
-                                    .setOPFirstName(igFirstName)
-                                    .setOPLastName(igLastName)
-                                    .setProfilePicUrl(igProfilePicUrl)
-                                    .setPostImageUrl(igPostImageUrl)
-                                    .setPostCaption(igPostCaption)
-                                    .setPostPublishDate(igPostPublishDate)
-                                    .setIsPostLiked(0)
-                                    .insert(databaseOpenHelper.getWritableDatabase());
-                        }
-
-                    } catch (InstagramException e) {
-                        Log.v(TAG, "Unable to get something...");
-                        e.printStackTrace();
+                        return instagram.getCurrentUserInfo();
                     }
-                    catch (NullPointerException e) {
-                        Log.v(TAG, "Unable to get something...");
+                    catch (InstagramException e) {
+                        Log.e(TAG, "There was an issue getting UserInfo object");
                         e.printStackTrace();
+                        BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
+                        return null;
                     }
-                    return null;
                 }
+
+                @Override
+                protected void onPostExecute(UserInfo userInfo) {
+                    if (userInfo != null) {
+                            Log.v(TAG, userInfo.getData().getUsername());
+                            Log.v(TAG, userInfo.getData().getProfilePicture());
+                            Log.v(TAG, userInfo.getData().getFullName());
+
+                            new AsyncTask<Void, Void, List<MediaFeedData>>() {
+                                @Override
+                                protected List<MediaFeedData> doInBackground(Void... params) {
+
+                                    MediaFeed mediaFeed = null;
+
+                                    try {
+                                        mediaFeed = instagram.getUserFeeds();
+                                        return mediaFeed.getData();
+                                    }
+                                    catch (InstagramException e) {
+                                        e.printStackTrace();
+                                        Log.v(TAG, "There was something wrong with the MediaFeed object");
+                                        BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                                                BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
+                                        return null;
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(List<MediaFeedData> mediaFeedDatas) {
+                                    if(mediaFeedDatas != null) {
+                                        for (MediaFeedData mediaFeedData : mediaFeedDatas) {
+                                            Log.e(TAG, "User: " + mediaFeedData.getUser().getFullName());
+                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
+                                            Log.v(TAG, "Link: " + mediaFeedData.getLink());
+
+                                            igOPName = mediaFeedData.getUser().getFullName();
+                                            igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
+                                            igPostImageUrl = mediaFeedData.getLink();
+
+                                            try {
+                                                Log.e(TAG, "Text: " + mediaFeedData.getCaption().getText());
+                                                igPostCaption = mediaFeedData.getCaption().getText();
+                                            } catch (NullPointerException e) {
+                                                Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
+                                            }
+
+                                            try {
+                                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
+                                            }
+                                            catch (NullPointerException e) {
+                                                Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
+                                            }
+
+                                            // Split the Name later.
+
+                                            new PostItemTable.Builder()
+                                                    .setOPFullName(igOPName)
+                                                    .setProfilePicUrl(igProfilePicUrl)
+                                                    .setPostImageUrl(igPostImageUrl)
+                                                    .setPostCaption(igPostCaption)
+                                                    .setPostPublishDate(igPostPublishDate)
+                                                    .setIsPostLiked(0)
+                                                    .insert(databaseOpenHelper.getWritableDatabase());
+                                        }
+                                    }
+                                }
+
+                            }.execute();
+                        }
+                    }
             }.execute();
         }
         else {
@@ -409,10 +409,9 @@ public class DataSource {
 
         boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;
 
-        return new PostItem(PostItemTable.getRowId(cursor), PostItemTable.getColumnOpFirstName(cursor),
-                PostItemTable.getColumnOpLastName(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
-                PostItemTable.getColumnPostImageUrl(cursor), PostItemTable.getColumnPostImageCaption(cursor),
-                PostItemTable.getPostPublishDate(cursor), isLiked);
+        return new PostItem(PostItemTable.getRowId(cursor), PostItemTable.getColumnOPFullName(cursor),
+                PostItemTable.getColumnOpProfilePicUrl(cursor), PostItemTable.getColumnPostImageUrl(cursor),
+                PostItemTable.getColumnPostImageCaption(cursor), PostItemTable.getPostPublishDate(cursor), isLiked);
     }
 
     public boolean isDBEmpty(String tableName) {

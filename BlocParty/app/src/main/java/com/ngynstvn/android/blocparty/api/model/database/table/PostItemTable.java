@@ -14,7 +14,7 @@ public class PostItemTable extends Table {
     private static final String TAG = BPUtils.classTag(PostItemTable.class);
 
     private static final String NAME = BPUtils.POST_ITEM_TABLE;
-    private static final String COLUMN_OP_FIRST_NAME = "op_first_name";
+    private static final String COLUMN_OP_FULL_NAME = "op_full_name";
     private static final String COLUMN_OP_LAST_NAME = "op_last_name";
     private static final String COLUMN_OP_PROFILE_PIC_URL = "op_profile_pic_url";
     private static final String COLUMN_POST_IMAGE_URL = "post_image_url";
@@ -31,8 +31,7 @@ public class PostItemTable extends Table {
     public String getCreateStatement() {
         return "CREATE TABLE " + getName() + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
-                + COLUMN_OP_FIRST_NAME + " TEXT,"
-                + COLUMN_OP_LAST_NAME + " TEXT,"
+                + COLUMN_OP_FULL_NAME + " TEXT,"
                 + COLUMN_OP_PROFILE_PIC_URL + " TEXT,"
                 + COLUMN_POST_IMAGE_URL + " TEXT,"
                 + COLUMN_POST_IMAGE_CAPTION + " TEXT,"
@@ -46,13 +45,8 @@ public class PostItemTable extends Table {
 
         ContentValues contentValues = new ContentValues();
 
-        public Builder setOPFirstName(String name) {
-            contentValues.put(COLUMN_OP_FIRST_NAME, name);
-            return this;
-        }
-
-        public Builder setOPLastName(String name) {
-            contentValues.put(COLUMN_OP_LAST_NAME, name);
+        public Builder setOPFullName(String name) {
+            contentValues.put(COLUMN_OP_FULL_NAME, name);
             return this;
         }
 
@@ -89,12 +83,8 @@ public class PostItemTable extends Table {
 
     // Getters
 
-    public static String getColumnOpFirstName(Cursor cursor) {
-        return getString(cursor, COLUMN_OP_FIRST_NAME);
-    }
-
-    public static String getColumnOpLastName(Cursor cursor) {
-        return getString(cursor, COLUMN_OP_LAST_NAME);
+    public static String getColumnOPFullName(Cursor cursor) {
+        return getString(cursor, COLUMN_OP_FULL_NAME);
     }
 
     public static String getColumnOpProfilePicUrl(Cursor cursor) {

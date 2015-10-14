@@ -131,7 +131,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
         void updateViewHolder(PostItem postItem) {
             this.postItem = postItem;
-            postOPName.setText(postItem.getOpFirstName());
+            postOPName.setText(postItem.getOpFullName());
             postImageCaption.setText(postItem.getPostCaption());
             postPublishDate.setText(String.format("%d", postItem.getPostPublishDate()));
 
