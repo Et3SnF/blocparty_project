@@ -3,6 +3,7 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,7 +26,7 @@ public class TwitterAuthFragment extends Fragment {
     private static final String TAG = BPUtils.classTag(TwitterAuthFragment.class);
 
     private static final String TOKEN_URL = "request_token_url";
-    private static final String TOKEN = "request_token";
+    private static int counter = 0;
 
     private WebView webView;
 
@@ -90,15 +91,77 @@ public class TwitterAuthFragment extends Fragment {
     private class MyWebViewClient extends WebViewClient {
 
         @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.v(TAG, "shouldOverrideUrlLoading() called");
+            Log.v(TAG, "Current URL: " + url);
+
+            String dummyURL = "https://mobile.twitter.com/?oauth_token=";
+
+            try {
+                if(url.contains(dummyURL)) {
+                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                            LoginFragment.newInstance()).commit();
+
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.TW_ACCESS_TOKEN, getString(R.string.tat));
+
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.TW_ACCESS_TOKEN_SECRET, getString(R.string.tats));
+
+                    BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, true);
+                    return true;
+                }
+                else if(url.contains("https://api.twitter.com/login/error?")) {
+                    view.loadUrl("https://en.wikipedia.org/wiki/Uh_oh");
+                    return true;
+                }
+            }
+            catch(NullPointerException e) {
+                Log.v(TAG, "Whoop! Null Fragment here!");
+                e.printStackTrace();
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             Log.v(TAG, "Current URL: " + url);
 
-            if (url.equals("https://api.twitter.com/oauth/authorize")) {
+            counter++;
+
+            if(url.equals("https://api.twitter.com/oauth/authorize") && counter > 1) {
                 getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
                         LoginFragment.newInstance()).commit();
+
+                SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
+                if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
+                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+                }
+
                 BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, true);
+                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
+            }
+
+            if(url.equals("https://en.m.wikipedia.org/wiki/Uh_oh")) {
+                counter = 0;
+                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                        LoginFragment.newInstance()).commit();
+
+                SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
+                if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
+                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+                }
+
+                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
             }
         }
     }

@@ -367,10 +367,6 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
                 Log.v(TAG, "Logged into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
-
-                if(loginFragment.isVisible()) {
-                    displayMainFragment();
-                }
             }
 
             @Override
@@ -492,14 +488,9 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
 
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
 
-                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN, getString(R.string.tat));
-
-                    BPUtils.putSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN_SECRET, getString(R.string.tats));
-
                     getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
-                            TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL())).commit();
+                            TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL()),
+                            "tw_auth_fragment").commit();
 
                     return null;
                 }
@@ -577,8 +568,9 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.fl_activity_blocparty, IGAuthFragment.newInstance(authorizationURL)).commit();
+                getFragmentManager().beginTransaction().addToBackStack("ig_auth_fragment")
+                        .replace(R.id.fl_activity_blocparty, IGAuthFragment.newInstance(authorizationURL),
+                                "ig_auth_fragment").commit();
                 return null;
             }
         }.execute();
@@ -601,7 +593,8 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
     private void displayLoginFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack("login_fragment").replace(R.id.fl_activity_blocparty, LoginFragment.newInstance());
+        fragmentTransaction.addToBackStack("login_fragment").replace(R.id.fl_activity_blocparty,
+                LoginFragment.newInstance(), "login_fragment");
         fragmentTransaction.commit();
     }
 
@@ -612,7 +605,8 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
     private void displayMainFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty, MainFragment.newInstance());
+        fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty,
+                MainFragment.newInstance(), "main_fragment");
         fragmentTransaction.commit();
     }
 
@@ -643,5 +637,29 @@ public class MainActivity extends AppCompatActivity implements TwitterAuthFragme
                 return null;
             }
         }.execute();
+    }
+
+    /**
+     *
+     * Back pressing Method
+     *
+     */
+
+    @Override
+    public void onBackPressed() {
+        final IGAuthFragment igAuthFragment = (IGAuthFragment) getFragmentManager().findFragmentByTag("ig_auth_fragment");
+        final TwitterAuthFragment twitterAuthFragment = (TwitterAuthFragment) getFragmentManager().findFragmentByTag("tw_auth_fragment");
+
+        try {
+            if(igAuthFragment.isVisible()) {
+                displayLoginFragment();
+            } else if (twitterAuthFragment.isVisible()) {
+                displayLoginFragment();
+            }
+        }
+        catch (NullPointerException e) {
+            Log.v(TAG, "Some backpressed fragment was null...heading back to a fragment...");
+            displayLoginFragment();
+        }
     }
 }
