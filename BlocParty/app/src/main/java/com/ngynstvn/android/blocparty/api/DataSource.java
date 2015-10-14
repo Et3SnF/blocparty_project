@@ -298,7 +298,13 @@ public class DataSource {
 
             new AsyncTask<Void, Void, UserInfo>() {
                 @Override
+                protected void onPreExecute() {
+                    clearTable(BPUtils.POST_ITEM_TABLE);
+                }
+
+                @Override
                 protected UserInfo doInBackground(Void... params) {
+
                     try {
                         return instagram.getCurrentUserInfo();
                     }
@@ -312,6 +318,7 @@ public class DataSource {
 
                 @Override
                 protected void onPostExecute(UserInfo userInfo) {
+
                     if (userInfo != null) {
                             Log.v(TAG, userInfo.getData().getUsername());
                             Log.v(TAG, userInfo.getData().getProfilePicture());
@@ -338,25 +345,28 @@ public class DataSource {
 
                                 @Override
                                 protected void onPostExecute(List<MediaFeedData> mediaFeedDatas) {
+
+                                    int counter = 0;
+
                                     if(mediaFeedDatas != null) {
                                         for (MediaFeedData mediaFeedData : mediaFeedDatas) {
-                                            Log.e(TAG, "User: " + mediaFeedData.getUser().getFullName());
-                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
-                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
+//                                            Log.v(TAG, "User: " + mediaFeedData.getUser().getFullName());
+//                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
+//                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
                                             igOPName = mediaFeedData.getUser().getFullName();
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 
                                             try {
-                                                Log.e(TAG, "Text: " + mediaFeedData.getCaption().getText());
+//                                                Log.v(TAG, "Text: " + mediaFeedData.getCaption().getText());
                                                 igPostCaption = mediaFeedData.getCaption().getText();
                                             } catch (NullPointerException e) {
                                                 Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
                                             }
 
                                             try {
-                                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
+//                                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
                                                 igPostPublishDate = Long.parseLong(mediaFeedData.getCaption().getCreatedTime());
                                             }
                                             catch (NullPointerException e) {
@@ -364,6 +374,10 @@ public class DataSource {
                                             }
 
                                             // Split the Name later.
+
+                                            counter++;
+
+                                            Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
 
                                             new PostItemTable.Builder()
                                                     .setOPFullName(igOPName)
@@ -397,13 +411,13 @@ public class DataSource {
         if(cursor.moveToFirst()) {
             do {
                 postItemArrayList.add(itemFromCursor(cursor));
+                Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
             }
             while (cursor.moveToNext());
         }
 
         cursor.close();
 
-        Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
     }
 
     static PostItem itemFromCursor(Cursor cursor) {
@@ -425,6 +439,13 @@ public class DataSource {
         else {
             return false;
         }
+    }
+
+    public boolean isDBCountGTLimit(String tableName, int limit) {
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
+
+        return cursor.getCount() >= limit;
     }
 
     public void clearTable(String tableName) {

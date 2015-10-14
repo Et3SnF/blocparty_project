@@ -59,7 +59,7 @@ public class MainFragment extends Fragment {
 
     public MainFragmentDelegate getMainFragmentDelegate() {
 
-        // Delegated to MainActivity.java
+        // Delegated to LoginActivity.java
 
         if(mainFragmentDelegate == null) {
             return null;
@@ -101,7 +101,7 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        View view = inflater.inflate(R.layout.activity_main, container, false);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_main_fragment);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.srl_main_fragment);
         swipeRefreshLayout.setColorSchemeColors(R.color.material_indigo_500);
@@ -127,7 +127,6 @@ public class MainFragment extends Fragment {
             public void onRefresh() {
                 if(getMainFragmentDelegate() != null) {
                     getMainFragmentDelegate().onPostItemsRefreshed(MainFragment.this);
-                    postItemAdapter.notifyDataSetChanged();
                 }
 
                 swipeRefreshLayout.setRefreshing(false);

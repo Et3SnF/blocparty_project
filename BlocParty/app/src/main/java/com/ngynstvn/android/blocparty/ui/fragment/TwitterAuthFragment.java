@@ -99,7 +99,7 @@ public class TwitterAuthFragment extends Fragment {
 
             try {
                 if(url.contains(dummyURL)) {
-                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                             LoginFragment.newInstance()).commit();
 
                     BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
@@ -134,7 +134,7 @@ public class TwitterAuthFragment extends Fragment {
             counter++;
 
             if(url.equals("https://api.twitter.com/oauth/authorize") && counter > 1) {
-                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                         LoginFragment.newInstance()).commit();
 
                 SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
@@ -150,7 +150,7 @@ public class TwitterAuthFragment extends Fragment {
 
             if(url.equals("https://en.m.wikipedia.org/wiki/Uh_oh")) {
                 counter = 0;
-                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                         LoginFragment.newInstance()).commit();
 
                 SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);

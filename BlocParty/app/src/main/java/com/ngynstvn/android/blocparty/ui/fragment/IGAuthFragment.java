@@ -89,14 +89,14 @@ public class IGAuthFragment extends Fragment {
                     BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                             BPUtils.FILE_NAME, BPUtils.IG_TOKEN, authCode);
 
-                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty,
+                    getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                             LoginFragment.newInstance(authCode)).commit();
 
                     return true;
                 }
             }
             catch(IllegalStateException e) {
-                Log.v(TAG, "IGAuthFragment is not attached to MainActivity. Exception suppressed.");
+                Log.v(TAG, "IGAuthFragment is not attached to LoginActivity. Exception suppressed.");
             }
 
             return false;

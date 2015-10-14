@@ -1,8 +1,7 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/tb_activity_blocparty"
@@ -10,10 +9,18 @@
         android:layout_width="match_parent"
         android:background="@color/material_indigo_500"/>
 
-    <FrameLayout
-        android:id="@+id/fl_activity_blocparty"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/srl_main_fragment"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tb_activity_blocparty"/>
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tb_activity_blocparty">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_main_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>
