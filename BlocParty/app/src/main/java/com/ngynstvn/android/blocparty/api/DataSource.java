@@ -406,7 +406,8 @@ public class DataSource {
         Log.v(TAG, "fetchAllPostItems() called");
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " order by publish_date;", null);
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " " +
+                "order by publish_date desc;", null);
 
         if(cursor.moveToFirst()) {
             do {

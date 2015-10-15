@@ -99,7 +99,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         public PostItemAdapterViewHolder(View itemView) {
             super(itemView);
 
-            Log.v(TAG, "LoginAdapterViewHolder() called");
+//            Log.v(TAG, "PostItemAdapterViewHolder() called");
 
             postOPName = (TextView) itemView.findViewById(R.id.tv_op_name);
             postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);
@@ -154,13 +154,13 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
                 postMediaType.setText(R.string.instagram_text);
                 postMediaType.setTextColor(Color.parseColor("#FF663300"));
             }
-            else if(postItem.getPostImageUrl().contains("pbs.twimg.com/profile_images")) {
+            else if(postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
                 postMediaType.setText(R.string.twitter_text);
-                postMediaType.setTextColor(Color.parseColor("#FF4099FF"));
+                postMediaType.setTextColor(Color.parseColor("#FF55ACEE"));
             }
             else if(postItem.getPostImageUrl().contains("fbcdn.net")) {
                 postMediaType.setText(R.string.facebook_text);
-                postMediaType.setTextColor(Color.parseColor("#FF55ACEE"));
+                postMediaType.setTextColor(Color.parseColor("#FF3B5998"));
             }
         }
     }

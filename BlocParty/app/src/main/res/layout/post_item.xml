@@ -111,7 +111,9 @@
                 android:layout_margin="16dp"
                 android:text="@string/post_item_test_message"
                 android:textSize="14sp"
-                android:textColor="@color/black_87"/>
+                android:textColor="@color/black_87"
+                android:autoLink="web"
+                android:textColorLink="@color/material_indigo_700"/>
 
         </LinearLayout>
 
