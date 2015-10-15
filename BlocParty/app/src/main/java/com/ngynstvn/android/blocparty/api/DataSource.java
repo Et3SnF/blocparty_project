@@ -367,7 +367,7 @@ public class DataSource {
 
                                             try {
 //                                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
-                                                igPostPublishDate = Long.parseLong(mediaFeedData.getCaption().getCreatedTime());
+                                                igPostPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
                                             }
                                             catch (NullPointerException e) {
                                                 Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
@@ -406,7 +406,7 @@ public class DataSource {
         Log.v(TAG, "fetchAllPostItems() called");
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + ";", null);
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " order by publish_date;", null);
 
         if(cursor.moveToFirst()) {
             do {

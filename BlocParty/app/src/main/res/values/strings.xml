@@ -27,6 +27,7 @@
     <string name="social_media">Social Media</string>
     <string name="instagram_text">Instagram</string>
     <string name="facebook_text">Facebook</string>
-    <string name="twitter_text">Instagram</string>
+    <string name="twitter_text">Twitter</string>
+    <string name="log_in_text">Log In</string>
 
 </resources>

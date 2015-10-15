@@ -156,7 +156,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             }
             else if(postItem.getPostImageUrl().contains("pbs.twimg.com/profile_images")) {
                 postMediaType.setText(R.string.twitter_text);
-                postMediaType.setTextColor(Color.parseColor("#FF663300"));
+                postMediaType.setTextColor(Color.parseColor("#FF4099FF"));
             }
             else if(postItem.getPostImageUrl().contains("fbcdn.net")) {
                 postMediaType.setText(R.string.facebook_text);
