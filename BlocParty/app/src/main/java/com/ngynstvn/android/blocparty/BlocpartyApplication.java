@@ -41,7 +41,6 @@ public class BlocpartyApplication extends Application {
     }
 
     public static DataSource getSharedDataSource() {
-        Log.v(TAG, "getSharedDataSource called");
         return BlocpartyApplication.getSharedInstance().getDataSource();
     }
 

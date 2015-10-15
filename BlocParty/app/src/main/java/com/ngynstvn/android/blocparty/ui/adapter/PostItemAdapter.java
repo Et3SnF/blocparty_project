@@ -33,7 +33,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     @Override
     public PostItemAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        Log.v(TAG, "PostItemAdapterViewHolder() called");
+//        Log.v(TAG, "PostItemAdapterViewHolder() called");
         View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.post_item,
                 viewGroup, false);
         return new PostItemAdapterViewHolder(inflate);
@@ -41,14 +41,14 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     @Override
     public void onBindViewHolder(PostItemAdapterViewHolder postItemAdapterViewHolder, int i) {
-        Log.v(TAG, "onBindViewHolder() called");
+//        Log.v(TAG, "onBindViewHolder() called");
         PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(i);
         postItemAdapterViewHolder.updateViewHolder(postItem);
     }
 
     @Override
     public int getItemCount() {
-        Log.v(TAG, "getItemCount() called");
+//        Log.v(TAG, "getItemCount() called");
         Log.v(TAG, "Array Size in PostItemAdapter: " + BlocpartyApplication.getSharedDataSource()
                 .getPostItemArrayList().size());
         return BlocpartyApplication.getSharedDataSource().getPostItemArrayList().size();

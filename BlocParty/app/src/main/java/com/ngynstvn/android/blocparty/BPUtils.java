@@ -46,6 +46,8 @@ public class BPUtils {
     public static final String DB_NAME = "blocparty_db";
     public static final String POST_ITEM_TABLE = "post_item_table";
 
+    public static final String INSTANCE_COUNTER = "instance_counter";
+
     // ----- Static Methods ----- //
 
     public static String classTag(Class className) {
