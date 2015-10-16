@@ -94,7 +94,9 @@ public class DataSource {
         return postItemArrayList;
     }
 
-    public void getFacebookInformation(final SimpleFacebook simpleFacebook) {
+    // ----- Fetch Methods ----- //
+
+        public void fetchFacebookInformation(final SimpleFacebook simpleFacebook) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
             Log.v(TAG, "Facebook is logged in. Getting photos.");
@@ -217,9 +219,9 @@ public class DataSource {
         }
     }
 
-    public void getTwitterInformation(final Twitter twitter) {
+    public void fetchTwitterInformation(final Twitter twitter) {
 
-        Log.v(TAG, "getTwitterInformation() called");
+        Log.v(TAG, "fetchTwitterInformation() called");
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
 
@@ -291,7 +293,7 @@ public class DataSource {
         }
     }
 
-    public void getInstagramInformation(final Instagram instagram) {
+    public void fetchInstagramInformation(final Instagram instagram) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
             Log.e(TAG, "Instagram is logged in. Getting profile info.");
@@ -403,8 +405,8 @@ public class DataSource {
 
     }
 
-    public void fetchAllPostItems() {
-        Log.v(TAG, "fetchAllPostItems() called");
+    public void displayPostItems() {
+        Log.v(TAG, "displayPostItems() called");
 
         // Clear the current ArrayList and then insert new items into it.
 

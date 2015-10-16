@@ -128,24 +128,24 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        if(isFBLoggedIn && simpleFacebook != null) {
+            BlocpartyApplication.getSharedDataSource().fetchFacebookInformation(simpleFacebook);
+        }
+
         if(isTwLoggedIn && twitter != null) {
-            BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
+            BlocpartyApplication.getSharedDataSource().fetchTwitterInformation(twitter);
         }
 
         if(isIGLoggedIn && instagram != null) {
             if(instagram != null) {
-                BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
+                BlocpartyApplication.getSharedDataSource().fetchInstagramInformation(instagram);
             }
             else {
                 Log.e(TAG, "Instagram variable is null. Unable to fetch feed");
             }
         }
 
-        if(isFBLoggedIn && simpleFacebook != null) {
-            BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
-        }
-
-        BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+        BlocpartyApplication.getSharedDataSource().displayPostItems();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+                BlocpartyApplication.getSharedDataSource().displayPostItems();
                 postItemAdapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
             }
