@@ -197,7 +197,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
             String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
-            TwitterFactory twitterFactory = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret,
+            TwitterFactory twitterFactory = new TwitterFactory(getTWConfiguration(twConsumerKey, twConsumerSecret,
                     twToken, twTokenSecret));
 
             twitter = twitterFactory.getInstance();
@@ -221,7 +221,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                 String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
                 String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
-                twitterFactory = new TwitterFactory(getConfiguration(twConsumerKey, twConsumerSecret,
+                twitterFactory = new TwitterFactory(getTWConfiguration(twConsumerKey, twConsumerSecret,
                         twToken, twTokenSecret));
 
                 twitter = twitterFactory.getInstance();
@@ -231,7 +231,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
         // Resume any Instagram activity
 
-        if(isIGLoggedIn()) {
+        if(isIGConnected()) {
             instagram = new Instagram(getString(R.string.igc));
             BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
         }
@@ -451,7 +451,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     public void onIGLogout(LoginFragment loginFragment, int adapterPosition) {
-        if(isIGLoggedIn()) {
+        if(isIGConnected()) {
             igLogout();
             Log.v(TAG, "Logged out of Instagram");
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
@@ -459,13 +459,13 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         }
     }
 
+    // ---- SOCIAL MEDIA METHODS ----- //
+
     /**
      *
-     * All Social Network methods
+     * Facebook methods
      *
      */
-
-    // ----- Facebook Methods ----- //
 
     private void fbLogin(SimpleFacebook simpleFacebook, int adapterPosition, OnLoginListener onLoginListener) {
         simpleFacebook.login(onLoginListener);
@@ -475,7 +475,11 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         simpleFacebook.logout(onLogoutListener);
     }
 
-    // ----- Twitter Methods ----- //
+    /**
+     *
+     * Twitter methods
+     *
+     */
 
     private void twitterLogin(final Authoritative authoritative) {
         Log.v(TAG, "twitterLogin() called");
@@ -484,12 +488,12 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             authoritative.onSuccess();
         }
         else {
-            getAccessToken();
+            getTWAccessToken();
         }
     }
 
-    private void getAccessToken() {
-        Log.v(TAG, "getAccessToken() called");
+    private void getTWAccessToken() {
+        Log.v(TAG, "getTWAccessToken() called");
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -508,7 +512,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                     twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
                     twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
 
-                    Twitter twitter = new TwitterFactory(getConfiguration(twConsumerKey,
+                    Twitter twitter = new TwitterFactory(getTWConfiguration(twConsumerKey,
                             twConsumerSecret, null, null)).getInstance();
 
                     RequestToken requestToken = twitter.getOAuthRequestToken(getString(R.string.tcu));
@@ -530,7 +534,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         }.execute();
     }
 
-    private Configuration getConfiguration(String consumerKey, String consumerSecret, String token, String tokenSecret) {
+    private Configuration getTWConfiguration(String consumerKey, String consumerSecret, String token, String tokenSecret) {
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 
         configurationBuilder
@@ -547,7 +551,11 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         return sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
     }
 
-    // ----- Instagram Methods ----- //
+    /**
+     *
+     * Instagram methods
+     *
+     */
 
     private void igLogin(final Authoritative authoritative) {
         Log.v(TAG, "igLogin() called");
@@ -615,8 +623,8 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
     }
 
-    private boolean isIGLoggedIn() {
-        Log.v(TAG, "isIGLoggedIn() called");
+    private boolean isIGConnected() {
+        Log.v(TAG, "isIGConnected() called");
         return BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null;
     }
 
