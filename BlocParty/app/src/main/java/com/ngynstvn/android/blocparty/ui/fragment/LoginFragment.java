@@ -99,6 +99,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         loginAdapter = new LoginAdapter();
+        loginAdapter.setLoginAdapterDelegate(this);
     }
 
     @Nullable
@@ -106,8 +107,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_login, container, false);
-        loginAdapter = new LoginAdapter();
-        loginAdapter.setLoginAdapterDelegate(this);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_login_items);
         return view;
     }

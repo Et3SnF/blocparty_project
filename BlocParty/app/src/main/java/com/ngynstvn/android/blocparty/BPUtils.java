@@ -2,7 +2,8 @@ package com.ngynstvn.android.blocparty;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,7 @@ public class BPUtils {
 
     public static final String FB_LOGIN = "isFBLoggedIn";
     public static final String FB_POSITION = "fbAdapterPosition";
+    public static final String FB_OBJECT = "fb_object";
 
     // Twitter Variables
 
@@ -33,6 +35,7 @@ public class BPUtils {
     public static final String TW_CONSUMER_KEY = "twConsumerKey";
     public static final String TW_CONSUMER_SECRET = "twConsumerSecret";
     public static final String IS_TW_ACCT_REG = "is_tw_account_registered";
+    public static final String TW_OBJECT = "tw_object";
 
     // Instagram Variables
 
@@ -40,13 +43,12 @@ public class BPUtils {
     public static final String IG_POSITION ="igAdapterPosition";
     public static final String IG_TOKEN = "ig_token";
     public static final String IG_AUTH_CODE = "ig_auth_code";
+    public static final String IG_OBJECT = "ig_object";
 
     // Table Related
 
     public static final String DB_NAME = "blocparty_db";
     public static final String POST_ITEM_TABLE = "post_item_table";
-
-    public static final String INSTANCE_COUNTER = "instance_counter";
 
     // ----- Static Methods ----- //
 
@@ -54,13 +56,7 @@ public class BPUtils {
         return "(" + className.getSimpleName() + "): ";
     }
 
-    // Universal method to show toast messages
-
-    public static void toast(String message) {
-        Toast.makeText(BlocpartyApplication.getSharedInstance(), message, Toast.LENGTH_SHORT).show();
-    }
-
-        // SharedPreferences
+    // SharedPreferences
 
     public static SharedPreferences newSPrefInstance(String name) {
         return BlocpartyApplication.getSharedInstance().getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -110,7 +106,22 @@ public class BPUtils {
         editor.apply();
     }
 
-    public static void delSPrefStrValue(SharedPreferences sharedPreferences, String fileName, String key) {
+    public static void putSPrefObject(SharedPreferences sharedPreferences, String fileName, String key, Object objectValue) {
+        sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(objectValue);
+        editor.putString(key, json);
+        editor.apply();
+    }
+
+    public static <T> T getSPrefObject(SharedPreferences sharedPreferences, Class<T> tClass, String key) {
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString(key, "");
+        return gson.fromJson(json, tClass);
+    }
+
+    public static void delSPrefValue(SharedPreferences sharedPreferences, String fileName, String key) {
         sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(key);

@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +20,6 @@ import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
 import com.ngynstvn.android.blocparty.ui.fragment.IGAuthFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
-import com.ngynstvn.android.blocparty.ui.fragment.MainFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.TwitterAuthFragment;
 import com.sromku.simple.fb.Permission;
 import com.sromku.simple.fb.SimpleFacebook;
@@ -34,6 +32,7 @@ import org.jinstagram.auth.model.Token;
 import org.jinstagram.auth.model.Verifier;
 import org.jinstagram.auth.oauth.InstagramService;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import twitter4j.Twitter;
@@ -48,7 +47,7 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 
 public class LoginActivity extends AppCompatActivity implements TwitterAuthFragment.TwitterAuthFragDelegate,
-        LoginFragment.LoginFragmentDelegate, MainFragment.MainFragmentDelegate {
+        LoginFragment.LoginFragmentDelegate {
 
     private static final String TAG = BPUtils.classTag(LoginActivity.class);
     private static int instance_counter = 0;
@@ -58,7 +57,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     private MenuItem menuItem;
 
     private TwitterAuthFragment twitterAuthFragment;
-    private LoginFragment loginFragment;
 
     private SharedPreferences sharedPreferences;
 
@@ -86,6 +84,31 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     private TextView welcomeMessage;
     private PostItemAdapter postItemAdapter;
+
+    /*
+     * Interface Material
+     */
+
+    public interface LoginActivityDelegate {
+
+    }
+
+    private WeakReference<LoginActivityDelegate> loginActivityDelegate;
+
+    public void setMainActivityDelegate(LoginActivityDelegate loginActivityDelegate) {
+        this.loginActivityDelegate = new WeakReference<LoginActivityDelegate>(loginActivityDelegate);
+    }
+
+    public LoginActivityDelegate getLoginActivityDelegate() {
+
+        // Delegated to MainActivity.java
+
+        if(loginActivityDelegate == null) {
+            return null;
+        }
+
+        return loginActivityDelegate.get();
+    }
 
     /**
      *
@@ -127,10 +150,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
         welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
 
-        if(instance_counter > 1) {
-            welcomeMessage.setVisibility(View.GONE);
-        }
-
         if(savedInstanceState != null) {
             String token = sharedPreferences.getString(BPUtils.IG_TOKEN, "");
             instagram = new Instagram(token);
@@ -159,11 +178,16 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         displayLoginFragment();
 
         simpleFacebook = SimpleFacebook.getInstance(this);
+        BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT, simpleFacebook);
 
         // Must place sharedPreference here for it to save states properly
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
 
-        // Resume any Twitter activity when back to this fragment
+        /**
+         *
+         * For first time Twitter authentication
+         *
+         */
 
         if(!isTWAcctRegistered && sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null &&
                 sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null) != null) {
@@ -181,7 +205,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             isTWAcctRegistered = true;
 
             BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IS_TW_ACCT_REG, isTWAcctRegistered);
+            BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
         }
+
+        /**
+         *
+         * For subsequent Twitter uses
+         *
+         */
 
         if(isTwitterConnected() && isTWAcctRegistered) {
             if(twitter == null) {
@@ -194,6 +225,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                         twToken, twTokenSecret));
 
                 twitter = twitterFactory.getInstance();
+                BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
             }
         }
 
@@ -201,6 +233,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
         if(isIGLoggedIn()) {
             instagram = new Instagram(getString(R.string.igc));
+            BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
         }
     }
 
@@ -267,7 +300,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
 
-        BPUtils.delSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                 BPUtils.IG_AUTH_CODE);
     }
 
@@ -276,27 +309,29 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.v(TAG, "onCreateOptionsMenu() called");
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_login, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.v(TAG, "onOptionsItemSelected() called");
+
+        if(item.getTitle() == getString(R.string.log_in_text)) {
+
+            boolean isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
+            boolean isTwLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
+            boolean isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false);
+
+            if(!isFBLoggedIn && !isTwLoggedIn && !isIGLoggedIn) {
+                Toast.makeText(BlocpartyApplication.getSharedInstance(), "You must be logged into at " +
+                        "least one account in order to proceed", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            startActivity(new Intent(this, MainActivity.class));
+        }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem cameraItem = menu.findItem(R.id.action_camera_mode);
-        MenuItem loginItem = menu.findItem(R.id.action_login_mode);
-
-        cameraItem.setVisible(false);
-        cameraItem.setEnabled(false);
-        loginItem.setVisible(false);
-        loginItem.setEnabled(false);
-        
-        return true;
     }
 
     /**
@@ -317,8 +352,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Facebook",
                         Toast.LENGTH_SHORT).show();
-
-                BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
             }
 
             @Override
@@ -379,6 +412,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                 Log.v(TAG, "Unable to log into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
+
             }
         });
     }
@@ -386,8 +420,8 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     @Override
     public void onTWLogout(LoginFragment loginFragment, int adapterPosition) {
         if(isTwitterConnected()) {
-            BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-            BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
 
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
@@ -408,9 +442,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
-
-                BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
-                displayMainFragment();
             }
 
             @Override
@@ -429,30 +460,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                     BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
         }
-    }
-
-    /**
-     *
-     * MainFragment.MainFragmentDelegate Implemented Methods
-     *
-     */
-
-    @Override
-    public void onPostItemsRefreshed(MainFragment mainFragment) {
-        if(sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false)) {
-            BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
-        }
-
-        if(sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false)) {
-            BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
-        }
-
-        if(sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false)) {
-            BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
-        }
-
-        BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
-        postItemAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -575,8 +582,17 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             @Override
             protected void onPostExecute(Token accessToken) {
-                instagram = new Instagram(accessToken);
-                authoritative.onSuccess();
+
+                if(accessToken != null) {
+                    instagram = new Instagram(accessToken);
+                    Log.v(TAG, "Instagram authentication successful. Storing object.");
+                    BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
+                    authoritative.onSuccess();
+                }
+                else {
+                    authoritative.onFailure();
+                }
+
             }
         }.execute();
     }
@@ -599,7 +615,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     private void igLogout() {
         Log.v(TAG, "igLogout() called");
-        BPUtils.delSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
+        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
     }
 
     private boolean isIGLoggedIn() {
@@ -616,18 +632,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack("login_fragment").replace(R.id.fl_activity_blocparty_login,
                 LoginFragment.newInstance(), "login_fragment");
-        fragmentTransaction.commit();
-    }
-
-    /**
-     * Display Main Fragment
-     */
-
-    private void displayMainFragment() {
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack("main_fragment").replace(R.id.fl_activity_blocparty_login,
-                MainFragment.newInstance(), "main_fragment");
         fragmentTransaction.commit();
     }
 

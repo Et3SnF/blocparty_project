@@ -140,8 +140,8 @@ public class TwitterAuthFragment extends Fragment {
                 SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
 
                 if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
-                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
                 }
 
                 BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
@@ -156,8 +156,8 @@ public class TwitterAuthFragment extends Fragment {
                 SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
 
                 if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
-                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-                    BPUtils.delSPrefStrValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
                 }
 
                 BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,

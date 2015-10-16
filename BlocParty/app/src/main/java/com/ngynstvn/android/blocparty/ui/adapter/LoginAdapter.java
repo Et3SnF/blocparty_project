@@ -90,7 +90,7 @@ public class LoginAdapter extends RecyclerView.Adapter<LoginAdapter.LoginAdapter
         public LoginAdapterViewHolder(View itemView) {
             super(itemView);
 
-            Log.v(TAG, "LoginAdapterViewHolder() called");
+//            Log.v(TAG, "LoginAdapterViewHolder() called");
 
             loginItems = getLoginItems();
 
