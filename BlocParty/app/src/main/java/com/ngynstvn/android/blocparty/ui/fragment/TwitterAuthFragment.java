@@ -13,8 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 
 import java.lang.ref.WeakReference;
@@ -126,6 +128,8 @@ public class TwitterAuthFragment extends Fragment {
                 }
                 else if(url.contains("https://api.twitter.com/login/error?")) {
                     view.loadUrl("https://en.wikipedia.org/wiki/Uh_oh");
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Wrong Twitter username/password " +
+                            "combination", Toast.LENGTH_LONG).show();
                     return true;
                 }
             }

@@ -354,6 +354,7 @@ public class DataSource {
 //                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
 //                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
+                                            Log.v(TAG, "IG Post ID: " + mediaFeedData.getId());
                                             igOPName = mediaFeedData.getUser().getFullName();
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();

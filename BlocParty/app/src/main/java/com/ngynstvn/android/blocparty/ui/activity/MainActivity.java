@@ -129,11 +129,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if(isTwLoggedIn) {
+        if(isTwLoggedIn && twitter != null) {
             BlocpartyApplication.getSharedDataSource().getTwitterInformation(twitter);
         }
 
-        if(isIGLoggedIn) {
+        if(isIGLoggedIn && instagram != null) {
             if(instagram != null) {
                 BlocpartyApplication.getSharedDataSource().getInstagramInformation(instagram);
             }
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if(isFBLoggedIn) {
+        if(isFBLoggedIn && simpleFacebook != null) {
             BlocpartyApplication.getSharedDataSource().getFacebookInformation(simpleFacebook);
         }
 
