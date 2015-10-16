@@ -156,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+                postItemAdapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
@@ -213,6 +214,13 @@ public class MainActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.action_login_mode) {
             Log.v(TAG, "Login button clicked");
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
+
+            // Clear the DB, ArrayList, and ViewHolder once you're here so everything has a fresh start
+
+            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+            BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
+            postItemAdapter.notifyDataSetChanged();
+
             return true;
         }
 

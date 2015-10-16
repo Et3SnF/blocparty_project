@@ -406,6 +406,10 @@ public class DataSource {
     public void fetchAllPostItems() {
         Log.v(TAG, "fetchAllPostItems() called");
 
+        // Clear the current ArrayList and then insert new items into it.
+
+        postItemArrayList.clear();
+
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " " +
                 "order by publish_date desc;", null);
