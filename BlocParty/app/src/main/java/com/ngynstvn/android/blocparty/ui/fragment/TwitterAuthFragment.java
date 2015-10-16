@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -69,6 +71,7 @@ public class TwitterAuthFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
@@ -84,6 +87,15 @@ public class TwitterAuthFragment extends Fragment {
         webView.loadUrl(getArguments().getString(TOKEN_URL));
 
         return view;
+    }
+
+    // ---- Menu Related Methods ---- //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if(menu != null) {
+            menu.findItem(R.id.action_login_button).setVisible(false).setEnabled(false);
+        }
     }
 
     // WebClient class that will use JavaScript to do its magic!

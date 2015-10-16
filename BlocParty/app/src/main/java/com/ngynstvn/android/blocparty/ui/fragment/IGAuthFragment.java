@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -45,6 +47,7 @@ public class IGAuthFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
@@ -60,6 +63,16 @@ public class IGAuthFragment extends Fragment {
 
         return view;
     }
+
+    // ----- Menu Related Methods ----- //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if(menu != null) {
+            menu.findItem(R.id.action_login_button).setVisible(false).setEnabled(false);
+        }
+    }
+
 
     // WebClient class that will use JavaScript to do its magic!
 

@@ -349,9 +349,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, true);
-
-                Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged into Facebook",
-                        Toast.LENGTH_SHORT).show();
             }
 
             @Override
