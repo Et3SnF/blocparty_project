@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
 import com.ngynstvn.android.blocparty.ui.fragment.IGAuthFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.LoginFragment;
 import com.ngynstvn.android.blocparty.ui.fragment.TwitterAuthFragment;
@@ -83,7 +82,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     private static String igAuthCode;
 
     private TextView welcomeMessage;
-    private PostItemAdapter postItemAdapter;
 
     /*
      * Interface Material
@@ -133,10 +131,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
 
-        if(savedInstanceState != null) {
-            savedInstanceState.getInt("counter");
-        }
-
         sharedPreferences = getSharedPreferences("log_states", 0);
 
         if(sharedPreferences != null) {
@@ -160,8 +154,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
         configurationBuilder = new ConfigurationBuilder();
         instagramService = BlocpartyApplication.getSharedInstagramService();
-
-        postItemAdapter = new PostItemAdapter();
     }
 
     @Override

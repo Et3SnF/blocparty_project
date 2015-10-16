@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     private static SimpleFacebook simpleFacebook;
     private static Twitter twitter;
     private static Instagram instagram;
-    private boolean isIGObjectValid;
 
     private PostItemAdapter postItemAdapter;
 
