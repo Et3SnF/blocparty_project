@@ -24,6 +24,8 @@ import org.jinstagram.Instagram;
 import java.lang.ref.WeakReference;
 
 import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Created by Ngynstvn on 10/14/15.
@@ -103,7 +105,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(isTwLoggedIn) {
-            twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
+//            twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
+
+            String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                    .getString(BPUtils.TW_CONSUMER_KEY, null);
+            String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                    .getString(BPUtils.TW_CONSUMER_SECRET, null);
+            String token = getString(R.string.tat);
+            String tokenSecret = getString(R.string.tats);
+
+            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+
+            configurationBuilder
+                    .setOAuthConsumerKey(consumerKey)
+                    .setOAuthConsumerSecret(consumerKeySecret)
+                    .setOAuthAccessToken(token)
+                    .setOAuthAccessTokenSecret(tokenSecret);
+
+            TwitterFactory twitterFactory = new TwitterFactory(configurationBuilder.build());
+            twitter = twitterFactory.getInstance();
         }
 
         if(isIGLoggedIn) {
