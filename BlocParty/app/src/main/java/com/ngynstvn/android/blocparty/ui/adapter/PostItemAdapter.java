@@ -144,7 +144,6 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             }
 
             if(postItem.getPostImageUrl().length() != 0) {
-                Log.v(TAG, "Post Image URL: " + postItem.getPostImageUrl());
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
             }
 

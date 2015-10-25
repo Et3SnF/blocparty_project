@@ -197,7 +197,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             isTWAcctRegistered = true;
 
             BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IS_TW_ACCT_REG, isTWAcctRegistered);
-            BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
         }
 
         /**
@@ -207,18 +206,15 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
          */
 
         if(isTwitterConnected() && isTWAcctRegistered) {
-            if(twitter == null) {
-                String twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
-                String twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
-                String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
-                String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+            String twConsumerKey = sharedPreferences.getString(BPUtils.TW_CONSUMER_KEY, null);
+            String twConsumerSecret = sharedPreferences.getString(BPUtils.TW_CONSUMER_SECRET, null);
+            String twToken = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null);
+            String twTokenSecret = sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
 
-                twitterFactory = new TwitterFactory(getTWConfiguration(twConsumerKey, twConsumerSecret,
-                        twToken, twTokenSecret));
+            twitterFactory = new TwitterFactory(getTWConfiguration(twConsumerKey, twConsumerSecret,
+                    twToken, twTokenSecret));
 
-                twitter = twitterFactory.getInstance();
-                BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
-            }
+            twitter = twitterFactory.getInstance();
         }
 
         // Resume any Instagram activity

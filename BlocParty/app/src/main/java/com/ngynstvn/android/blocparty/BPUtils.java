@@ -35,7 +35,7 @@ public class BPUtils {
     public static final String TW_CONSUMER_KEY = "twConsumerKey";
     public static final String TW_CONSUMER_SECRET = "twConsumerSecret";
     public static final String IS_TW_ACCT_REG = "is_tw_account_registered";
-    public static final String TW_OBJECT = "tw_object";
+    public static final String TW_POST_IMG_URL = "post_image_url";
 
     // Instagram Variables
 
@@ -129,7 +129,7 @@ public class BPUtils {
     }
 
     public static String dateConverter(Long rawDate) {
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH);
+        DateFormat dateFormat = new SimpleDateFormat("h:mm a 'on' MM/dd/yy", Locale.ENGLISH);
         Date date = new Date(rawDate);
         return dateFormat.format(date);
     }

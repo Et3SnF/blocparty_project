@@ -20,7 +20,6 @@ import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 
 import java.lang.ref.WeakReference;
-import java.net.UnknownHostException;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
@@ -122,7 +121,6 @@ public class TwitterAuthFragment extends Fragment {
                         Log.v(TAG, "Current Counter: " + counter);
                     }
 
-
                     String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
                             .getString(BPUtils.TW_CONSUMER_KEY, null);
                     String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
@@ -148,8 +146,6 @@ public class TwitterAuthFragment extends Fragment {
                     Twitter twitter = twitterFactory.getInstance();
 
                     if(twitter != null) {
-                        BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                                BPUtils.TW_OBJECT, twitter);
                         getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                                 LoginFragment.newInstance()).commit();
                         BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,

@@ -171,6 +171,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);
 
+        if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+        }
+
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

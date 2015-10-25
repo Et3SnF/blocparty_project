@@ -48,6 +48,7 @@ public class DataSource {
 
     private static String fbUserId = "";
     private static String fbOPName = "";
+    private static long fbPostId = 0L;
     private static String fbProfilePicUrl = "";
     private static String fbPostImageUrl = "";
     private static String fbPostCaption = "";
@@ -55,12 +56,14 @@ public class DataSource {
 
     private static String twOPName = "";
     private static String twProfilePicUrl = "";
+    private static long twPostId = 0L;
     private static String twPostImageUrl = "";
     private static String twPostCaption = "";
     private static long twPostPublishDate = 0L;
 
     private static String igOPName = "";
     private static String igProfilePicUrl = "";
+    private static long igPostId = 0L;
     private static String igPostImageUrl = "";
     private static String igPostCaption = "";
     private static long igPostPublishDate = 0L;
@@ -155,6 +158,7 @@ public class DataSource {
 
                                             fbOPName = object.optString("name");
                                             fbUserId = object.getString("id");
+                                            fbPostId = 0L;
                                             fbPostImageUrl = jsonArray.getJSONObject(0).getJSONArray("images")
                                                     .getJSONObject(0).getString("source");
 
@@ -173,6 +177,7 @@ public class DataSource {
                                             new PostItemTable.Builder()
                                                     .setOPFullName(fbOPName)
                                                     .setProfilePicUrl(fbProfilePicUrl)
+                                                    .setPostId(fbPostId)
                                                     .setPostImageUrl(fbPostImageUrl)
                                                     .setPostCaption(fbPostCaption)
                                                     .setPostPublishDate(fbPostPublishDate)
@@ -246,6 +251,7 @@ public class DataSource {
                             Log.v(TAG, "User: " + status.getUser().getName());
                             Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
                             Log.v(TAG, "Status: " + status.getText());
+                            Log.v(TAG, "Post ID: " + status.getId());
 
                             twOPName = status.getUser().getName();
                             twProfilePicUrl = status.getUser().getBiggerProfileImageURL();
@@ -254,15 +260,15 @@ public class DataSource {
                             if(status.getMediaEntities().length != 0) {
                                 Log.e(TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
                                 twPostImageUrl = status.getMediaEntities()[0].getMediaURL();
+                                twPostId = status.getMediaEntities()[0].getId();
                                 twPostCaption = status.getText();
                             }
 
-                            // Split the Name later.
-
-                            if(twPostImageUrl != null && twPostImageUrl.length() > 0) {
+                            if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl)) {
                                 new PostItemTable.Builder()
                                         .setOPFullName(twOPName)
                                         .setProfilePicUrl(twProfilePicUrl)
+                                        .setPostId(twPostId)
                                         .setPostImageUrl(twPostImageUrl)
                                         .setPostCaption(twPostCaption)
                                         .setPostPublishDate(twPostPublishDate)
@@ -356,8 +362,10 @@ public class DataSource {
 //                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
 //                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
-                                            Log.v(TAG, "IG Post ID: " + mediaFeedData.getId());
                                             igOPName = mediaFeedData.getUser().getFullName();
+                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
+                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[1]);
+                                            Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 
@@ -376,8 +384,6 @@ public class DataSource {
                                                 Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
                                             }
 
-                                            // Split the Name later.
-
                                             counter++;
 
                                             Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
@@ -385,6 +391,7 @@ public class DataSource {
                                             new PostItemTable.Builder()
                                                     .setOPFullName(igOPName)
                                                     .setProfilePicUrl(igProfilePicUrl)
+                                                    .setPostId(igPostId)
                                                     .setPostImageUrl(igPostImageUrl)
                                                     .setPostCaption(igPostCaption)
                                                     .setPostPublishDate(igPostPublishDate)
@@ -449,11 +456,17 @@ public class DataSource {
         }
     }
 
-    public boolean isDBCountGTLimit(String tableName, int limit) {
+    private boolean isValueInDB(String tableName, String field, String fieldValue) {
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
-                .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
+                .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field + " = '" + fieldValue + "'", null);
 
-        return cursor.getCount() >= limit;
+        if(cursor.getCount() <= 0) {
+            cursor.close();
+            return false;
+        }
+
+        cursor.close();
+        return true;
     }
 
     public void clearTable(String tableName) {
