@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -93,6 +94,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         CheckBox postLikedBtn;
         CheckBox postMoreSettings;
         TextView postMediaType;
+        LinearLayout postCaptionArea;
 
         PostItem postItem;
 
@@ -105,6 +107,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);
             postImage = (ImageView) itemView.findViewById(R.id.iv_post_image);
             postMediaType = (TextView) itemView.findViewById(R.id.tv_social_media_type);
+            postCaptionArea = (LinearLayout) itemView.findViewById(R.id.ll_caption_area);
             postImageCaption = (TextView) itemView.findViewById(R.id.tv_post_caption);
             postPublishDate = (TextView) itemView.findViewById(R.id.tv_publish_date);
             postLikedBtn = (CheckBox) itemView.findViewById(R.id.btn_like_button);
@@ -139,6 +142,13 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postImageCaption.setText(postItem.getPostCaption());
             postPublishDate.setText(BPUtils.dateConverter(postItem.getPostPublishDate()));
 
+            if(postItem.getPostCaption().length() == 0) {
+                postCaptionArea.setVisibility(View.GONE);
+            }
+            else {
+                postCaptionArea.setVisibility(View.VISIBLE);
+            }
+
             if(postItem.getOpProfilePicUrl().length() != 0) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getOpProfilePicUrl()).into(postProfileImage);
             }
@@ -147,7 +157,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
             }
 
-            // For media icon at bottom left corner
+            // For media text at bottom left corner
 
             if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
                 postMediaType.setText(R.string.instagram_text);

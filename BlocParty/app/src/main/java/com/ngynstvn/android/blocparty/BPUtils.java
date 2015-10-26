@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by Ngynstvn on 9/23/15.
@@ -132,5 +134,19 @@ public class BPUtils {
         DateFormat dateFormat = new SimpleDateFormat("h:mm a 'on' MM/dd/yy", Locale.ENGLISH);
         Date date = new Date(rawDate);
         return dateFormat.format(date);
+    }
+
+    // Time converter specifically for Facebook
+
+    public static long dateConverter(String rfcDate) {
+        try {
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ENGLISH);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date date = dateFormat.parse(rfcDate.substring(0, 19) + ".000" + rfcDate.substring(19, rfcDate.length()));
+            return date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0L;
+        }
     }
 }

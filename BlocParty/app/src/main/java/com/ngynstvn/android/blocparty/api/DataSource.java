@@ -16,9 +16,7 @@ import com.ngynstvn.android.blocparty.api.model.PostItem;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
 import com.sromku.simple.fb.SimpleFacebook;
-import com.sromku.simple.fb.entities.Post;
 import com.sromku.simple.fb.entities.Profile;
-import com.sromku.simple.fb.listeners.OnPostsListener;
 import com.sromku.simple.fb.listeners.OnProfileListener;
 import com.sromku.simple.fb.utils.Attributes;
 import com.sromku.simple.fb.utils.PictureAttributes;
@@ -46,13 +44,13 @@ public class DataSource {
 
     private static final String TAG = BPUtils.classTag(DataSource.class);
 
-    private static String fbUserId = "";
     private static String fbOPName = "";
     private static long fbPostId = 0L;
     private static String fbProfilePicUrl = "";
     private static String fbPostImageUrl = "";
     private static String fbPostCaption = "";
     private static long fbPostPublishDate = 0L;
+    private static int fbPostLiked = 0;
 
     private static String twOPName = "";
     private static String twProfilePicUrl = "";
@@ -136,7 +134,6 @@ public class DataSource {
                     });
 
                     AccessToken accessToken = AccessToken.getCurrentAccessToken();
-                    Log.v(TAG, "Current ID: " + accessToken.getUserId());
 
                     // Get photos
 
@@ -154,35 +151,38 @@ public class DataSource {
 
                                         JSONArray jsonArray = object.optJSONObject("photos").getJSONArray("data");
 
-                                        for(int i = 0; i < jsonArray.length(); i++) {
+                                        for (int i = 0; i < jsonArray.length(); i++) {
 
                                             fbOPName = object.optString("name");
-                                            fbUserId = object.getString("id");
-                                            fbPostId = 0L;
-                                            fbPostImageUrl = jsonArray.getJSONObject(0).getJSONArray("images")
-                                                    .getJSONObject(0).getString("source");
 
-//                                            if(jsonArray.getJSONObject(0).getString("name") != null ||
-//                                                    jsonArray.getJSONObject(0).getString("name").length() == 0) {
-//                                                fbPostCaption = jsonArray.getJSONObject(0).getString("name");
-//                                            }
-//                                            else if(jsonArray.getJSONObject(0).getString("name") == null){
-//                                                fbPostCaption = "";
-//                                            }
+                                            if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Profile Pictures")) {
+                                                fbProfilePicUrl = jsonArray.getJSONObject(0).getJSONArray("images").getJSONObject(0).getString("source");
+                                            }
+                                            else if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")){
+                                                fbPostImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
+                                                        .getJSONObject(0).getString("source");
+                                                fbPostId = Long.parseLong(jsonArray.getJSONObject(i).getJSONObject("album").getString("id"));
+                                                fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
 
-                                            String rawDate = jsonArray.getJSONObject(0).getString("created_time");
+                                                try{
+                                                    fbPostCaption = jsonArray.getJSONObject(i).getString("name");
+                                                }
+                                                catch (JSONException e) {
+                                                    fbPostCaption = "";
+                                                }
+                                            }
 
-                                            fbPostPublishDate = 0L;
-
-                                            new PostItemTable.Builder()
-                                                    .setOPFullName(fbOPName)
-                                                    .setProfilePicUrl(fbProfilePicUrl)
-                                                    .setPostId(fbPostId)
-                                                    .setPostImageUrl(fbPostImageUrl)
-                                                    .setPostCaption(fbPostCaption)
-                                                    .setPostPublishDate(fbPostPublishDate)
-                                                    .setIsPostLiked(0)
-                                                    .insert(database);
+                                            if(fbPostPublishDate != 0) {
+                                                new PostItemTable.Builder()
+                                                        .setOPFullName(fbOPName)
+                                                        .setProfilePicUrl(fbProfilePicUrl)
+                                                        .setPostId(fbPostId)
+                                                        .setPostImageUrl(fbPostImageUrl)
+                                                        .setPostCaption(fbPostCaption)
+                                                        .setPostPublishDate(fbPostPublishDate)
+                                                        .setIsPostLiked(fbPostLiked)
+                                                        .insert(database);
+                                            }
                                         }
 
                                     } catch (JSONException e) {
@@ -192,26 +192,10 @@ public class DataSource {
                                 }
                             });
 
-                    // Bundle the string necessary to perform query
-
                     Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,photos{created_time,picture,name,images}");
-
-                    // Perform the request
-
+                    parameters.putString("fields", "id,name,photos{album,images,id,name,picture,link,created_time}");
                     request.setParameters(parameters);
                     request.executeAsync();
-
-            simpleFacebook.getPosts(new OnPostsListener() {
-                @Override
-                public void onComplete(List<Post> response) {
-                    Log.v(TAG, "Number of posts: " + response.size());
-
-                    for(Post post : response) {
-                        Log.v(TAG, "Posts: " + post.getId());
-                    }
-                }
-            });
 
                     return null;
 
@@ -264,7 +248,7 @@ public class DataSource {
                                 twPostCaption = status.getText();
                             }
 
-                            if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl)) {
+                            if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl) && twPostId != 0) {
                                 new PostItemTable.Builder()
                                         .setOPFullName(twOPName)
                                         .setProfilePicUrl(twProfilePicUrl)
@@ -426,7 +410,7 @@ public class DataSource {
         if(cursor.moveToFirst()) {
             do {
                 postItemArrayList.add(itemFromCursor(cursor));
-                Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
+//                Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
             }
             while (cursor.moveToNext());
         }
