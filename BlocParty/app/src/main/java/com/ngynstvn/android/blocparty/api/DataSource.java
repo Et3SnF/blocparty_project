@@ -404,8 +404,7 @@ public class DataSource {
         postItemArrayList.clear();
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " " +
-                "order by publish_date desc;", null);
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " order by publish_date desc limit 20;", null);
 
         if(cursor.moveToFirst()) {
             do {
