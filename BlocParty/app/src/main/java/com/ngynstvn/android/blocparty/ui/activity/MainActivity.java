@@ -56,6 +56,14 @@ public class MainActivity extends AppCompatActivity {
     private boolean isTwLoggedIn;
     private boolean isIGLoggedIn;
 
+    private boolean loading = true;
+    private int previousTotal = 0;
+    private int visibleThreshold = 3;
+    private int firstVisibleItem;
+    private int visibleItemCount;
+    private int totalItemCount;
+    private LinearLayoutManager linearLayoutManager;
+
     /*
      * Interface Material
      */
@@ -166,8 +174,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         BlocpartyApplication.getSharedDataSource().displayPostItems();
+        linearLayoutManager = new LinearLayoutManager(this);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+//        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);
 
@@ -179,7 +189,44 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 BlocpartyApplication.getSharedDataSource().displayPostItems();
-                postItemAdapter.notifyDataSetChanged();
+
+                recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+                        visibleItemCount = recyclerView.getChildCount();
+                        totalItemCount = linearLayoutManager.getItemCount();
+                        firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
+
+                        Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
+                        Log.v(TAG, "TotalItemCount: " + totalItemCount);
+                        Log.v(TAG, "FirstVisibleItem: " + firstVisibleItem);
+
+                        if (loading) {
+
+                            // If list is loading, stop it and set the previousTotal to the current list's total
+
+                            if (totalItemCount > previousTotal) {
+                                loading = false;
+                                previousTotal = totalItemCount;
+                                Log.v(TAG, "Previous Total: " + previousTotal);
+                            }
+                        }
+
+                        if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                            Log.v(TAG, "End has been reached...loading more...");
+                            postItemAdapter.notifyDataSetChanged();
+                            loading = true;
+                        }
+
+                        Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+                        Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+                                "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
+                                +  (firstVisibleItem + visibleThreshold));
+                        Log.v(TAG, "Current loading state: " + loading);
+                    }
+                });
+
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
