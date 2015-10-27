@@ -418,6 +418,28 @@ public class DataSource {
 
     }
 
+    public void displayPostItems(int limit) {
+        Log.v(TAG, "displayPostItems() called");
+
+        // Clear the current ArrayList and then insert new items into it.
+
+        postItemArrayList.clear();
+
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " order by publish_date desc limit " + limit + ";", null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                postItemArrayList.add(itemFromCursor(cursor));
+//                Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+    }
+
     static PostItem itemFromCursor(Cursor cursor) {
 
         boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;

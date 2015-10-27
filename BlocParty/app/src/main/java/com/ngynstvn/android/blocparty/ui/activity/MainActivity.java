@@ -215,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
                             Log.v(TAG, "End has been reached...loading more...");
+                            BlocpartyApplication.getSharedDataSource().displayPostItems(visibleThreshold);
                             postItemAdapter.notifyDataSetChanged();
                             loading = true;
                         }
