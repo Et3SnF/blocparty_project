@@ -9,6 +9,7 @@
     <string name="login_item_dummy_item_name">Dummy Item Name Blarg</string>
     <string name="login_item_dummy_item_description">This is a headline you would like to give about your login item!</string>
     <string name="camera_mode_text">Camera</string>
+    <string name="collection_mode_text">Collection</string>
     <string name="account_mode_text">Account</string>
     <string name="welcome_message">Welcome to BlocParty! To get started, toggle at least one switch to log in.</string>
     <string name="igc">4034d9cd68834821842ca8978869ed28</string>

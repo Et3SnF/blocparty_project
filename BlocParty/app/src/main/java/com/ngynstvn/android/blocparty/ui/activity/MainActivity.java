@@ -294,6 +294,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        if(item.getItemId() == R.id.action_collection_mode) {
+            Log.v(TAG, "Collection Button Clicked");
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 }
