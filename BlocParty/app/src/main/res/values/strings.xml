@@ -30,5 +30,9 @@
     <string name="facebook_text">Facebook</string>
     <string name="twitter_text">Twitter</string>
     <string name="log_in_text">Log In</string>
+    <string name="choose_collection_text">Choose Collection</string>
+    <string name="collection_dummy_text">Collection Test</string>
+    <string name="collection_num_users">4</string>
+    <string name="collection_user_text">users</string>
 
 </resources>

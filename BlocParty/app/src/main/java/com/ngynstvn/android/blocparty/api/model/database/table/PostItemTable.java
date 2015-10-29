@@ -15,6 +15,7 @@ public class PostItemTable extends Table {
 
     private static final String NAME = BPUtils.POST_ITEM_TABLE;
     private static final String COLUMN_OP_FULL_NAME = "op_full_name";
+    private static final String COLUMN_OP_PROFILE_ID = "op_profile_id";
     private static final String COLUMN_OP_PROFILE_PIC_URL = "op_profile_pic_url";
     private static final String COLUMN_POST_ID = "post_id";
     private static final String COLUMN_POST_IMAGE_URL = "post_image_url";
@@ -32,6 +33,7 @@ public class PostItemTable extends Table {
         return "CREATE TABLE " + getName() + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_OP_FULL_NAME + " TEXT,"
+                + COLUMN_OP_PROFILE_ID + " TEXT,"
                 + COLUMN_OP_PROFILE_PIC_URL + " TEXT,"
                 + COLUMN_POST_ID + " TEXT,"
                 + COLUMN_POST_IMAGE_URL + " TEXT,"
@@ -48,6 +50,11 @@ public class PostItemTable extends Table {
 
         public Builder setOPFullName(String name) {
             contentValues.put(COLUMN_OP_FULL_NAME, name);
+            return this;
+        }
+
+        public Builder setOPProfileId(long id) {
+            contentValues.put(COLUMN_OP_PROFILE_ID, id);
             return this;
         }
 
@@ -93,12 +100,16 @@ public class PostItemTable extends Table {
         return getString(cursor, COLUMN_OP_FULL_NAME);
     }
 
+    public static long getColumnOpProfileId(Cursor cursor) {
+        return getLong(cursor, COLUMN_OP_PROFILE_ID);
+    }
+
     public static String getColumnOpProfilePicUrl(Cursor cursor) {
         return getString(cursor, COLUMN_OP_PROFILE_PIC_URL);
     }
 
-    public static String getColumnPostId(Cursor cursor) {
-        return getString(cursor, COLUMN_POST_ID);
+    public static long getColumnPostId(Cursor cursor) {
+        return getLong(cursor, COLUMN_POST_ID);
     }
 
     public static String getColumnPostImageUrl(Cursor cursor) {

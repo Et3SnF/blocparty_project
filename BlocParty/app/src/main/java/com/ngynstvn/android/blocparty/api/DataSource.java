@@ -12,6 +12,7 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
+import com.ngynstvn.android.blocparty.api.model.Collection;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
@@ -45,14 +46,16 @@ public class DataSource {
     private static final String TAG = BPUtils.classTag(DataSource.class);
 
     private static String fbOPName = "";
+    private static long fbOPProfileId = 0L;
     private static long fbPostId = 0L;
     private static String fbProfilePicUrl = "";
     private static String fbPostImageUrl = "";
     private static String fbPostCaption = "";
-    private static long fbPostPublishDate = 0L;
+    private long fbPostPublishDate = 0L;
     private static int fbPostLiked = 0;
 
     private static String twOPName = "";
+    private static long twOPProfileId = 0L;
     private static String twProfilePicUrl = "";
     private static long twPostId = 0L;
     private static String twPostImageUrl = "";
@@ -60,6 +63,7 @@ public class DataSource {
     private static long twPostPublishDate = 0L;
 
     private static String igOPName = "";
+    private static long igOPProfileId = 0L;
     private static String igProfilePicUrl = "";
     private static long igPostId = 0L;
     private static String igPostImageUrl = "";
@@ -71,6 +75,7 @@ public class DataSource {
     private PostItemTable postItemTable;
 
     private ArrayList<PostItem> postItemArrayList;
+    private ArrayList<Collection> collectionUserArrayList;
 
     // Instantiate the database
 
@@ -79,7 +84,8 @@ public class DataSource {
 
         postItemTable = new PostItemTable();
 
-        postItemArrayList = new ArrayList<>();
+        postItemArrayList = new ArrayList<PostItem>();
+        collectionUserArrayList = new ArrayList<Collection>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(), postItemTable);
@@ -93,6 +99,10 @@ public class DataSource {
 
     public ArrayList<PostItem> getPostItemArrayList() {
         return postItemArrayList;
+    }
+
+    public ArrayList<Collection> getCollectionUserArrayList() {
+        return collectionUserArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -155,14 +165,16 @@ public class DataSource {
 
                                             fbOPName = object.optString("name");
 
+                                            fbOPProfileId = object.optLong("id");
+
                                             if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Profile Pictures")) {
                                                 fbProfilePicUrl = jsonArray.getJSONObject(0).getJSONArray("images").getJSONObject(0).getString("source");
                                             }
-                                            else if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")){
+
+                                            if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")){
+                                                fbPostId = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
                                                 fbPostImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
                                                         .getJSONObject(0).getString("source");
-                                                fbPostId = Long.parseLong(jsonArray.getJSONObject(i).getJSONObject("album").getString("id"));
-                                                fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
 
                                                 try{
                                                     fbPostCaption = jsonArray.getJSONObject(i).getString("name");
@@ -170,11 +182,14 @@ public class DataSource {
                                                 catch (JSONException e) {
                                                     fbPostCaption = "";
                                                 }
+
+                                                fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
                                             }
 
                                             if(fbPostPublishDate != 0) {
                                                 new PostItemTable.Builder()
                                                         .setOPFullName(fbOPName)
+                                                        .setOPProfileId(fbOPProfileId)
                                                         .setProfilePicUrl(fbProfilePicUrl)
                                                         .setPostId(fbPostId)
                                                         .setPostImageUrl(fbPostImageUrl)
@@ -233,11 +248,13 @@ public class DataSource {
 
                         for(twitter4j.Status status : statuses) {
                             Log.v(TAG, "User: " + status.getUser().getName());
+                            Log.v(TAG, "User ID: " + status.getUser().getId());
                             Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
                             Log.v(TAG, "Status: " + status.getText());
                             Log.v(TAG, "Post ID: " + status.getId());
 
                             twOPName = status.getUser().getName();
+                            twOPProfileId = status.getUser().getId();
                             twProfilePicUrl = status.getUser().getBiggerProfileImageURL();
                             twPostPublishDate = status.getCreatedAt().getTime();
 
@@ -251,6 +268,7 @@ public class DataSource {
                             if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl) && twPostId != 0) {
                                 new PostItemTable.Builder()
                                         .setOPFullName(twOPName)
+                                        .setOPProfileId(twOPProfileId)
                                         .setProfilePicUrl(twProfilePicUrl)
                                         .setPostId(twPostId)
                                         .setPostImageUrl(twPostImageUrl)
@@ -347,9 +365,10 @@ public class DataSource {
 //                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
                                             igOPName = mediaFeedData.getUser().getFullName();
+                                            igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
                                             Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
-                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[1]);
                                             Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));
+                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[1]);
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 
@@ -357,6 +376,7 @@ public class DataSource {
 //                                                Log.v(TAG, "Text: " + mediaFeedData.getCaption().getText());
                                                 igPostCaption = mediaFeedData.getCaption().getText();
                                             } catch (NullPointerException e) {
+                                                igPostCaption = "";
                                                 Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
                                             }
 
@@ -374,6 +394,7 @@ public class DataSource {
 
                                             new PostItemTable.Builder()
                                                     .setOPFullName(igOPName)
+                                                    .setOPProfileId(igOPProfileId)
                                                     .setProfilePicUrl(igProfilePicUrl)
                                                     .setPostId(igPostId)
                                                     .setPostImageUrl(igPostImageUrl)
@@ -423,7 +444,8 @@ public class DataSource {
         boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;
 
         return new PostItem(PostItemTable.getRowId(cursor), PostItemTable.getColumnOPFullName(cursor),
-                PostItemTable.getColumnOpProfilePicUrl(cursor), PostItemTable.getColumnPostImageUrl(cursor),
+                PostItemTable.getColumnOpProfileId(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
+                PostItemTable.getColumnPostId(cursor), PostItemTable.getColumnPostImageUrl(cursor),
                 PostItemTable.getColumnPostImageCaption(cursor), PostItemTable.getPostPublishDate(cursor), isLiked);
     }
 

@@ -21,25 +21,10 @@
     <!-- AlertDialog Colors -->
 
     <style name="MaterialAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name = "colorAccent">@color/material_teal_primary</item>
+        <item name = "colorAccent">@color/material_indigo_500</item>
         <item name = "android:textColorPrimary">@android:color/black</item>
     </style>
-
-    <style name="LoginBottomButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">36dp</item>
-        <item name="android:minWidth">64dp</item>
-        <item name="android:paddingLeft">8dp</item>
-        <item name="android:paddingRight">8dp</item>
-        <item name="android:layout_marginRight">8dp</item>
-        <item name="android:layout_centerVertical">true</item>
-        <item name="android:background">@drawable/click_effect</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/material_indigo_500</item>
-    </style>
-
-    <!-- Point of Interest Styles -->
-
+    
     <style name="LoginItemName">
         <item name="android:textColor">@color/black_87</item>
         <item name="android:textSize">20sp</item>

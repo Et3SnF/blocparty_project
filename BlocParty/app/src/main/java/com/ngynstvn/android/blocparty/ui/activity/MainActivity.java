@@ -17,6 +17,7 @@ import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
+import com.ngynstvn.android.blocparty.ui.fragment.CollectionDialog;
 import com.sromku.simple.fb.SimpleFacebook;
 
 import org.jinstagram.Instagram;
@@ -296,9 +297,15 @@ public class MainActivity extends AppCompatActivity {
 
         if(item.getItemId() == R.id.action_collection_mode) {
             Log.v(TAG, "Collection Button Clicked");
+            showCollectionDialog();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showCollectionDialog() {
+        CollectionDialog collectionDialog = CollectionDialog.newInstance();
+        collectionDialog.show(getFragmentManager(), "collection_dialog");
     }
 }

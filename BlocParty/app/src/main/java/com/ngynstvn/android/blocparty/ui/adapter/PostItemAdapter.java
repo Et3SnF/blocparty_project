@@ -34,7 +34,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     @Override
     public PostItemAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-//        Log.v(TAG, "PostItemAdapterViewHolder() called");
+//        Log.v(TAG, "CollectionAdapterViewHolder() called");
         View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.post_item,
                 viewGroup, false);
         return new PostItemAdapterViewHolder(inflate);
@@ -101,7 +101,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         public PostItemAdapterViewHolder(View itemView) {
             super(itemView);
 
-//            Log.v(TAG, "PostItemAdapterViewHolder() called");
+//            Log.v(TAG, "CollectionAdapterViewHolder() called");
 
             postOPName = (TextView) itemView.findViewById(R.id.tv_op_name);
             postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);

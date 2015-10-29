@@ -1,13 +1,21 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
 /**
  * Created by Ngynstvn on 10/27/15.
@@ -16,6 +24,23 @@ import com.ngynstvn.android.blocparty.BPUtils;
 public class CollectionDialog extends DialogFragment {
 
     private static String TAG = BPUtils.classTag(CollectionDialog.class);
+
+    private RecyclerView recyclerView;
+    private Button addButton;
+
+    private CollectionAdapter collectionAdapter;
+
+    // ---- Instantiation Method with Bundle ----- //
+
+    public static CollectionDialog newInstance() {
+        CollectionDialog collectionDialog = new CollectionDialog();
+
+        Bundle bundle = new Bundle();
+
+        collectionDialog.setArguments(bundle);
+
+        return collectionDialog;
+    }
 
     // ----- Lifecycle Methods ------ //
 
@@ -29,12 +54,45 @@ public class CollectionDialog extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
+        collectionAdapter = new CollectionAdapter();
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.v(TAG, "onCreateDialog() called");
-        return null;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_collection_dialog, null);
+
+        addButton = (Button) view.findViewById(R.id.btn_add_collection);
+
+        recyclerView = (RecyclerView) view.findViewById(R.id.rl_collection_items);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(collectionAdapter);
+
+        builder.setView(view)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.v(TAG, "Collection Mode Save Button Clicked");
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.v(TAG, "Collection Mode Cancel Button Clicked");
+                    }
+                });
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v(TAG, "Add Button Clicked");
+            }
+        });
+
+        return builder.create();
     }
 
     @Override
@@ -47,6 +105,7 @@ public class CollectionDialog extends DialogFragment {
     public void onStart() {
         Log.v(TAG, "onStart() called");
         super.onStart();
+        // Override any positive and negative buttons here
     }
 
     @Override

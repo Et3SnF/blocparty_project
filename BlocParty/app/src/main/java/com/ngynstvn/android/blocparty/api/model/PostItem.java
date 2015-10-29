@@ -11,7 +11,9 @@ public class PostItem extends Model {
     private static final String TAG = BPUtils.classTag(PostItem.class);
 
     private String opFullName;
+    private long opProfileId;
     private String opProfilePicUrl;
+    private long postId;
     private String postImageUrl;
     private String postCaption;
     private long postPublishDate;
@@ -22,25 +24,29 @@ public class PostItem extends Model {
     public PostItem(long rowId) {
         super(rowId);
         opFullName = "";
+        opProfileId = 0L;
         opProfilePicUrl = "";
+        postId = 0L;
         postImageUrl = "";
         postCaption = "";
         postPublishDate = 0;
         isLiked = false;
     }
 
-    public PostItem(long rowId, String opFullName, String opProfilePicUrl,
+    public PostItem(long rowId, String opFullName, long opProfileId, String opProfilePicUrl, long postId,
                     String postImageUrl, String postCaption, long postPublishDate, boolean isLiked) {
         super(rowId);
         this.opFullName = opFullName;
+        this.opProfileId = opProfileId;
         this.opProfilePicUrl = opProfilePicUrl;
+        this.postId = postId;
         this.postImageUrl = postImageUrl;
         this.postCaption = postCaption;
         this.postPublishDate = postPublishDate;
         this.isLiked = isLiked;
     }
 
-    // Setters and Getters
+// Setters and Getters
 
     public void setOpFullName(String opFullName) {
         this.opFullName = opFullName;
@@ -50,12 +56,28 @@ public class PostItem extends Model {
         return opFullName;
     }
 
+    public void setOpProfileId(long opProfileId) {
+        this.opProfileId = opProfileId;
+    }
+
+    public long getOpProfileId() {
+        return opProfileId;
+    }
+
     public void setOpProfilePicUrl(String opProfilePicUrl) {
         this.opProfilePicUrl = opProfilePicUrl;
     }
 
     public String getOpProfilePicUrl() {
         return opProfilePicUrl;
+    }
+
+    public void setPostId(long postId) {
+        this.postId = postId;
+    }
+
+    public long getPostId() {
+        return postId;
     }
 
     public void setPostImageUrl(String postImageUrl) {

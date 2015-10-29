@@ -17,6 +17,13 @@ public class AddUserDialog extends DialogFragment {
 
     private static String TAG = BPUtils.classTag(AddUserDialog.class);
 
+    public static AddUserDialog newInstance() {
+        AddUserDialog addUserDialog = new AddUserDialog();
+        Bundle bundle = new Bundle();
+        addUserDialog.setArguments(bundle);
+        return addUserDialog;
+    }
+
     // ----- Lifecycle Methods ------ //
 
     @Override

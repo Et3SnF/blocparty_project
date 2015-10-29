@@ -8,6 +8,7 @@ public class User {
     private String fullName;
     private long userId;
     private String userSocNetwork;
+    private String userProfilePicUrl;
 
     public User(String fullName, long userId, String userSocNetwork) {
         this.fullName = fullName;
@@ -37,5 +38,13 @@ public class User {
 
     public String getUserSocNetwork() {
         return userSocNetwork;
+    }
+
+    public void setUserProfilePicUrl(String userProfilePicUrl) {
+        this.userProfilePicUrl = userProfilePicUrl;
+    }
+
+    public String getUserProfilePicUrl() {
+        return userProfilePicUrl;
     }
 }
