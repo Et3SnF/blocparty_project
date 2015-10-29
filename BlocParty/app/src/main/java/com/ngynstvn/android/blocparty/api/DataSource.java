@@ -77,6 +77,7 @@ public class DataSource {
     private SQLiteDatabase database;
 
     private ArrayList<PostItem> postItemArrayList;
+    private ArrayList<Collection> collectionArrayList;
 
     // Instantiate the database
 
@@ -102,6 +103,10 @@ public class DataSource {
 
     public ArrayList<PostItem> getPostItemArrayList() {
         return postItemArrayList;
+    }
+
+    public ArrayList<Collection> getCollectionArrayList() {
+        return collectionArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -491,5 +496,5 @@ public class DataSource {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");
     }
-    
+
 }
