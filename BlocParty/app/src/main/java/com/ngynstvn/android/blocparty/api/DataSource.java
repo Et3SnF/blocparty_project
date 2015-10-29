@@ -14,8 +14,11 @@ import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.api.model.Collection;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
+import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.api.model.database.DatabaseOpenHelper;
+import com.ngynstvn.android.blocparty.api.model.database.table.CollectionTable;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
+import com.ngynstvn.android.blocparty.api.model.database.table.UserTable;
 import com.sromku.simple.fb.SimpleFacebook;
 import com.sromku.simple.fb.entities.Profile;
 import com.sromku.simple.fb.listeners.OnProfileListener;
@@ -72,23 +75,23 @@ public class DataSource {
 
     private DatabaseOpenHelper databaseOpenHelper;
     private SQLiteDatabase database;
-    private PostItemTable postItemTable;
 
     private ArrayList<PostItem> postItemArrayList;
-    private ArrayList<Collection> collectionUserArrayList;
 
     // Instantiate the database
 
     public DataSource(Context context) {
         Log.v(TAG, "DataSource instantiated");
 
-        postItemTable = new PostItemTable();
+        PostItemTable postItemTable = new PostItemTable();
+        CollectionTable collectionTable = new CollectionTable();
+        UserTable userTable = new UserTable();
 
         postItemArrayList = new ArrayList<PostItem>();
-        collectionUserArrayList = new ArrayList<Collection>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
-        databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(), postItemTable);
+        databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
+                postItemTable, collectionTable, userTable);
 
         database = databaseOpenHelper.getWritableDatabase();
     }
@@ -99,10 +102,6 @@ public class DataSource {
 
     public ArrayList<PostItem> getPostItemArrayList() {
         return postItemArrayList;
-    }
-
-    public ArrayList<Collection> getCollectionUserArrayList() {
-        return collectionUserArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -438,7 +437,9 @@ public class DataSource {
         cursor.close();
 
     }
-    
+
+    // Object from Cursor Methods
+
     static PostItem itemFromCursor(Cursor cursor) {
 
         boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;
@@ -447,6 +448,16 @@ public class DataSource {
                 PostItemTable.getColumnOpProfileId(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
                 PostItemTable.getColumnPostId(cursor), PostItemTable.getColumnPostImageUrl(cursor),
                 PostItemTable.getColumnPostImageCaption(cursor), PostItemTable.getPostPublishDate(cursor), isLiked);
+    }
+
+    static Collection collectionFromCursor(Cursor cursor) {
+        return new Collection(CollectionTable.getRowId(cursor), CollectionTable.getColumnCollectionName(cursor));
+    }
+
+    static User userFromCursor(Cursor cursor) {
+        return new User(UserTable.getRowId(cursor), UserTable.getColumnUserFullName(cursor),
+                UserTable.getColumnUserSocialNetwork(cursor), UserTable.getColumnUserProfileId(cursor),
+                UserTable.getColumnUserProfilePicUrl(cursor), UserTable.getColumnCollectionId(cursor));
     }
 
     public boolean isDBEmpty(String tableName) {
@@ -460,6 +471,8 @@ public class DataSource {
             return false;
         }
     }
+
+    // DB Methods
 
     private boolean isValueInDB(String tableName, String field, String fieldValue) {
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
@@ -478,4 +491,5 @@ public class DataSource {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");
     }
+    
 }

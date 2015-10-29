@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         Log.e(TAG, "onStart() called");
         super.onStart();
+        BlocpartyApplication.getSharedDataSource().displayPostItems();
     }
 
     @Override

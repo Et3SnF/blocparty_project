@@ -14,6 +14,7 @@ public class PostItemTable extends Table {
     private static final String TAG = BPUtils.classTag(PostItemTable.class);
 
     private static final String NAME = BPUtils.POST_ITEM_TABLE;
+
     private static final String COLUMN_OP_FULL_NAME = "op_full_name";
     private static final String COLUMN_OP_PROFILE_ID = "op_profile_id";
     private static final String COLUMN_OP_PROFILE_PIC_URL = "op_profile_pic_url";

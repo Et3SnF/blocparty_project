@@ -3,33 +3,32 @@ package com.ngynstvn.android.blocparty.api.model;
 /**
  * Created by Ngynstvn on 10/27/15.
  */
-public class User {
+public class User extends Model {
 
-    private String fullName;
-    private long userId;
+    private String userFullName;
     private String userSocNetwork;
+    private long userProfileId;
     private String userProfilePicUrl;
+    private int collectionId;
 
-    public User(String fullName, long userId, String userSocNetwork) {
-        this.fullName = fullName;
-        this.userId = userId;
+    // The value associated with the collection. This prevents misnaming a collection later later.
+
+    public User(long rowId, String userFullName, String userSocNetwork, long userProfileId,
+                String userProfilePicUrl, int collectionId) {
+        super(rowId);
+        this.userFullName = userFullName;
         this.userSocNetwork = userSocNetwork;
+        this.userProfileId = userProfileId;
+        this.userProfilePicUrl = userProfilePicUrl;
+        this.collectionId = collectionId;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setUserFullName(String userFullName) {
+        this.userFullName = userFullName;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
-    public long getUserId() {
-        return userId;
+    public String getUserFullName() {
+        return userFullName;
     }
 
     public void setUserSocNetwork(String userSocNetwork) {
@@ -40,11 +39,27 @@ public class User {
         return userSocNetwork;
     }
 
+    public void setUserProfileId(long userProfileId) {
+        this.userProfileId = userProfileId;
+    }
+
+    public long getUserProfileId() {
+        return userProfileId;
+    }
+
     public void setUserProfilePicUrl(String userProfilePicUrl) {
         this.userProfilePicUrl = userProfilePicUrl;
     }
 
     public String getUserProfilePicUrl() {
         return userProfilePicUrl;
+    }
+
+    public void setCollectionId(int collectionId) {
+        this.collectionId = collectionId;
+    }
+
+    public int getCollectionId() {
+        return collectionId;
     }
 }

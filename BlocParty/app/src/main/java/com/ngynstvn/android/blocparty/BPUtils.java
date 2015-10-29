@@ -51,6 +51,8 @@ public class BPUtils {
 
     public static final String DB_NAME = "blocparty_db";
     public static final String POST_ITEM_TABLE = "post_item_table";
+    public static final String COLLECTION_TABLE = "collection_table";
+    public static final String USER_TABLE = "user_table";
 
     // ----- Static Methods ----- //
 
