@@ -17,7 +17,7 @@ import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
-import com.ngynstvn.android.blocparty.ui.fragment.CollectionDialog;
+import com.ngynstvn.android.blocparty.ui.fragment.CollectionModeDialog;
 import com.sromku.simple.fb.SimpleFacebook;
 
 import org.jinstagram.Instagram;
@@ -181,6 +181,42 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                visibleItemCount = recyclerView.getChildCount();
+                totalItemCount = linearLayoutManager.getItemCount();
+                firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
+
+                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
+                Log.v(TAG, "TotalItemCount: " + totalItemCount);
+                Log.v(TAG, "FirstVisibleItem: " + firstVisibleItem);
+
+                if (loading) {
+
+                    // If list is loading, stop it and set the previousTotal to the current list's total
+
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                        Log.v(TAG, "Previous Total: " + previousTotal);
+                    }
+                }
+
+                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                    Log.v(TAG, "End has been reached...loading more...");
+                    postItemAdapter.notifyDataSetChanged();
+                    loading = true;
+                }
+
+                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
+                        + (firstVisibleItem + visibleThreshold));
+                Log.v(TAG, "Current loading state: " + loading);
+            }
+        });
 
         if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
             BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
@@ -190,44 +226,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 BlocpartyApplication.getSharedDataSource().displayPostItems();
-
-                recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                        super.onScrolled(recyclerView, dx, dy);
-                        visibleItemCount = recyclerView.getChildCount();
-                        totalItemCount = linearLayoutManager.getItemCount();
-                        firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
-
-                        Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
-                        Log.v(TAG, "TotalItemCount: " + totalItemCount);
-                        Log.v(TAG, "FirstVisibleItem: " + firstVisibleItem);
-
-                        if (loading) {
-
-                            // If list is loading, stop it and set the previousTotal to the current list's total
-
-                            if (totalItemCount > previousTotal) {
-                                loading = false;
-                                previousTotal = totalItemCount;
-                                Log.v(TAG, "Previous Total: " + previousTotal);
-                            }
-                        }
-
-                        if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-                            Log.v(TAG, "End has been reached...loading more...");
-                            postItemAdapter.notifyDataSetChanged();
-                            loading = true;
-                        }
-
-                        Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-                        Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
-                                "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
-                                +  (firstVisibleItem + visibleThreshold));
-                        Log.v(TAG, "Current loading state: " + loading);
-                    }
-                });
-
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
@@ -297,15 +295,15 @@ public class MainActivity extends AppCompatActivity {
 
         if(item.getItemId() == R.id.action_collection_mode) {
             Log.v(TAG, "Collection Button Clicked");
-            showCollectionDialog();
+            showCollectionModeDialog();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void showCollectionDialog() {
-        CollectionDialog collectionDialog = CollectionDialog.newInstance();
-        collectionDialog.show(getFragmentManager(), "collection_dialog");
+    private void showCollectionModeDialog() {
+        CollectionModeDialog collectionModeDialog = CollectionModeDialog.newInstance();
+        collectionModeDialog.show(getFragmentManager(), "collection_mode_dialog");
     }
 }

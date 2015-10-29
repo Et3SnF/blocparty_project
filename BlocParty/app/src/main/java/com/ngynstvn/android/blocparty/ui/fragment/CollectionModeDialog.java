@@ -21,9 +21,9 @@ import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
  * Created by Ngynstvn on 10/27/15.
  */
 
-public class CollectionDialog extends DialogFragment {
+public class CollectionModeDialog extends DialogFragment {
 
-    private static String TAG = BPUtils.classTag(CollectionDialog.class);
+    private static String TAG = BPUtils.classTag(CollectionModeDialog.class);
 
     private RecyclerView recyclerView;
     private Button addButton;
@@ -32,14 +32,14 @@ public class CollectionDialog extends DialogFragment {
 
     // ---- Instantiation Method with Bundle ----- //
 
-    public static CollectionDialog newInstance() {
-        CollectionDialog collectionDialog = new CollectionDialog();
+    public static CollectionModeDialog newInstance() {
+        CollectionModeDialog collectionModeDialog = new CollectionModeDialog();
 
         Bundle bundle = new Bundle();
 
-        collectionDialog.setArguments(bundle);
+        collectionModeDialog.setArguments(bundle);
 
-        return collectionDialog;
+        return collectionModeDialog;
     }
 
     // ----- Lifecycle Methods ------ //

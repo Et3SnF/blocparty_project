@@ -13,15 +13,15 @@ import com.ngynstvn.android.blocparty.BPUtils;
  * Created by Ngynstvn on 10/27/15.
  */
 
-public class AddUserDialog extends DialogFragment {
+public class AddCollectionDialog extends DialogFragment {
 
-    private static String TAG = BPUtils.classTag(AddUserDialog.class);
+    private static String TAG = BPUtils.classTag(AddCollectionDialog.class);
 
-    public static AddUserDialog newInstance() {
-        AddUserDialog addUserDialog = new AddUserDialog();
+    public static AddCollectionDialog newInstance() {
+        AddCollectionDialog addCollectionDialog = new AddCollectionDialog();
         Bundle bundle = new Bundle();
-        addUserDialog.setArguments(bundle);
-        return addUserDialog;
+        addCollectionDialog.setArguments(bundle);
+        return addCollectionDialog;
     }
 
     // ----- Lifecycle Methods ------ //
