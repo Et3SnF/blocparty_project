@@ -33,7 +33,7 @@
     <string name="choose_collection_text">Choose Collection</string>
     <string name="create_collection_text">Create Collection</string>
     <string name="create_collection_instruction">1. Enter collection name: </string>
-    <string name="add_user_instruction">2. Add users to collection: </string>
+    <string name="add_user_instruction">2. Add user(s) to collection: </string>
     <string name="collection_dummy_text">Collection Test</string>
     <string name="collection_num_users">4</string>
     <string name="collection_user_text">users</string>
