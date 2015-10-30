@@ -144,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         Log.e(TAG, "onStart() called");
         super.onStart();
-        BlocpartyApplication.getSharedDataSource().displayPostItems();
     }
 
     @Override
@@ -178,7 +177,6 @@ public class MainActivity extends AppCompatActivity {
         BlocpartyApplication.getSharedDataSource().displayPostItems();
         linearLayoutManager = new LinearLayoutManager(this);
 
-//        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);

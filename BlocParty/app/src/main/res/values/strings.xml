@@ -34,5 +34,6 @@
     <string name="collection_dummy_text">Collection Test</string>
     <string name="collection_num_users">4</string>
     <string name="collection_user_text">users</string>
+    <string name="dummy_user_text">Richard Richardson</string>
 
 </resources>

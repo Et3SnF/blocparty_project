@@ -76,8 +76,8 @@ public class DataSource {
     private DatabaseOpenHelper databaseOpenHelper;
     private SQLiteDatabase database;
 
-    private ArrayList<PostItem> postItemArrayList;
-    private ArrayList<Collection> collectionArrayList;
+    private static ArrayList<PostItem> postItemArrayList;
+    private static ArrayList<Collection> collectionArrayList;
 
     // Instantiate the database
 
@@ -89,6 +89,7 @@ public class DataSource {
         UserTable userTable = new UserTable();
 
         postItemArrayList = new ArrayList<PostItem>();
+        collectionArrayList = new ArrayList<Collection>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),

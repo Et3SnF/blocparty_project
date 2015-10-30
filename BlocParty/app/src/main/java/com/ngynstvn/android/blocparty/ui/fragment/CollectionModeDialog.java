@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
@@ -70,6 +71,13 @@ public class CollectionModeDialog extends DialogFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(collectionAdapter);
+
+        if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+        }
 
         builder.setView(view)
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {

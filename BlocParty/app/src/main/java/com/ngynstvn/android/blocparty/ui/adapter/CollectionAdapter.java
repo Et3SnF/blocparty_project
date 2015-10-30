@@ -113,44 +113,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             this.collection = collection;
             collectionName.setText(collection.getCollectionName());
             collectionUserNum.setText(String.valueOf(0));
-//            collectionUserNum.setText(String.valueOf(collection.getUserList().size()));
-
-//            User user1 = collection.getUserList().get(0);
-//            User user2 = collection.getUserList().get(1);
-//            User user3 = collection.getUserList().get(2);
-//            User user4 = collection.getUserList().get(3);
-
-//            if(user1 != null) {
-//                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl())
-//                        .into(topUserLeftPic);
-//            }
-//            else {
-//                topUserLeftPic.setBackgroundColor(Color.TRANSPARENT);
-//            }
-//
-//            if(user2 != null) {
-//                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl())
-//                        .into(topUserRightPic);
-//            }
-//            else {
-//                topUserRightPic.setBackgroundColor(Color.TRANSPARENT);
-//            }
-//
-//            if(user3 != null) {
-//                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl())
-//                        .into(botUserLeftPic);
-//            }
-//            else {
-//                botUserLeftPic.setBackgroundColor(Color.TRANSPARENT);
-//            }
-//
-//            if(user4 != null) {
-//                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl())
-//                        .into(botUserRightPic);
-//            }
-//            else {
-//                botUserRightPic.setBackgroundColor(Color.TRANSPARENT);
-//            }
         }
     }
 }
