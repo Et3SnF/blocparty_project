@@ -38,5 +38,8 @@
     <string name="collection_num_users">4</string>
     <string name="collection_user_text">users</string>
     <string name="dummy_user_text">Richard Richardson</string>
+    <string name="collection_counter_limit">30</string>
+    <string name="collection_counter_value">0</string>
+    <string name="counter_slash">/</string>
 
 </resources>

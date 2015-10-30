@@ -10,21 +10,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/create_collection_text"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textColor="@android:color/black"
+        android:textStyle="bold"
         android:layout_marginLeft="24dp"
         android:layout_marginRight="24dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:layout_centerVertical="true"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/material_indigo_500"/>
-
     <TextView
-        android:id="@+id/tv_edit_category_instruction"
+        android:id="@+id/tv_add_collection_instruction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/create_collection_instruction"
@@ -34,29 +30,57 @@
         android:layout_marginTop="16dp"/>
 
     <EditText
-        android:id="@+id/et_category_input"
+        android:id="@+id/et_collection_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/black_87"
         android:layout_gravity="center_horizontal"
         android:maxLines="1"
-        android:maxLength="30"
         android:maxEms="8"
         android:layout_marginLeft="24dp"
         android:layout_marginRight="24dp"/>
 
-    <TextView
-        android:id="@+id/tv_editcat_edittext_counter"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/ll_collection_char_counter"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0 / 30"
-        android:layout_gravity="end"
         android:gravity="end"
-        android:singleLine="true"
-        android:ellipsize="end"
-        android:layout_marginEnd="4dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"/>
+        android:layout_gravity="right">
+
+        <TextView
+            android:id="@+id/tv_collection_edittext_counter_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/collection_counter_value"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"/>
+
+        <TextView
+            android:id="@+id/tv_collection_edittext_counter_slash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/counter_slash"
+            android:layout_gravity="end"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_marginEnd="4dp"
+            android:layout_marginRight="4dp"/>
+
+        <TextView
+            android:id="@+id/tv_collection_edittext_counter_limit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/collection_counter_limit"
+            android:layout_gravity="end"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_marginEnd="4dp"
+            android:layout_marginRight="24dp"/>
+
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
@@ -77,6 +101,15 @@
 
     <!-- Add Tab Layout here -->
 
-    
+    <com.ngynstvn.android.blocparty.ui.tabs.SlidingTabLayout
+        android:id="@+id/stl_add_collection_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_collection_add_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 
 </LinearLayout>

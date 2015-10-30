@@ -19,14 +19,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/choose_collection_text"
-            android:textSize="18sp"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:textColor="@android:color/black"
             android:layout_centerVertical="true"/>
 
         <Button
             android:id="@+id/btn_add_collection"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
@@ -35,11 +36,6 @@
             android:layout_margin="8dp"/>
 
     </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/material_indigo_500"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rl_collection_items"

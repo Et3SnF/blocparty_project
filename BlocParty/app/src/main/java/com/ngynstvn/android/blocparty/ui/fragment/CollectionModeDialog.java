@@ -97,6 +97,7 @@ public class CollectionModeDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Log.v(TAG, "Add Button Clicked");
+                showAddCollectionDialog();
             }
         });
 
@@ -154,5 +155,10 @@ public class CollectionModeDialog extends DialogFragment {
     }
 
     // ----------------------------- //
+
+    private void showAddCollectionDialog() {
+        AddCollectionDialog addCollectionDialog = AddCollectionDialog.newInstance();
+        addCollectionDialog.show(getFragmentManager(), "add_collection_dialog");
+    }
 
 }

@@ -1,13 +1,33 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
+import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.tabs.SlidingTabLayout;
 
 /**
  * Created by Ngynstvn on 10/27/15.
@@ -16,6 +36,36 @@ import com.ngynstvn.android.blocparty.BPUtils;
 public class AddCollectionDialog extends DialogFragment {
 
     private static String TAG = BPUtils.classTag(AddCollectionDialog.class);
+
+    private TextView dialogTitle;
+    private TextView collectionInstr;
+    private EditText collectionInputBox;
+    private TextView collectionInputValue;
+    private TextView collectionInputValueLimit;
+    private TextView userInstr;
+    private SlidingTabLayout slidingTabLayout;
+    private ViewPager tabViewPager;
+
+    private PagerAdapter pagerAdapter;
+
+    // Character Tracking anonymous inner class
+
+    private final TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            // Nothing here for now
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            collectionInputValue.setText(String.valueOf(s.length()));
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            // Nothing here for now
+        }
+    };
 
     public static AddCollectionDialog newInstance() {
         AddCollectionDialog addCollectionDialog = new AddCollectionDialog();
@@ -41,7 +91,37 @@ public class AddCollectionDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.v(TAG, "onCreateDialog() called");
-        return null;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.collection_add, null);
+
+        pagerAdapter = new PagerAdapter(getFragmentManager());
+
+        collectionInstr = (TextView) view.findViewById(R.id.tv_collection_title);
+        dialogTitle = (TextView) view.findViewById(R.id.tv_add_collection_instruction);
+        collectionInputBox = (EditText) view.findViewById(R.id.et_collection_input);
+        collectionInputValue = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_value);
+        collectionInputValueLimit = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_limit);
+        userInstr = (TextView) view.findViewById(R.id.tv_add_user_instructions);
+        slidingTabLayout = (SlidingTabLayout) view.findViewById(R.id.stl_add_collection_tabs);
+        tabViewPager = (ViewPager) view.findViewById(R.id.vp_collection_add_pager);
+
+        builder.setView(view)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.v(TAG, "Save Collection Button Clicked");
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.v(TAG, "Cancel Collection Button Clicked");
+                    }
+                });
+
+        tabViewPager.setAdapter(pagerAdapter);
+
+        return builder.create();
     }
 
     @Override
@@ -54,6 +134,23 @@ public class AddCollectionDialog extends DialogFragment {
     public void onStart() {
         Log.v(TAG, "onStart() called");
         super.onStart();
+        getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // Counter related code
+
+        final int collectionCounterLimit = 30;
+
+        collectionInputBox.setInputType(InputType.TYPE_CLASS_TEXT);
+        collectionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(collectionCounterLimit)});
+        collectionInputBox.addTextChangedListener(textWatcher);
+        collectionInputBox.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+            }
+        });
+
+        collectionInputValueLimit.setText(String.valueOf(collectionCounterLimit));
     }
 
     @Override
@@ -93,6 +190,43 @@ public class AddCollectionDialog extends DialogFragment {
         super.onDetach();
     }
 
-    // ----------------------------- //s
+    // ----------------------------- //
 
+    // Must import android.support.v13.app.FragmentPagerAdapter to use getFragmentManager() as argument
+
+    class PagerAdapter extends FragmentPagerAdapter {
+
+        public PagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return 0;
+        }
+    }
+
+    public static class TabFragment extends Fragment {
+
+        public static TabFragment newInstance() {
+            TabFragment tabFragment = new TabFragment();
+            Bundle bundle = new Bundle();
+
+            tabFragment.setArguments(bundle);
+            return tabFragment;
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            Log.v(TAG, "View from TabFragment created");
+            Toast.makeText(BlocpartyApplication.getSharedInstance(), "View from TabFragment Created", Toast.LENGTH_SHORT).show();
+            return super.onCreateView(inflater, container, savedInstanceState);
+        }
+    }
 }
