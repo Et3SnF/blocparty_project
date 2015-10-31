@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -22,10 +23,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
-import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.tabs.SlidingTabLayout;
 
@@ -94,16 +93,18 @@ public class AddCollectionDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
         View view = getActivity().getLayoutInflater().inflate(R.layout.collection_add, null);
 
-        pagerAdapter = new PagerAdapter(getFragmentManager());
-
         collectionInstr = (TextView) view.findViewById(R.id.tv_collection_title);
         dialogTitle = (TextView) view.findViewById(R.id.tv_add_collection_instruction);
         collectionInputBox = (EditText) view.findViewById(R.id.et_collection_input);
         collectionInputValue = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_value);
         collectionInputValueLimit = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_limit);
         userInstr = (TextView) view.findViewById(R.id.tv_add_user_instructions);
-        slidingTabLayout = (SlidingTabLayout) view.findViewById(R.id.stl_add_collection_tabs);
+
         tabViewPager = (ViewPager) view.findViewById(R.id.vp_collection_add_pager);
+        tabViewPager.setAdapter(new PagerAdapter(getFragmentManager()));
+
+        slidingTabLayout = (SlidingTabLayout) view.findViewById(R.id.stl_add_collection_tabs);
+//        slidingTabLayout.setViewPager(tabViewPager);
 
         builder.setView(view)
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -118,8 +119,6 @@ public class AddCollectionDialog extends DialogFragment {
                         Log.v(TAG, "Cancel Collection Button Clicked");
                     }
                 });
-
-        tabViewPager.setAdapter(pagerAdapter);
 
         return builder.create();
     }
@@ -196,37 +195,104 @@ public class AddCollectionDialog extends DialogFragment {
 
     class PagerAdapter extends FragmentPagerAdapter {
 
+        String[] tabNames;
+
         public PagerAdapter(FragmentManager fm) {
             super(fm);
+            tabNames = new String[]{"Facebook", "Twitter", "Instagram"};
         }
 
         @Override
         public Fragment getItem(int position) {
-            return null;
+            FacebookUserTabFragment facebookUserTabFragment = FacebookUserTabFragment.newInstance(position);
+            TwitterUserTabFragment twitterUserTabFragment = TwitterUserTabFragment.newInstance(position);
+            InstagramUserTabFragment instagramUserTabFragment = InstagramUserTabFragment.newInstance(position);
+
+            return facebookUserTabFragment;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return tabNames[position];
         }
 
         @Override
         public int getCount() {
-            return 0;
+            return 3;
         }
     }
 
-    public static class TabFragment extends Fragment {
+    // Fragments for each ViewPager
 
-        public static TabFragment newInstance() {
-            TabFragment tabFragment = new TabFragment();
+    public static class FacebookUserTabFragment extends Fragment {
+
+        private RecyclerView recyclerView;
+
+        public static FacebookUserTabFragment newInstance(int position) {
+            FacebookUserTabFragment facebookUserTabFragment = new FacebookUserTabFragment();
             Bundle bundle = new Bundle();
-
-            tabFragment.setArguments(bundle);
-            return tabFragment;
+            bundle.putInt("position", position);
+            facebookUserTabFragment.setArguments(bundle);
+            return facebookUserTabFragment;
         }
 
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            Log.v(TAG, "View from TabFragment created");
-            Toast.makeText(BlocpartyApplication.getSharedInstance(), "View from TabFragment Created", Toast.LENGTH_SHORT).show();
-            return super.onCreateView(inflater, container, savedInstanceState);
+            View view = inflater.inflate(R.layout.fragment_facebook_users, container, false);
+//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_facebook_users);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+//            recyclerView.setItemAnimator(new DefaultItemAnimator());
+//            recyclerView.setAdapter(null);
+            return view;
+        }
+    }
+
+    public static class TwitterUserTabFragment extends Fragment {
+
+        private RecyclerView recyclerView;
+
+        public static TwitterUserTabFragment newInstance(int position) {
+            TwitterUserTabFragment twitterUserTabFragment = new TwitterUserTabFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("position", position);
+            twitterUserTabFragment.setArguments(bundle);
+            return twitterUserTabFragment;
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View view = inflater.inflate(R.layout.fragment_twitter_users, container, false);
+//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_twitter_users);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+//            recyclerView.setItemAnimator(new DefaultItemAnimator());
+//            recyclerView.setAdapter(null);
+            return view;
+        }
+    }
+
+    public static class InstagramUserTabFragment extends Fragment {
+
+        private RecyclerView recyclerView;
+
+        public static InstagramUserTabFragment newInstance(int position) {
+            InstagramUserTabFragment instagramUserTabFragment = new InstagramUserTabFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("position", position);
+            instagramUserTabFragment.setArguments(bundle);
+            return instagramUserTabFragment;
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View view = inflater.inflate(R.layout.fragment_instagram_users, container, false);
+//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_instagram_users);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+//            recyclerView.setItemAnimator(new DefaultItemAnimator());
+//            recyclerView.setAdapter(null);
+            return view;
         }
     }
 }
