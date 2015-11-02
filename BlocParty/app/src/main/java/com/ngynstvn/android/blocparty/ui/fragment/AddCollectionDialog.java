@@ -8,16 +8,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -195,104 +192,47 @@ public class AddCollectionDialog extends DialogFragment {
 
     class PagerAdapter extends FragmentPagerAdapter {
 
-        String[] tabNames;
-
         public PagerAdapter(FragmentManager fm) {
             super(fm);
-            tabNames = new String[]{"Facebook", "Twitter", "Instagram"};
         }
 
         @Override
         public Fragment getItem(int position) {
-            FacebookUserTabFragment facebookUserTabFragment = FacebookUserTabFragment.newInstance(position);
-            TwitterUserTabFragment twitterUserTabFragment = TwitterUserTabFragment.newInstance(position);
-            InstagramUserTabFragment instagramUserTabFragment = InstagramUserTabFragment.newInstance(position);
+            FacebookUserFragment facebookUserFragment = FacebookUserFragment.newInstance(position);
+            TwitterUserFragment twitterUserFragment = TwitterUserFragment.newInstance(position);
+            InstagramUserFragment instagramUserFragment = InstagramUserFragment.newInstance(position);
 
-            return facebookUserTabFragment;
+            switch(position) {
+                case 0:
+                    return facebookUserFragment;
+                case 1:
+                    return twitterUserFragment;
+                case 2:
+                    return instagramUserFragment;
+            }
+
+            return null;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return tabNames[position];
+
+            if(position == 0) {
+                return "Facebook";
+            }
+            else if(position == 1) {
+                return "Twitter";
+            }
+            else if(position == 2) {
+                return "Instagram";
+            }
+
+            return "";
         }
 
         @Override
         public int getCount() {
             return 3;
-        }
-    }
-
-    // Fragments for each ViewPager
-
-    public static class FacebookUserTabFragment extends Fragment {
-
-        private RecyclerView recyclerView;
-
-        public static FacebookUserTabFragment newInstance(int position) {
-            FacebookUserTabFragment facebookUserTabFragment = new FacebookUserTabFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("position", position);
-            facebookUserTabFragment.setArguments(bundle);
-            return facebookUserTabFragment;
-        }
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View view = inflater.inflate(R.layout.fragment_facebook_users, container, false);
-//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_facebook_users);
-//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
-//            recyclerView.setItemAnimator(new DefaultItemAnimator());
-//            recyclerView.setAdapter(null);
-            return view;
-        }
-    }
-
-    public static class TwitterUserTabFragment extends Fragment {
-
-        private RecyclerView recyclerView;
-
-        public static TwitterUserTabFragment newInstance(int position) {
-            TwitterUserTabFragment twitterUserTabFragment = new TwitterUserTabFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("position", position);
-            twitterUserTabFragment.setArguments(bundle);
-            return twitterUserTabFragment;
-        }
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View view = inflater.inflate(R.layout.fragment_twitter_users, container, false);
-//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_twitter_users);
-//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
-//            recyclerView.setItemAnimator(new DefaultItemAnimator());
-//            recyclerView.setAdapter(null);
-            return view;
-        }
-    }
-
-    public static class InstagramUserTabFragment extends Fragment {
-
-        private RecyclerView recyclerView;
-
-        public static InstagramUserTabFragment newInstance(int position) {
-            InstagramUserTabFragment instagramUserTabFragment = new InstagramUserTabFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("position", position);
-            instagramUserTabFragment.setArguments(bundle);
-            return instagramUserTabFragment;
-        }
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View view = inflater.inflate(R.layout.fragment_instagram_users, container, false);
-//            recyclerView = (RecyclerView) view.findViewById(R.id.rv_instagram_users);
-//            recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
-//            recyclerView.setItemAnimator(new DefaultItemAnimator());
-//            recyclerView.setAdapter(null);
-            return view;
         }
     }
 }
