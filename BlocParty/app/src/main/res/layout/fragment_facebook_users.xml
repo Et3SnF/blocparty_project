@@ -7,12 +7,6 @@
 
     <!-- Will eventually be deleted -->
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/vp_collection_add_pager"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
     <TextView
         android:id="@+id/tv_facebook_temp_text"
         android:layout_width="wrap_content"
