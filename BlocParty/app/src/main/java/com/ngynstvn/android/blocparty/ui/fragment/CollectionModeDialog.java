@@ -5,17 +5,21 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.activity.AddCollectionActivity;
 import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
 /**
@@ -26,8 +30,8 @@ public class CollectionModeDialog extends DialogFragment {
 
     private static String TAG = BPUtils.classTag(CollectionModeDialog.class);
 
+    private Toolbar toolbar;
     private RecyclerView recyclerView;
-    private Button addButton;
 
     private CollectionAdapter collectionAdapter;
 
@@ -55,7 +59,6 @@ public class CollectionModeDialog extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
-        collectionAdapter = new CollectionAdapter();
     }
 
     @Override
@@ -65,11 +68,12 @@ public class CollectionModeDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
         View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_collection_dialog, null);
 
-        addButton = (Button) view.findViewById(R.id.btn_add_collection);
+        toolbar = (Toolbar) view.findViewById(R.id.tb_collection_dialog);
 
         recyclerView = (RecyclerView) view.findViewById(R.id.rl_collection_items);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+        collectionAdapter = new CollectionAdapter();
         recyclerView.setAdapter(collectionAdapter);
 
         if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
@@ -80,7 +84,7 @@ public class CollectionModeDialog extends DialogFragment {
         }
 
         builder.setView(view)
-                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.v(TAG, "Collection Mode Save Button Clicked");
@@ -93,11 +97,19 @@ public class CollectionModeDialog extends DialogFragment {
                     }
                 });
 
-        addButton.setOnClickListener(new View.OnClickListener() {
+        toolbar.setTitle("Choose Collection");
+        toolbar.inflateMenu(R.menu.menu_collection);
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
-            public void onClick(View v) {
-                Log.v(TAG, "Add Button Clicked");
-                showAddCollectionDialog();
+            public boolean onMenuItemClick(MenuItem item) {
+                if(item.getItemId() == R.id.action_add_collection) {
+                    Log.v(TAG, "Add Collection Button Clicked");
+                    getActivity().startActivity(new Intent(getActivity(), AddCollectionActivity.class));
+                    return true;
+                }
+
+                return false;
             }
         });
 
@@ -114,6 +126,9 @@ public class CollectionModeDialog extends DialogFragment {
     public void onStart() {
         Log.v(TAG, "onStart() called");
         super.onStart();
+
+        getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
         // Override any positive and negative buttons here
     }
 

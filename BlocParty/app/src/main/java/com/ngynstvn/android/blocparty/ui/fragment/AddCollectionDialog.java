@@ -4,12 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v13.app.FragmentTabHost;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -23,7 +22,7 @@ import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.tabs.SlidingTabLayout;
+import com.ngynstvn.android.blocparty.ui.adapter.AddUserPagerAdapter;
 
 /**
  * Created by Ngynstvn on 10/27/15.
@@ -33,16 +32,17 @@ public class AddCollectionDialog extends DialogFragment {
 
     private static String TAG = BPUtils.classTag(AddCollectionDialog.class);
 
-    private TextView dialogTitle;
+    private Toolbar toolbar;
+
     private TextView collectionInstr;
     private EditText collectionInputBox;
     private TextView collectionInputValue;
     private TextView collectionInputValueLimit;
     private TextView userInstr;
-    private SlidingTabLayout slidingTabLayout;
-    private ViewPager tabViewPager;
 
-    private PagerAdapter pagerAdapter;
+    private AddUserPagerAdapter addUserPagerAdapter;
+    private FragmentTabHost fragmentTabHost;
+    private ViewPager viewPager;
 
     // Character Tracking anonymous inner class
 
@@ -88,20 +88,20 @@ public class AddCollectionDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.v(TAG, "onCreateDialog() called");
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
-        View view = getActivity().getLayoutInflater().inflate(R.layout.collection_add, null);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.activity_collection_add, null);
 
-        collectionInstr = (TextView) view.findViewById(R.id.tv_collection_title);
-        dialogTitle = (TextView) view.findViewById(R.id.tv_add_collection_instruction);
+        addUserPagerAdapter = new AddUserPagerAdapter(getFragmentManager());
+        toolbar = (Toolbar) view.findViewById(R.id.tb_add_collection_dialog);
+
+        collectionInstr = (TextView) view.findViewById(R.id.tv_add_collection_instruction);
         collectionInputBox = (EditText) view.findViewById(R.id.et_collection_input);
         collectionInputValue = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_value);
         collectionInputValueLimit = (TextView) view.findViewById(R.id.tv_collection_edittext_counter_limit);
         userInstr = (TextView) view.findViewById(R.id.tv_add_user_instructions);
+        fragmentTabHost = (FragmentTabHost) view.findViewById(R.id.stl_add_collection_tabs);
+        viewPager = (ViewPager) view.findViewById(R.id.vp_collection_add_pager);
 
-        tabViewPager = (ViewPager) view.findViewById(R.id.vp_collection_add_pager);
-        tabViewPager.setAdapter(new PagerAdapter(getFragmentManager()));
-
-        slidingTabLayout = (SlidingTabLayout) view.findViewById(R.id.stl_add_collection_tabs);
-//        slidingTabLayout.setViewPager(tabViewPager);
+        toolbar.setTitle("Add Collection");
 
         builder.setView(view)
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -188,51 +188,4 @@ public class AddCollectionDialog extends DialogFragment {
 
     // ----------------------------- //
 
-    // Must import android.support.v13.app.FragmentPagerAdapter to use getFragmentManager() as argument
-
-    class PagerAdapter extends FragmentPagerAdapter {
-
-        public PagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            FacebookUserFragment facebookUserFragment = FacebookUserFragment.newInstance(position);
-            TwitterUserFragment twitterUserFragment = TwitterUserFragment.newInstance(position);
-            InstagramUserFragment instagramUserFragment = InstagramUserFragment.newInstance(position);
-
-            switch(position) {
-                case 0:
-                    return facebookUserFragment;
-                case 1:
-                    return twitterUserFragment;
-                case 2:
-                    return instagramUserFragment;
-            }
-
-            return null;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-
-            if(position == 0) {
-                return "Facebook";
-            }
-            else if(position == 1) {
-                return "Twitter";
-            }
-            else if(position == 2) {
-                return "Instagram";
-            }
-
-            return "";
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-    }
 }
