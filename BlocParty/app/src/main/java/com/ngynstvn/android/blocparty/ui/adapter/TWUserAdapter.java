@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
@@ -55,6 +56,18 @@ public class TWUserAdapter extends RecyclerView.Adapter<TWUserAdapter.TWUserAdap
             userProfilePic = (CircleImageView) itemView.findViewById(R.id.civ_user_profile_pic);
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
             userSelected = (CheckBox) itemView.findViewById(R.id.cb_user_select);
+
+            userSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked) {
+                        Log.v(TAG, "Checkbox Checked");
+                    }
+                    else {
+                        Log.v(TAG, "Checkbox Unchecked");
+                    }
+                }
+            });
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
