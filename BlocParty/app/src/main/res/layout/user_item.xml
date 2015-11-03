@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dummy_user_text"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textColor="@color/black_87"
         android:layout_toRightOf="@+id/iv_user_profile_pic"
         android:layout_toEndOf="@+id/iv_user_profile_pic"

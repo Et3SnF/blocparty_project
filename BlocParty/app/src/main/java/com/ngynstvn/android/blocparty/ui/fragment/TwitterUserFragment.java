@@ -12,10 +12,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.adapter.UserAdapter;
+import com.ngynstvn.android.blocparty.ui.adapter.TWUserAdapter;
 
 /**
  * Created by Ngynstvn on 11/2/15.
@@ -24,8 +25,9 @@ public class TwitterUserFragment extends Fragment {
 
     private static final String TAG = TwitterUserFragment.class.getSimpleName();
 
+    private TextView emptyListText;
     private RecyclerView recyclerView;
-    private UserAdapter userAdapter;
+    private TWUserAdapter twUserAdapter;
 
     public static TwitterUserFragment newInstance(int position) {
         TwitterUserFragment facebookUserFragment = new TwitterUserFragment();
@@ -51,9 +53,8 @@ public class TwitterUserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
-        userAdapter = new UserAdapter();
-        BlocpartyApplication.getSharedDataSource().fetchAllUsers();
-//        BlocpartyApplication.getSharedDataSource().fetchUsers("user_social_network", "Twitter");
+        twUserAdapter = new TWUserAdapter();
+        BlocpartyApplication.getSharedDataSource().fetchTWUsers("user_social_network", "Twitter");
     }
 
     @Nullable
@@ -61,10 +62,13 @@ public class TwitterUserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_twitter_users, container, false);
+
+        emptyListText = (TextView) view.findViewById(R.id.tv_empty_users_tw);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_twitter_users);
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(userAdapter);
+        recyclerView.setAdapter(twUserAdapter);
+
         return view;
     }
 
@@ -78,6 +82,15 @@ public class TwitterUserFragment extends Fragment {
     public void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+
+        if(BlocpartyApplication.getSharedDataSource().getTwUserArrayList().size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            emptyListText.setVisibility(View.VISIBLE);
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyListText.setVisibility(View.GONE);
+        }
     }
 
     @Override

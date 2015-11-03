@@ -78,7 +78,9 @@ public class DataSource {
 
     private static ArrayList<PostItem> postItemArrayList;
     private static ArrayList<Collection> collectionArrayList;
-    private static ArrayList<User> userArrayList;
+    private static ArrayList<User> fbUserArrayList;
+    private static ArrayList<User> twUserArrayList;
+    private static ArrayList<User> igUserArrayList;
 
     // Instantiate the database
 
@@ -91,7 +93,9 @@ public class DataSource {
 
         postItemArrayList = new ArrayList<PostItem>();
         collectionArrayList = new ArrayList<Collection>();
-        userArrayList = new ArrayList<User>();
+        fbUserArrayList = new ArrayList<User>();
+        twUserArrayList = new ArrayList<User>();
+        igUserArrayList = new ArrayList<User>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
@@ -112,8 +116,16 @@ public class DataSource {
         return collectionArrayList;
     }
 
-    public ArrayList<User> getUserArrayList() {
-        return userArrayList;
+    public ArrayList<User> getFbUserArrayList() {
+        return fbUserArrayList;
+    }
+
+    public ArrayList<User> getTwUserArrayList() {
+        return twUserArrayList;
+    }
+
+    public ArrayList<User> getIgUserArrayList() {
+        return igUserArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -450,13 +462,14 @@ public class DataSource {
 
     }
 
-    public void fetchAllUsers() {
+    public void fetchFBUsers(String field, String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + ";", null);
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
+                + " = '" + socialNetwork + "';", null);
 
         if(cursor.moveToFirst()) {
             do {
-                userArrayList.add(userFromCursor(cursor));
+                fbUserArrayList.add(userFromCursor(cursor));
             }
             while (cursor.moveToNext());
         }
@@ -464,14 +477,29 @@ public class DataSource {
         cursor.close();
     }
 
-    public void fetchUsers(String field, String socialNetwork) {
+    public void fetchTWUsers(String field, String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
                 + " = '" + socialNetwork + "';", null);
 
         if(cursor.moveToFirst()) {
             do {
-                userArrayList.add(userFromCursor(cursor));
+                twUserArrayList.add(userFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
+    }
+
+    public void fetchIGUsers(String field, String socialNetwork) {
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
+                + " = '" + socialNetwork + "';", null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                igUserArrayList.add(userFromCursor(cursor));
             }
             while (cursor.moveToNext());
         }

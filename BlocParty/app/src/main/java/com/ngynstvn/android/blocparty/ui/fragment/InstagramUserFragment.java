@@ -12,10 +12,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
-import com.ngynstvn.android.blocparty.ui.adapter.UserAdapter;
+import com.ngynstvn.android.blocparty.ui.adapter.IGUserAdapter;
 
 /**
  * Created by Ngynstvn on 11/2/15.
@@ -24,8 +25,9 @@ public class InstagramUserFragment extends Fragment {
 
     private static final String TAG = InstagramUserFragment.class.getSimpleName();
 
+    private TextView emptyListText;
     private RecyclerView recyclerView;
-    private UserAdapter userAdapter;
+    private IGUserAdapter igUserAdapter;
 
     public static InstagramUserFragment newInstance(int position) {
         InstagramUserFragment facebookUserFragment = new InstagramUserFragment();
@@ -51,9 +53,8 @@ public class InstagramUserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
-        userAdapter = new UserAdapter();
-        BlocpartyApplication.getSharedDataSource().fetchAllUsers();
-//        BlocpartyApplication.getSharedDataSource().fetchUsers("user_social_network", "Instagram");
+        igUserAdapter = new IGUserAdapter();
+        BlocpartyApplication.getSharedDataSource().fetchIGUsers("user_social_network", "Instagram");
     }
 
     @Nullable
@@ -61,10 +62,13 @@ public class InstagramUserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_instagram_users, container, false);
+
+        emptyListText = (TextView) view.findViewById(R.id.tv_empty_users_ig);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_instagram_users);
         recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(userAdapter);
+        recyclerView.setAdapter(igUserAdapter);
+
         return view;
     }
 
@@ -78,6 +82,15 @@ public class InstagramUserFragment extends Fragment {
     public void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+
+        if(BlocpartyApplication.getSharedDataSource().getIgUserArrayList().size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            emptyListText.setVisibility(View.VISIBLE);
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyListText.setVisibility(View.GONE);
+        }
     }
 
     @Override

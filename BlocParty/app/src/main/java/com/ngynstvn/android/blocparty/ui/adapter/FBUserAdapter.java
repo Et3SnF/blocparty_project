@@ -19,29 +19,29 @@ import com.squareup.picasso.Picasso;
  * Created by Ngynstvn on 10/29/15.
  */
 
-public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserAdapterViewHolder> {
+public class FBUserAdapter extends RecyclerView.Adapter<FBUserAdapter.FBUserAdapterViewHolder> {
 
-    private static final String TAG = BPUtils.classTag(UserAdapter.class);
+    private static final String TAG = BPUtils.classTag(FBUserAdapter.class);
 
     @Override
-    public UserAdapter.UserAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public FBUserAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View inflate = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.user_item, viewGroup, false);
-        return new UserAdapterViewHolder(inflate);
+        return new FBUserAdapterViewHolder(inflate);
     }
 
     @Override
-    public void onBindViewHolder(UserAdapter.UserAdapterViewHolder holder, int position) {
-        User user = BlocpartyApplication.getSharedDataSource().getUserArrayList().get(position);
+    public void onBindViewHolder(FBUserAdapterViewHolder holder, int position) {
+        User user = BlocpartyApplication.getSharedDataSource().getFbUserArrayList().get(position);
         holder.updateViewHolder(user);
     }
 
     @Override
     public int getItemCount() {
-        return BlocpartyApplication.getSharedDataSource().getUserArrayList().size();
+        return BlocpartyApplication.getSharedDataSource().getFbUserArrayList().size();
     }
 
-    class UserAdapterViewHolder extends RecyclerView.ViewHolder {
+    class FBUserAdapterViewHolder extends RecyclerView.ViewHolder {
 
         ImageView userProfilePic;
         TextView userName;
@@ -49,7 +49,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserAdapterVie
 
         User user;
 
-        public UserAdapterViewHolder(View itemView) {
+        public FBUserAdapterViewHolder(View itemView) {
             super(itemView);
             userProfilePic = (ImageView) itemView.findViewById(R.id.iv_user_profile_pic);
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
