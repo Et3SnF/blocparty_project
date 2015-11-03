@@ -5,6 +5,19 @@
     android:layout_height="64dp"
     android:background="@drawable/click_effect">
 
+    <TextView
+        android:id="@+id/tv_empty_users_ig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_user_text"
+        android:textSize="20sp"
+        android:textColor="@color/black_26"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:visibility="gone"/>
+
     <ImageView
         android:id="@+id/iv_user_profile_pic"
         android:layout_width="48dp"

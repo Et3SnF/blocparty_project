@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -32,6 +33,7 @@ public class CollectionModeDialog extends DialogFragment {
 
     private Toolbar toolbar;
     private RecyclerView recyclerView;
+    private TextView emptyCollectionText;
 
     private CollectionAdapter collectionAdapter;
 
@@ -70,6 +72,8 @@ public class CollectionModeDialog extends DialogFragment {
 
         toolbar = (Toolbar) view.findViewById(R.id.tb_collection_dialog);
 
+        emptyCollectionText = (TextView) view.findViewById(R.id.tv_empty_collection);
+
         recyclerView = (RecyclerView) view.findViewById(R.id.rl_collection_items);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -78,9 +82,11 @@ public class CollectionModeDialog extends DialogFragment {
 
         if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
             recyclerView.setVisibility(View.GONE);
+            emptyCollectionText.setVisibility(View.VISIBLE);
         }
         else {
             recyclerView.setVisibility(View.VISIBLE);
+            emptyCollectionText.setVisibility(View.GONE);
         }
 
         builder.setView(view)
