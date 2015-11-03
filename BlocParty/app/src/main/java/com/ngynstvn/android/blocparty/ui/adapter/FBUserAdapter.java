@@ -51,7 +51,7 @@ public class FBUserAdapter extends RecyclerView.Adapter<FBUserAdapter.FBUserAdap
 
         public FBUserAdapterViewHolder(View itemView) {
             super(itemView);
-            userProfilePic = (ImageView) itemView.findViewById(R.id.iv_user_profile_pic);
+            userProfilePic = (ImageView) itemView.findViewById(R.id.civ_user_profile_pic);
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
             userSelected = (CheckBox) itemView.findViewById(R.id.cb_user_select);
 

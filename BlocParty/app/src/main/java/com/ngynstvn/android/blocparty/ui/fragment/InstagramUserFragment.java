@@ -54,6 +54,11 @@ public class InstagramUserFragment extends Fragment {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         igUserAdapter = new IGUserAdapter();
+
+        if(BlocpartyApplication.getSharedDataSource().getIgUserArrayList().size() > 0) {
+            BlocpartyApplication.getSharedDataSource().getIgUserArrayList().clear();
+        }
+
         BlocpartyApplication.getSharedDataSource().fetchIGUsers("user_social_network", "Instagram");
     }
 

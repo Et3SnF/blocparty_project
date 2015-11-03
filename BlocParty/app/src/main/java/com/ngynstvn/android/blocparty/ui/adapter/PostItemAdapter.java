@@ -20,6 +20,8 @@ import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 /**
  * Created by Ngynstvn on 9/22/15.
  */
@@ -87,7 +89,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         private final String TAG = "(" + PostItemAdapterViewHolder.class.getSimpleName() + "): ";
 
         TextView postOPName;
-        ImageView postProfileImage;
+        CircleImageView postProfileImage;
         ImageView postImage;
         TextView postImageCaption;
         TextView postPublishDate;
@@ -104,7 +106,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 //            Log.v(TAG, "CollectionAdapterViewHolder() called");
 
             postOPName = (TextView) itemView.findViewById(R.id.tv_op_name);
-            postProfileImage = (ImageView) itemView.findViewById(R.id.iv_profile_pic);
+            postProfileImage = (CircleImageView) itemView.findViewById(R.id.civ_profile_pic);
             postImage = (ImageView) itemView.findViewById(R.id.iv_post_image);
             postMediaType = (TextView) itemView.findViewById(R.id.tv_social_media_type);
             postCaptionArea = (LinearLayout) itemView.findViewById(R.id.ll_caption_area);

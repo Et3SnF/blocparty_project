@@ -54,6 +54,11 @@ public class FacebookUserFragment extends Fragment {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         fbUserAdapter = new FBUserAdapter();
+
+        if(BlocpartyApplication.getSharedDataSource().getFbUserArrayList().size() > 0) {
+            BlocpartyApplication.getSharedDataSource().getFbUserArrayList().clear();
+        }
+
         BlocpartyApplication.getSharedDataSource().fetchFBUsers("user_social_network", "Facebook");
     }
 

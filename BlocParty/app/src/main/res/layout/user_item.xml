@@ -6,7 +6,7 @@
     android:background="@drawable/click_effect">
 
     <TextView
-        android:id="@+id/tv_empty_users_ig"
+        android:id="@+id/tv_empty_users"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/empty_user_text"
@@ -18,8 +18,8 @@
         android:layout_marginRight="16dp"
         android:visibility="gone"/>
 
-    <ImageView
-        android:id="@+id/iv_user_profile_pic"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/civ_user_profile_pic"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@drawable/ic_person_outline_black_48dp"
@@ -37,8 +37,8 @@
         android:text="@string/dummy_user_text"
         android:textSize="18sp"
         android:textColor="@color/black_87"
-        android:layout_toRightOf="@+id/iv_user_profile_pic"
-        android:layout_toEndOf="@+id/iv_user_profile_pic"
+        android:layout_toRightOf="@+id/civ_user_profile_pic"
+        android:layout_toEndOf="@+id/civ_user_profile_pic"
         android:layout_centerVertical="true"/>
 
     <CheckBox

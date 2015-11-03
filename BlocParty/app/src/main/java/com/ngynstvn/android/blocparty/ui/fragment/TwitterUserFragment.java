@@ -54,6 +54,11 @@ public class TwitterUserFragment extends Fragment {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         twUserAdapter = new TWUserAdapter();
+
+        if(BlocpartyApplication.getSharedDataSource().getTwUserArrayList().size() > 0) {
+            BlocpartyApplication.getSharedDataSource().getTwUserArrayList().clear();
+        }
+
         BlocpartyApplication.getSharedDataSource().fetchTWUsers("user_social_network", "Twitter");
     }
 

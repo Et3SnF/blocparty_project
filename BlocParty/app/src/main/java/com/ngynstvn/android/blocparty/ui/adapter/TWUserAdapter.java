@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
@@ -14,6 +13,8 @@ import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.User;
 import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by Ngynstvn on 10/29/15.
@@ -43,7 +44,7 @@ public class TWUserAdapter extends RecyclerView.Adapter<TWUserAdapter.TWUserAdap
 
     class TWUserAdapterViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView userProfilePic;
+        CircleImageView userProfilePic;
         TextView userName;
         CheckBox userSelected;
 
@@ -51,7 +52,7 @@ public class TWUserAdapter extends RecyclerView.Adapter<TWUserAdapter.TWUserAdap
 
         public TWUserAdapterViewHolder(View itemView) {
             super(itemView);
-            userProfilePic = (ImageView) itemView.findViewById(R.id.iv_user_profile_pic);
+            userProfilePic = (CircleImageView) itemView.findViewById(R.id.civ_user_profile_pic);
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
             userSelected = (CheckBox) itemView.findViewById(R.id.cb_user_select);
 
