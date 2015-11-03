@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +38,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserAdapterVie
 
     @Override
     public int getItemCount() {
-        return 0;
+        return BlocpartyApplication.getSharedDataSource().getUserArrayList().size();
     }
 
     class UserAdapterViewHolder extends RecyclerView.ViewHolder {
@@ -53,12 +54,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserAdapterVie
             userProfilePic = (ImageView) itemView.findViewById(R.id.iv_user_profile_pic);
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
             userSelected = (CheckBox) itemView.findViewById(R.id.cb_user_select);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.v(TAG, "User item clicked");
+                }
+            });
         }
 
         private void updateViewHolder(User user) {
             this.user = user;
 
-            if(user.getUserProfilePicUrl() != null) {
+            if (user.getUserProfilePicUrl() != null) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(user
                         .getUserProfilePicUrl()).into(userProfilePic);
             }
