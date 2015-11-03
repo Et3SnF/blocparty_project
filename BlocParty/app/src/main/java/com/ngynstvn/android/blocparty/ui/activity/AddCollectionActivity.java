@@ -137,6 +137,7 @@ public class AddCollectionActivity extends AppCompatActivity {
     protected void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+
     }
 
     @Override

@@ -5,12 +5,17 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.ui.adapter.UserAdapter;
 
 /**
  * Created by Ngynstvn on 11/2/15.
@@ -18,6 +23,9 @@ import com.ngynstvn.android.blocparty.R;
 public class TwitterUserFragment extends Fragment {
 
     private static final String TAG = TwitterUserFragment.class.getSimpleName();
+
+    private RecyclerView recyclerView;
+    private UserAdapter userAdapter;
 
     public static TwitterUserFragment newInstance(int position) {
         TwitterUserFragment facebookUserFragment = new TwitterUserFragment();
@@ -43,6 +51,9 @@ public class TwitterUserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
+        userAdapter = new UserAdapter();
+        BlocpartyApplication.getSharedDataSource().fetchAllUsers();
+//        BlocpartyApplication.getSharedDataSource().fetchUsers("user_social_network", "Twitter");
     }
 
     @Nullable
@@ -50,6 +61,10 @@ public class TwitterUserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_twitter_users, container, false);
+        recyclerView = (RecyclerView) view.findViewById(R.id.rv_twitter_users);
+        recyclerView.setLayoutManager(new LinearLayoutManager(BlocpartyApplication.getSharedInstance()));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(userAdapter);
         return view;
     }
 

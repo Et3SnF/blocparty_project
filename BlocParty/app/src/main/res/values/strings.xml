@@ -43,5 +43,6 @@
     <string name="collection_counter_limit">30</string>
     <string name="collection_counter_value">0</string>
     <string name="counter_slash">/</string>
+    <string name="empty_user_text">No users to add here :(</string>
 
 </resources>

@@ -78,6 +78,7 @@ public class DataSource {
 
     private static ArrayList<PostItem> postItemArrayList;
     private static ArrayList<Collection> collectionArrayList;
+    private static ArrayList<User> userArrayList;
 
     // Instantiate the database
 
@@ -90,6 +91,7 @@ public class DataSource {
 
         postItemArrayList = new ArrayList<PostItem>();
         collectionArrayList = new ArrayList<Collection>();
+        userArrayList = new ArrayList<User>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
@@ -108,6 +110,10 @@ public class DataSource {
 
     public ArrayList<Collection> getCollectionArrayList() {
         return collectionArrayList;
+    }
+
+    public ArrayList<User> getUserArrayList() {
+        return userArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -442,6 +448,35 @@ public class DataSource {
 
         cursor.close();
 
+    }
+
+    public void fetchAllUsers() {
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + ";", null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                userArrayList.add(userFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
+    }
+
+    public void fetchUsers(String field, String socialNetwork) {
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
+                + " = '" + socialNetwork + "';", null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                userArrayList.add(userFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
     }
 
     // Object from Cursor Methods

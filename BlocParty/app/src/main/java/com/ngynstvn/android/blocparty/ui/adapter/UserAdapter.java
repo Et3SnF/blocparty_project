@@ -31,7 +31,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserAdapterVie
 
     @Override
     public void onBindViewHolder(UserAdapter.UserAdapterViewHolder holder, int position) {
-        User user = null;
+        User user = BlocpartyApplication.getSharedDataSource().getUserArrayList().get(position);
         holder.updateViewHolder(user);
     }
 

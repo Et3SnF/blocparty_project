@@ -40,14 +40,13 @@ public class AddUserPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
 
-        if(position == 0) {
-            return "Facebook";
-        }
-        else if(position == 1) {
-            return "Twitter";
-        }
-        else if(position == 2) {
-            return "Instagram";
+        switch(position) {
+            case 0:
+                return "Facebook";
+            case 1:
+                return "Twitter";
+            case 2:
+                return "Instagram";
         }
 
         return "";

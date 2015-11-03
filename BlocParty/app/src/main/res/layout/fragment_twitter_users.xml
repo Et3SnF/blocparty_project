@@ -4,10 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/tv_empty_users_tw"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_user_text"
+        android:textColor="@color/black_26"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:visibility="gone"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_twitter_users"
         android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:visibility="gone"/>
+        android:layout_width="match_parent"/>
 
 </RelativeLayout>
