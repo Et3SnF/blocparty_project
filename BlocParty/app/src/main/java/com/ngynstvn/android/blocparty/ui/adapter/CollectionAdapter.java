@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -13,6 +12,8 @@ import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.Collection;
 
 import java.lang.ref.WeakReference;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by Ngynstvn on 10/28/15.
@@ -82,10 +83,10 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         TextView collectionUserNum;
         TextView collectionUserText;
 
-        ImageView topUserLeftPic;
-        ImageView topUserRightPic;
-        ImageView botUserLeftPic;
-        ImageView botUserRightPic;
+        CircleImageView topUserLeftPic;
+        CircleImageView topUserRightPic;
+        CircleImageView botUserLeftPic;
+        CircleImageView botUserRightPic;
 
         Collection collection;
 
@@ -96,10 +97,10 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             collectionName = (TextView) itemView.findViewById(R.id.tv_collection_name);
             collectionUserNum = (TextView) itemView.findViewById(R.id.tv_collection_user_num_value);
             collectionUserText = (TextView) itemView.findViewById(R.id.tv_collection_users_text);
-            topUserLeftPic = (ImageView) itemView.findViewById(R.id.iv_top_left_pic);
-            topUserRightPic = (ImageView) itemView.findViewById(R.id.iv_top_right_pic);
-            botUserLeftPic = (ImageView) itemView.findViewById(R.id.iv_bot_left_pic);
-            botUserRightPic = (ImageView) itemView.findViewById(R.id.iv_bot_right_pic);
+            topUserLeftPic = (CircleImageView) itemView.findViewById(R.id.iv_top_left_pic);
+            topUserRightPic = (CircleImageView) itemView.findViewById(R.id.iv_top_right_pic);
+            botUserLeftPic = (CircleImageView) itemView.findViewById(R.id.iv_bot_left_pic);
+            botUserRightPic = (CircleImageView) itemView.findViewById(R.id.iv_bot_right_pic);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

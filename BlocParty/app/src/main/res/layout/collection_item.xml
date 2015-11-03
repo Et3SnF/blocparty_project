@@ -70,12 +70,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_top_left_pic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_top_right_pic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
@@ -89,12 +89,12 @@
             android:orientation="horizontal"
             android:layout_below="@id/ll_top_user_pics">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_bot_left_pic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_bot_right_pic"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
