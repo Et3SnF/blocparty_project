@@ -4,8 +4,16 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
@@ -25,6 +33,32 @@ public class AddCollectionActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private AddUserPagerAdapter addUserPagerAdapter;
 
+    private TextView collectionInstr;
+    private EditText collectionInputBox;
+    private TextView collectionInputValue;
+    private TextView collectionInputValueLimit;
+    private TextView userInstr;
+
+    // Character Tracking anonymous inner class
+
+    private final TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            // Nothing here for now
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            collectionInputValue.setText(String.valueOf(s.length()));
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            // Nothing here for now
+        }
+    };
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
@@ -34,6 +68,11 @@ public class AddCollectionActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.tb_add_collection_dialog);
         slidingTabLayout = (SlidingTabLayout) findViewById(R.id.stl_add_collection_tabs);
         viewPager = (ViewPager) findViewById(R.id.vp_collection_add_pager);
+        collectionInstr = (TextView) findViewById(R.id.tv_add_collection_instruction);
+        collectionInputBox = (EditText) findViewById(R.id.et_collection_input);
+        collectionInputValue = (TextView) findViewById(R.id.tv_collection_edittext_counter_value);
+        collectionInputValueLimit = (TextView) findViewById(R.id.tv_collection_edittext_counter_limit);
+        userInstr = (TextView) findViewById(R.id.tv_add_user_instructions);
 
         toolbar.setTitle("Add Collection");
         toolbar.inflateMenu(R.menu.menu_add_collection);
@@ -69,12 +108,29 @@ public class AddCollectionActivity extends AppCompatActivity {
 
         viewPager.setAdapter(addUserPagerAdapter);
         slidingTabLayout.setViewPager(viewPager);
+
     }
 
     @Override
     protected void onStart() {
         Log.e(TAG, "onStart() called");
         super.onStart();
+
+        // Counter related code
+
+        final int collectionCounterLimit = 30;
+
+        collectionInputBox.setInputType(InputType.TYPE_CLASS_TEXT);
+        collectionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(collectionCounterLimit)});
+        collectionInputBox.addTextChangedListener(textWatcher);
+        collectionInputBox.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+            }
+        });
+
+        collectionInputValueLimit.setText(String.valueOf(collectionCounterLimit));
     }
 
     @Override

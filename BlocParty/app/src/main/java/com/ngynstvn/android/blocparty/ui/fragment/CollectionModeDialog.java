@@ -168,12 +168,4 @@ public class CollectionModeDialog extends DialogFragment {
         Log.v(TAG, "onDetach() called");
         super.onDetach();
     }
-
-    // ----------------------------- //
-
-    private void showAddCollectionDialog() {
-        AddCollectionDialog addCollectionDialog = AddCollectionDialog.newInstance();
-        addCollectionDialog.show(getFragmentManager(), "add_collection_dialog");
-    }
-
 }
