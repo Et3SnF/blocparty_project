@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.api.model.PostItem;
+import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
 import com.ngynstvn.android.blocparty.ui.fragment.CollectionModeDialog;
 import com.sromku.simple.fb.SimpleFacebook;
@@ -177,6 +179,14 @@ public class MainActivity extends AppCompatActivity {
         BlocpartyApplication.getSharedDataSource().displayPostItems();
         linearLayoutManager = new LinearLayoutManager(this);
 
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                BlocpartyApplication.getSharedDataSource().displayPostItems();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(postItemAdapter);
@@ -188,46 +198,57 @@ public class MainActivity extends AppCompatActivity {
                 totalItemCount = linearLayoutManager.getItemCount();
                 firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
-                Log.v(TAG, "TotalItemCount: " + totalItemCount);
-                Log.v(TAG, "FirstVisibleItem: " + firstVisibleItem);
+//                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
+//                Log.v(TAG, "TotalItemCount: " + totalItemCount);
+                Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
 
-                if (loading) {
+                PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
 
-                    // If list is loading, stop it and set the previousTotal to the current list's total
+                User user = new User(0); // dummy argument. it doesn't matter for DB insertion
 
-                    if (totalItemCount > previousTotal) {
-                        loading = false;
-                        previousTotal = totalItemCount;
-                        Log.v(TAG, "Previous Total: " + previousTotal);
-                    }
+                user.setUserFullName(postItem.getOpFullName());
+                user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
+                user.setUserProfileId(postItem.getOpProfileId());
+                user.setCollectionId(0); // default collection ID
+
+                if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+                    user.setUserSocNetwork("Instagram");
+                } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+                    user.setUserSocNetwork("Twitter");
+                } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
+                    user.setUserSocNetwork("Facebook");
                 }
 
-                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-                    Log.v(TAG, "End has been reached...loading more...");
-                    postItemAdapter.notifyDataSetChanged();
-                    loading = true;
-                }
+                BlocpartyApplication.getSharedDataSource().addUserToDB(user);
 
-                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
-                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
-                        + (firstVisibleItem + visibleThreshold));
-                Log.v(TAG, "Current loading state: " + loading);
+//                if (loading) {
+//
+//                    // If list is loading, stop it and set the previousTotal to the current list's total
+//
+//                    if (totalItemCount > previousTotal) {
+//                        loading = false;
+//                        previousTotal = totalItemCount;
+//                        Log.v(TAG, "Previous Total: " + previousTotal);
+//                    }
+//                }
+//
+//                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+//                    Log.v(TAG, "End has been reached...loading more...");
+//                    postItemAdapter.notifyDataSetChanged();
+//                    loading = true;
+//                }
+//
+//                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+//                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+//                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
+//                        + (firstVisibleItem + visibleThreshold));
+//                Log.v(TAG, "Current loading state: " + loading);
             }
         });
 
         if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
             BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
         }
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                BlocpartyApplication.getSharedDataSource().displayPostItems();
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
     }
 
     @Override

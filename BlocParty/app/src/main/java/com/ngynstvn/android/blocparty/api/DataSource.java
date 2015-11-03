@@ -480,7 +480,7 @@ public class DataSource {
 
     // DB Methods
 
-    private boolean isValueInDB(String tableName, String field, String fieldValue) {
+    public boolean isValueInDB(String tableName, String field, String fieldValue) {
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
                 .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field + " = '" + fieldValue + "'", null);
 
@@ -496,6 +496,31 @@ public class DataSource {
     public void clearTable(String tableName) {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");
+    }
+
+    public void addUserToDB(final User user) {
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
+                        !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
+                    new UserTable.Builder()
+                            .setColumnUserFullName(user.getUserFullName())
+                            .setColumnUserSocialNetwork(user.getUserSocNetwork())
+                            .setColumnUserProfileId(user.getUserProfileId())
+                            .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
+                            .setColumnCollectionId(user.getCollectionId())
+                            .insert(databaseOpenHelper.getWritableDatabase());
+                }
+                else {
+                    return null;
+                }
+
+                return null;
+            }
+        }.execute();
     }
 
 }

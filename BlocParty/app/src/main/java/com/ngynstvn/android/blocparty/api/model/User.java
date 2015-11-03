@@ -13,6 +13,10 @@ public class User extends Model {
 
     // The value associated with the collection. This prevents misnaming a collection later later.
 
+    public User(long rowId) {
+        super(rowId);
+    }
+
     public User(long rowId, String userFullName, String userSocNetwork, long userProfileId,
                 String userProfilePicUrl, int collectionId) {
         super(rowId);
