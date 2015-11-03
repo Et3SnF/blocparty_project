@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     private int totalItemCount;
     private LinearLayoutManager linearLayoutManager;
 
+    private static PostItem postItem;
+
     /*
      * Interface Material
      */
@@ -202,7 +204,9 @@ public class MainActivity extends AppCompatActivity {
 //                Log.v(TAG, "TotalItemCount: " + totalItemCount);
                 Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
 
-                PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                if (firstVisibleItem != -1) {
+                    postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                }
 
                 User user = new User(0); // dummy argument. it doesn't matter for DB insertion
 
