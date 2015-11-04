@@ -11,6 +11,8 @@ import android.widget.Toast;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.Collection;
+import com.ngynstvn.android.blocparty.api.model.User;
+import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 
@@ -141,7 +143,42 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                         .getString(R.string.users));
             }
 
+            User user1 = null;
+            User user2 = null;
+            User user3 = null;
+            User user4 = null;
 
+            if(user1.getUserProfilePicUrl() != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(topUserLeftPic);
+            }
+            else {
+                topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                        .getResources().getColor(android.R.color.white));
+            }
+
+            if(user2.getUserProfilePicUrl() != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(topUserRightPic);
+            }
+            else {
+                topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                        .getResources().getColor(android.R.color.white));
+            }
+
+            if(user3.getUserProfilePicUrl() != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(botUserLeftPic);
+            }
+            else {
+                botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                        .getResources().getColor(android.R.color.white));
+            }
+
+            if(user4.getUserProfilePicUrl() != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(botUserRightPic);
+            }
+            else {
+                botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                        .getResources().getColor(android.R.color.white));
+            }
         }
     }
 }

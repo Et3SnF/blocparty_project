@@ -83,6 +83,8 @@ public class DataSource {
     private static ArrayList<User> twUserArrayList;
     private static ArrayList<User> igUserArrayList;
 
+    private static ArrayList<User> filteredUserArrayList;
+
     // Instantiate the database
 
     public DataSource(Context context) {
@@ -97,6 +99,7 @@ public class DataSource {
         fbUserArrayList = new ArrayList<User>();
         twUserArrayList = new ArrayList<User>();
         igUserArrayList = new ArrayList<User>();
+        filteredUserArrayList = new ArrayList<User>();
 
         // This will be network dependent so the application starts out at a clean slate every time.
         databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
@@ -127,6 +130,10 @@ public class DataSource {
 
     public ArrayList<User> getIgUserArrayList() {
         return igUserArrayList;
+    }
+
+    public ArrayList<User> getFilteredUserArrayList() {
+        return filteredUserArrayList;
     }
 
     // ----- Fetch Methods ----- //
@@ -518,6 +525,22 @@ public class DataSource {
                 collectionArrayList.add(collectionFromCursor(cursor));
             }
             while(cursor.moveToNext());
+        }
+
+        cursor.close();
+    }
+
+    public void fetchCollectionUser(String tbName1, String tbName2, String keyField, String condField, String condFieldValue) {
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select * from " + tbName1 + " , " + tbName2 + " where "
+                + tbName1 + "." + keyField + " = " + tbName2 + "." + keyField + " and " + tbName2
+                + "." + condField + " = '" + condFieldValue + "';", null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                filteredUserArrayList.add(userFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
         }
 
         cursor.close();
