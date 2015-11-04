@@ -90,7 +90,7 @@ public class CollectionModeDialog extends DialogFragment {
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.v(TAG, "Collection Mode Save Button Clicked");
+                        Log.v(TAG, "Collection Mode Ok Button Clicked");
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

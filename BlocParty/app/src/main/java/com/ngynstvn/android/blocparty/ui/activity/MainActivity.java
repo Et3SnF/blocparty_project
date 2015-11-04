@@ -12,6 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -26,6 +30,7 @@ import org.jinstagram.Instagram;
 
 import java.lang.ref.WeakReference;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
@@ -42,8 +47,26 @@ public class MainActivity extends AppCompatActivity {
     private Menu menu;
     private MenuItem menuItem;
 
+    private boolean isFilterActive = false;
+
+    // All Posts Fields here
+
+    private LinearLayout allPostsLayout;
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    // Filtered Posts Fields here
+
+    private LinearLayout filteredPostsLayout;
+    // SRL and RV apply here
+    private CircleImageView topLeftImage;
+    private CircleImageView topRightImage;
+    private CircleImageView botLeftImage;
+    private CircleImageView botRightImage;
+    private TextView collectionName;
+    private Button closeFilteredButton;
+
+    // ---- Other Fields ---- //
 
     private SharedPreferences sharedPreferences;
 
@@ -100,15 +123,13 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = (Toolbar) findViewById(R.id.tb_activity_blocparty);
+        toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
 
         isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
         postItemAdapter = new PostItemAdapter();
-        recyclerView = (RecyclerView) findViewById(R.id.rv_main_fragment);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_main_fragment);
 
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
         isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
@@ -146,6 +167,11 @@ public class MainActivity extends AppCompatActivity {
         if(isIGLoggedIn) {
             instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
         }
+
+        // Inflate initial views
+
+        allPostsLayout = (LinearLayout) findViewById(R.id.ll_all_user_posts);
+        filteredPostsLayout = (LinearLayout) findViewById(R.id.ll_filtered_user_posts);
     }
 
     @Override
@@ -182,51 +208,68 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        BlocpartyApplication.getSharedDataSource().displayPostItems();
-        linearLayoutManager = new LinearLayoutManager(this);
+        // Display Collection Dialog once a new collection is saved
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                BlocpartyApplication.getSharedDataSource().displayPostItems();
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
+        if(isColDialogActive) {
+            showCollectionModeDialog();
+            isColDialogActive = false;
+        }
 
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(postItemAdapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                visibleItemCount = recyclerView.getChildCount();
-                totalItemCount = linearLayoutManager.getItemCount();
-                firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
+        /**
+         *
+         * Views Area
+         *
+         */
+
+        if(!isFilterActive) {
+
+            // Disable this layout until it is needed
+            allPostsLayout.setEnabled(true);
+            allPostsLayout.setVisibility(View.VISIBLE);
+            filteredPostsLayout.setEnabled(false);
+            filteredPostsLayout.setVisibility(View.GONE);
+
+            // Inflate views here
+
+            recyclerView = (RecyclerView) findViewById(R.id.rv_activity_main_all);
+            swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_activity_main_all);
+
+            linearLayoutManager = new LinearLayoutManager(this);
+
+            recyclerView.setLayoutManager(linearLayoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.setAdapter(postItemAdapter);
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    visibleItemCount = recyclerView.getChildCount();
+                    totalItemCount = linearLayoutManager.getItemCount();
+                    firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
 //                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
 //                Log.v(TAG, "TotalItemCount: " + totalItemCount);
-                Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
+                    Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
 
-                if (firstVisibleItem != -1) {
-                    postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
-                }
+                    if (firstVisibleItem != -1) {
+                        postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                    }
 
-                User user = new User(0); // dummy argument. it doesn't matter for DB insertion
+                    User user = new User(0); // dummy argument. it doesn't matter for DB insertion
 
-                user.setUserFullName(postItem.getOpFullName());
-                user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
-                user.setUserProfileId(postItem.getOpProfileId());
+                    user.setUserFullName(postItem.getOpFullName());
+                    user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
+                    user.setUserProfileId(postItem.getOpProfileId());
 
-                if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
-                    user.setUserSocNetwork("Instagram");
-                } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
-                    user.setUserSocNetwork("Twitter");
-                } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
-                    user.setUserSocNetwork("Facebook");
-                }
+                    if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+                        user.setUserSocNetwork("Instagram");
+                    } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+                        user.setUserSocNetwork("Twitter");
+                    } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
+                        user.setUserSocNetwork("Facebook");
+                    }
 
-                BlocpartyApplication.getSharedDataSource().addUserToDB(user);
+                    BlocpartyApplication.getSharedDataSource().addUserToDB(user);
 
 //                if (loading) {
 //
@@ -250,16 +293,124 @@ public class MainActivity extends AppCompatActivity {
 //                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
 //                        + (firstVisibleItem + visibleThreshold));
 //                Log.v(TAG, "Current loading state: " + loading);
+                }
+            });
+
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    BlocpartyApplication.getSharedDataSource().displayPostItems();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
+
+
+            if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+                BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
             }
-        });
-
-        if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-            BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
         }
+        else {
+            // Disable this layout until it is needed
+            allPostsLayout.setEnabled(false);
+            allPostsLayout.setVisibility(View.GONE);
+            filteredPostsLayout.setEnabled(true);
+            filteredPostsLayout.setVisibility(View.VISIBLE);
 
-        if(isColDialogActive) {
-            showCollectionModeDialog();
-            isColDialogActive = false;
+            // Inflate views here
+
+            recyclerView = (RecyclerView) findViewById(R.id.rv_activity_main_filtered);
+            swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_activity_main_filtered);
+            topLeftImage = (CircleImageView) findViewById(R.id.civ_top_left_pic_view);
+            topRightImage = (CircleImageView) findViewById(R.id.civ_top_right_pic_view);
+            botLeftImage = (CircleImageView) findViewById(R.id.civ_bot_left_pic_view);
+            botRightImage = (CircleImageView) findViewById(R.id.civ_bot_right_pic_view);
+            closeFilteredButton = (Button) findViewById(R.id.btn_close_collection_view);
+
+            linearLayoutManager = new LinearLayoutManager(this);
+
+            recyclerView.setLayoutManager(linearLayoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.setAdapter(postItemAdapter);
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    visibleItemCount = recyclerView.getChildCount();
+                    totalItemCount = linearLayoutManager.getItemCount();
+                    firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
+
+//                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
+//                Log.v(TAG, "TotalItemCount: " + totalItemCount);
+                    Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
+
+                    if (firstVisibleItem != -1) {
+                        postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                    }
+
+                    User user = new User(0); // dummy argument. it doesn't matter for DB insertion
+
+                    user.setUserFullName(postItem.getOpFullName());
+                    user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
+                    user.setUserProfileId(postItem.getOpProfileId());
+
+                    if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+                        user.setUserSocNetwork("Instagram");
+                    } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+                        user.setUserSocNetwork("Twitter");
+                    } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
+                        user.setUserSocNetwork("Facebook");
+                    }
+
+                    BlocpartyApplication.getSharedDataSource().addUserToDB(user);
+
+//                if (loading) {
+//
+//                    // If list is loading, stop it and set the previousTotal to the current list's total
+//
+//                    if (totalItemCount > previousTotal) {
+//                        loading = false;
+//                        previousTotal = totalItemCount;
+//                        Log.v(TAG, "Previous Total: " + previousTotal);
+//                    }
+//                }
+//
+//                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+//                    Log.v(TAG, "End has been reached...loading more...");
+//                    postItemAdapter.notifyDataSetChanged();
+//                    loading = true;
+//                }
+//
+//                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+//                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+//                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
+//                        + (firstVisibleItem + visibleThreshold));
+//                Log.v(TAG, "Current loading state: " + loading);
+                }
+            });
+
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    // Create method to get filtered results here;
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
+
+            closeFilteredButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.v(TAG, "Close Collection View button clicked");
+                    isFilterActive = false;
+                    allPostsLayout.setEnabled(true);
+                    allPostsLayout.setVisibility(View.VISIBLE);
+                    filteredPostsLayout.setEnabled(false);
+                    filteredPostsLayout.setVisibility(View.GONE);
+                }
+            });
+
+            if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+                BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+            }
         }
     }
 

@@ -4,7 +4,7 @@
     android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/tb_activity_blocparty"
+        android:id="@+id/tb_activity_main"
         android:layout_height="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:background="@color/material_indigo_500"/>
@@ -13,7 +13,7 @@
         android:id="@+id/fl_post_item_views"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/tb_activity_blocparty">
+        android:layout_below="@+id/tb_activity_main">
 
         <!-- All User Posts -->
 
@@ -24,13 +24,13 @@
             android:orientation="vertical">
 
             <android.support.v4.widget.SwipeRefreshLayout
-                android:id="@+id/srl_activity_blocparty_all"
+                android:id="@+id/srl_activity_main_all"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rv_activity_blocparty_all"
+                    android:id="@+id/rv_activity_main_all"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
@@ -71,12 +71,12 @@
                         android:orientation="horizontal">
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/iv_top_left_pic_view"
+                            android:id="@+id/civ_top_left_pic_view"
                             android:layout_width="30dp"
                             android:layout_height="30dp"/>
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/iv_top_right_pic_view"
+                            android:id="@+id/civ_top_right_pic_view"
                             android:layout_width="30dp"
                             android:layout_height="30dp"/>
 
@@ -90,12 +90,12 @@
                         android:layout_below="@id/ll_top_user_pics">
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/iv_bot_left_pic_view"
+                            android:id="@+id/civ_bot_left_pic_view"
                             android:layout_width="30dp"
                             android:layout_height="30dp"/>
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/iv_bot_right_pic_view"
+                            android:id="@+id/civ_bot_right_pic_view"
                             android:layout_width="30dp"
                             android:layout_height="30dp"/>
 
@@ -132,13 +132,13 @@
             </RelativeLayout>
 
             <android.support.v4.widget.SwipeRefreshLayout
-                android:id="@+id/srl_activity_blocparty_filtered"
+                android:id="@+id/srl_activity_main_filtered"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rv_activity_blocparty_filtered"
+                    android:id="@+id/rv_activity_main_filtered"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
