@@ -510,7 +510,8 @@ public class DataSource {
 
     public void fetchCollections() {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select distinct " + "collection_name" + " from " + BPUtils.COLLECTION_TABLE, null);
+        Cursor cursor = database.rawQuery("Select distinct " + "collection_name" + " from "
+                + BPUtils.COLLECTION_TABLE + " order by " + "collection_name;", null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -584,7 +585,7 @@ public class DataSource {
 
         return 0;
     }
-    
+
     public void clearTable(String tableName) {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");

@@ -65,8 +65,6 @@ public class CollectionModeDialog extends DialogFragment {
 
         BlocpartyApplication.getSharedDataSource().getCollectionArrayList().clear();
         BlocpartyApplication.getSharedDataSource().fetchCollections();
-
-
     }
 
     @Override
