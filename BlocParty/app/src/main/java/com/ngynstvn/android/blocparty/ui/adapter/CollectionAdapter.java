@@ -5,9 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.Collection;
@@ -15,6 +17,7 @@ import com.ngynstvn.android.blocparty.api.model.User;
 import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -143,42 +146,75 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                         .getString(R.string.users));
             }
 
+            updateCollectionUserImages(topUserLeftPic, topUserRightPic, botUserLeftPic, botUserRightPic);
+        }
+
+        private void updateCollectionUserImages(ImageView image1, ImageView image2, ImageView image3, ImageView image4) {
+
+            ArrayList<User> userArrayList = new ArrayList<>();
+
+            for(int i = 0; i < BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size(); i++) {
+                userArrayList = BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(BPUtils.USER_PROFILE_ID,
+                        BlocpartyApplication.getSharedDataSource().getCollectionArrayList().get(i).getCollectionName());
+            }
+
             User user1 = null;
             User user2 = null;
             User user3 = null;
             User user4 = null;
 
-            if(user1.getUserProfilePicUrl() != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(topUserLeftPic);
+            if(userArrayList.size() == 1) {
+                user1 = userArrayList.get(0);
+            }
+            else if(userArrayList.size() == 2) {
+                user1 = userArrayList.get(0);
+                user2 = userArrayList.get(1);
+            }
+            else if(userArrayList.size() == 3) {
+                user1 = userArrayList.get(0);
+                user2 = userArrayList.get(1);
+                user3 = userArrayList.get(2);
+            }
+            else if(userArrayList.size() == 4) {
+                user1 = userArrayList.get(0);
+                user2 = userArrayList.get(1);
+                user3 = userArrayList.get(2);
+                user4 =  userArrayList.get(3);
+            }
+
+            if(user1 != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(image1);
             }
             else {
                 topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.white));
+                        .getResources().getColor(android.R.color.transparent));
             }
 
-            if(user2.getUserProfilePicUrl() != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(topUserRightPic);
+            if(user2 != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(image2);
             }
             else {
                 topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.white));
+                        .getResources().getColor(android.R.color.transparent));
             }
 
-            if(user3.getUserProfilePicUrl() != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(botUserLeftPic);
+            if(user3 != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(image3);
             }
             else {
                 botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.white));
+                        .getResources().getColor(android.R.color.transparent));
             }
 
-            if(user4.getUserProfilePicUrl() != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(botUserRightPic);
+            if(user4 != null) {
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(image4);
             }
             else {
                 botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.white));
+                        .getResources().getColor(android.R.color.transparent));
             }
+
+            userArrayList.clear();
         }
     }
 }

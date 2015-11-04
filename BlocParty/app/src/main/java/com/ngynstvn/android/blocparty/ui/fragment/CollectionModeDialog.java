@@ -65,12 +65,6 @@ public class CollectionModeDialog extends DialogFragment {
 
         BlocpartyApplication.getSharedDataSource().getCollectionArrayList().clear();
         BlocpartyApplication.getSharedDataSource().fetchCollections();
-
-        for(int i = 0; i < BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size(); i++) {
-            BlocpartyApplication.getSharedDataSource().fetchCollectionUser(BPUtils.USER_TABLE,
-                    BPUtils.COLLECTION_TABLE, BPUtils.USER_PROFILE_ID, "collection_name",
-                    BlocpartyApplication.getSharedDataSource().getCollectionArrayList().get(i).getCollectionName());
-        }
     }
 
     @Override
