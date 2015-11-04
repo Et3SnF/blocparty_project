@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="16dp">
+        android:layout_marginLeft="24dp">
 
         <TextView
             android:id="@+id/tv_collection_name"

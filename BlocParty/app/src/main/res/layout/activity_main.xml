@@ -9,18 +9,143 @@
         android:layout_width="match_parent"
         android:background="@color/material_indigo_500"/>
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/srl_main_fragment"
-        android:orientation="vertical"
+    <FrameLayout
+        android:id="@+id/fl_post_item_views"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/tb_activity_blocparty">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_main_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        <!-- All User Posts -->
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+        <LinearLayout
+            android:id="@+id/ll_all_user_posts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/srl_activity_blocparty_all"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_activity_blocparty_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </android.support.v4.widget.SwipeRefreshLayout>
+
+        </LinearLayout>
+
+        <!-- Filtered by Collection Posts -->
+
+        <LinearLayout
+            android:id="@+id/ll_filtered_user_posts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@color/collection_post_bar">
+
+                <RelativeLayout
+                    android:id="@+id/rl_collection_user_pics_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_centerVertical="true">
+
+                    <LinearLayout
+                        android:id="@+id/ll_top_user_pics"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/iv_top_left_pic_view"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"/>
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/iv_top_right_pic_view"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_bottom_user_pics"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_below="@id/ll_top_user_pics">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/iv_bot_left_pic_view"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"/>
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/iv_bot_right_pic_view"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/tv_collection_name_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/collection_dummy_text"
+                    android:textSize="26sp"
+                    android:paddingRight="16dp"
+                    android:paddingLeft="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"/>
+
+                <Button
+                    android:id="@+id/btn_close_collection_view"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/close_filter_selector"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"/>
+
+            </RelativeLayout>
+
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/srl_activity_blocparty_filtered"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_activity_blocparty_filtered"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </android.support.v4.widget.SwipeRefreshLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </RelativeLayout>
