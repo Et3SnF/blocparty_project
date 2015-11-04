@@ -107,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
         isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
         postItemAdapter = new PostItemAdapter();
-        recyclerView = (RecyclerView) findViewById(R.id.rv_main_fragment_all_users);
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_main_activity);
+        recyclerView = (RecyclerView) findViewById(R.id.rv_main_fragment);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_main_fragment);
 
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
         isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
