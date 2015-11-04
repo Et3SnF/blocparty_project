@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.facebook.AccessToken;
@@ -507,6 +508,20 @@ public class DataSource {
         cursor.close();
     }
 
+    public void fetchCollections() {
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery("Select distinct " + "collection_name" + " from " + BPUtils.COLLECTION_TABLE, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                collectionArrayList.add(collectionFromCursor(cursor));
+            }
+            while(cursor.moveToNext());
+        }
+
+        cursor.close();
+    }
+
     // Object from Cursor Methods
 
     static PostItem itemFromCursor(Cursor cursor) {
@@ -546,7 +561,8 @@ public class DataSource {
 
     public boolean isValueInDB(String tableName, String field, String fieldValue) {
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
-                .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field + " = '" + fieldValue + "'", null);
+                .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field
+                        + " like '" + fieldValue + "'", null);
 
         if(cursor.getCount() <= 0) {
             cursor.close();
@@ -560,6 +576,20 @@ public class DataSource {
     public void clearTable(String tableName) {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");
+    }
+
+    public void addCollectionToDB(final String name, final String userProfileId) {
+        Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                new CollectionTable.Builder()
+                        .setCollectionName(name)
+                        .setUserId(Long.parseLong(userProfileId))
+                        .insert(databaseOpenHelper.getWritableDatabase());
+            }
+        });
     }
 
     public void addUserToDB(final User user) {

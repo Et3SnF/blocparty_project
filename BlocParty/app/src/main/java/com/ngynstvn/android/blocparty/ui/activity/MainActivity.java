@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static PostItem postItem;
 
+    private boolean isColDialogActive = false;
+
     /*
      * Interface Material
      */
@@ -101,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.tb_activity_blocparty);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
+
+        isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
         postItemAdapter = new PostItemAdapter();
         recyclerView = (RecyclerView) findViewById(R.id.rv_main_fragment);
@@ -251,6 +255,11 @@ public class MainActivity extends AppCompatActivity {
 
         if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
             BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
+        }
+
+        if(isColDialogActive) {
+            showCollectionModeDialog();
+            isColDialogActive = false;
         }
     }
 

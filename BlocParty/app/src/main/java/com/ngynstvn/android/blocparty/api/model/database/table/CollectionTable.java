@@ -44,7 +44,7 @@ public class CollectionTable extends Table {
         }
 
         public Builder setUserId(long id) {
-            contentValues.put(COLUMN_COLLECTION_NAME, id);
+            contentValues.put(COLUMN_USER_ID, id);
             return this;
         }
 

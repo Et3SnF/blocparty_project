@@ -33,6 +33,7 @@ public class CollectionModeDialog extends DialogFragment {
 
     private Toolbar toolbar;
     private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
     private TextView emptyCollectionText;
 
     private CollectionAdapter collectionAdapter;
@@ -61,6 +62,11 @@ public class CollectionModeDialog extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
+
+        BlocpartyApplication.getSharedDataSource().getCollectionArrayList().clear();
+        BlocpartyApplication.getSharedDataSource().fetchCollections();
+
+
     }
 
     @Override
@@ -74,20 +80,13 @@ public class CollectionModeDialog extends DialogFragment {
 
         emptyCollectionText = (TextView) view.findViewById(R.id.tv_empty_collection);
 
+        linearLayoutManager = new org.solovyev.android.views.llm.LinearLayoutManager(getActivity(),
+                LinearLayoutManager.VERTICAL, false);
         recyclerView = (RecyclerView) view.findViewById(R.id.rl_collection_items);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         collectionAdapter = new CollectionAdapter();
         recyclerView.setAdapter(collectionAdapter);
-
-        if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
-            recyclerView.setVisibility(View.GONE);
-            emptyCollectionText.setVisibility(View.VISIBLE);
-        }
-        else {
-            recyclerView.setVisibility(View.VISIBLE);
-            emptyCollectionText.setVisibility(View.GONE);
-        }
 
         builder.setView(view)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -111,6 +110,7 @@ public class CollectionModeDialog extends DialogFragment {
             public boolean onMenuItemClick(MenuItem item) {
                 if(item.getItemId() == R.id.action_add_collection) {
                     Log.v(TAG, "Add Collection Button Clicked");
+                    dismiss();
                     getActivity().startActivity(new Intent(getActivity(), AddCollectionActivity.class));
                     return true;
                 }
@@ -118,6 +118,15 @@ public class CollectionModeDialog extends DialogFragment {
                 return false;
             }
         });
+
+        if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            emptyCollectionText.setVisibility(View.VISIBLE);
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyCollectionText.setVisibility(View.GONE);
+        }
 
         return builder.create();
     }
@@ -132,10 +141,15 @@ public class CollectionModeDialog extends DialogFragment {
     public void onStart() {
         Log.v(TAG, "onStart() called");
         super.onStart();
-
         getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         // Override any positive and negative buttons here
+    }
+
+    @Override
+    public void onResume() {
+        Log.v(TAG, "onResume() called");
+        super.onResume();
     }
 
     @Override

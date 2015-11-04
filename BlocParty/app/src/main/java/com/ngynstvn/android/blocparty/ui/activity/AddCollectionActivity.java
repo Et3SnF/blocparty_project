@@ -1,5 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -14,12 +16,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.adapter.AddUserPagerAdapter;
-import com.ngynstvn.android.blocparty.ui.fragment.CollectionModeDialog;
 import com.ngynstvn.android.blocparty.ui.tabs.SlidingTabLayout;
+
+import java.util.Map;
 
 /**
  * Created by Ngynstvn on 11/2/15.
@@ -29,14 +34,17 @@ public class AddCollectionActivity extends AppCompatActivity {
 
     private static String TAG = BPUtils.classTag(AddCollectionActivity.class);
 
+    private SharedPreferences sPrefChkStates;
+    private Map<String, ?> sPrefUserKeys;
+
     private SlidingTabLayout slidingTabLayout;
     private ViewPager viewPager;
     private AddUserPagerAdapter addUserPagerAdapter;
 
-    private TextView collectionInstr;
     private EditText collectionInputBox;
     private TextView collectionInputValue;
     private TextView collectionInputValueLimit;
+    private TextView collectionInstr;
     private TextView userInstr;
 
     // Character Tracking anonymous inner class
@@ -65,6 +73,8 @@ public class AddCollectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_collection_add);
 
+        sPrefChkStates = BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.tb_add_collection_dialog);
         slidingTabLayout = (SlidingTabLayout) findViewById(R.id.stl_add_collection_tabs);
         viewPager = (ViewPager) findViewById(R.id.vp_collection_add_pager);
@@ -82,14 +92,49 @@ public class AddCollectionActivity extends AppCompatActivity {
                 if (item.getItemId() == R.id.action_add_collection_close) {
                     Log.v(TAG, "Cancel Add Collection Clicked");
                     BPUtils.clearSPrefTable(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE), BPUtils.CHECKED_STATE);
-                    finish();
-                    showCollectionModeDialog();
+
+                    showMainActivity();
+
                     return true;
                 }
                 else if (item.getItemId() == R.id.action_add_collection_save) {
                     Log.v(TAG, "Save Add Collection Clicked");
-                    finish();
-                    showCollectionModeDialog();
+
+                    if(collectionInputBox != null) {
+
+                        sPrefUserKeys = sPrefChkStates.getAll();
+
+                        String input = collectionInputBox.getText().toString();
+
+                        if(collectionInputBox.getText().toString().length() == 0) {
+                            Toast.makeText(AddCollectionActivity.this, "Collection name cannot be " +
+                                    "empty", Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        if(BlocpartyApplication.getSharedDataSource().isValueInDB(BPUtils.COLLECTION_TABLE,
+                                "collection_name", input)) {
+                            Toast.makeText(AddCollectionActivity.this, input + " is already a Collection " +
+                                    "name.", Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        if(sPrefUserKeys.size() == 0) {
+                            Toast.makeText(AddCollectionActivity.this, "You must add at least one " +
+                                    "user to the collection.", Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        // Insert into collection_table with user ids
+
+                        for(Map.Entry<String, ?> key : sPrefUserKeys.entrySet()) {
+                            BlocpartyApplication.getSharedDataSource().addCollectionToDB(input, key.getKey());
+                        }
+
+                        showMainActivity();
+                        BPUtils.clearSPrefTable(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE), BPUtils.CHECKED_STATE);
+                    }
+
                     return true;
                 }
 
@@ -139,7 +184,6 @@ public class AddCollectionActivity extends AppCompatActivity {
     protected void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
-
     }
 
     @Override
@@ -167,9 +211,11 @@ public class AddCollectionActivity extends AppCompatActivity {
 
     // -----   -----  -----  -----  ----- //
 
-    private void showCollectionModeDialog() {
-        CollectionModeDialog collectionModeDialog = CollectionModeDialog.newInstance();
-        collectionModeDialog.show(getFragmentManager(), "collection_mode_dialog");
+    private void showMainActivity() {
+        finish();
+        Intent intent = new Intent(AddCollectionActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //clears back stack
+        intent.putExtra("show_dialog", true);
+        startActivity(intent);
     }
-
 }
