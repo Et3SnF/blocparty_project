@@ -21,6 +21,7 @@ public class BPUtils {
     // ----- Static Variables ----- //
 
     public static final String FILE_NAME = "log_states";
+    public static final String CHECKED_STATE = "checked_states";
 
     // Facebook Variables
 
@@ -129,6 +130,13 @@ public class BPUtils {
         sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(key);
+        editor.apply();
+    }
+
+    public static void clearSPrefTable(SharedPreferences sharedPreferences, String fileName) {
+        sharedPreferences = BlocpartyApplication.getSharedInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
         editor.apply();
     }
 

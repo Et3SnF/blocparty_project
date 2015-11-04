@@ -81,10 +81,12 @@ public class AddCollectionActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.action_add_collection_close) {
                     Log.v(TAG, "Cancel Add Collection Clicked");
+                    BPUtils.clearSPrefTable(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE), BPUtils.CHECKED_STATE);
                     finish();
                     showCollectionModeDialog();
                     return true;
-                } else if (item.getItemId() == R.id.action_add_collection_save) {
+                }
+                else if (item.getItemId() == R.id.action_add_collection_save) {
                     Log.v(TAG, "Save Add Collection Clicked");
                     finish();
                     showCollectionModeDialog();

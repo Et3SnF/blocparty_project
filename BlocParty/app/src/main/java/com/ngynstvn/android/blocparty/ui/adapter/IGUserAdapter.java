@@ -56,18 +56,6 @@ public class IGUserAdapter extends RecyclerView.Adapter<IGUserAdapter.IGUserAdap
             userName = (TextView) itemView.findViewById(R.id.tv_user_name);
             userSelected = (CheckBox) itemView.findViewById(R.id.cb_user_select);
 
-            userSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked) {
-                        Log.v(TAG, "Checkbox Checked");
-                    }
-                    else {
-                        Log.v(TAG, "Checkbox Unchecked");
-                    }
-                }
-            });
-
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -76,13 +64,29 @@ public class IGUserAdapter extends RecyclerView.Adapter<IGUserAdapter.IGUserAdap
             });
         }
 
-        private void updateViewHolder(User user) {
+        private void updateViewHolder(final User user) {
             this.user = user;
 
             if (user.getUserProfilePicUrl() != null) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(user
                         .getUserProfilePicUrl()).into(userProfilePic);
             }
+
+            userSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked) {
+                        Log.v(TAG, "Checkbox Checked");
+                        BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE),
+                                BPUtils.CHECKED_STATE, String.valueOf(user.getUserProfileId()), true);
+                    }
+                    else {
+                        Log.v(TAG, "Checkbox Unchecked");
+                        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE),
+                                BPUtils.CHECKED_STATE, String.valueOf(user.getUserProfileId()));
+                    }
+                }
+            });
 
             userName.setText(user.getUserFullName());
         }
