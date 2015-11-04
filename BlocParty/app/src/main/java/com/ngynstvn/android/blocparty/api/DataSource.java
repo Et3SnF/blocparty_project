@@ -466,7 +466,7 @@ public class DataSource {
     public void fetchFBUsers(String field, String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "';", null);
+                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -481,7 +481,7 @@ public class DataSource {
     public void fetchTWUsers(String field, String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "';", null);
+                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -496,7 +496,7 @@ public class DataSource {
     public void fetchIGUsers(String field, String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "';", null);
+                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
 
         if(cursor.moveToFirst()) {
             do {
