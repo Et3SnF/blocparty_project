@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
@@ -106,6 +107,18 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 @Override
                 public void onClick(View v) {
                     Log.v(TAG, "Collection Item Clicked");
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Long press to modify",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Log.v(TAG, "Collection Item Long Clicked");
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "I have been long pressed",
+                            Toast.LENGTH_SHORT).show();
+                    return true;
                 }
             });
         }
@@ -113,7 +126,22 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         void updateViewHolder(Collection collection) {
             this.collection = collection;
             collectionName.setText(collection.getCollectionName());
-            collectionUserNum.setText(String.valueOf(0));
+
+            int count = BlocpartyApplication.getSharedDataSource()
+                    .getCollectionItemCount("collection_name", collection.getCollectionName());
+
+            collectionUserNum.setText(String.valueOf(count));
+
+            if(count == 1) {
+                collectionUserText.setText(BlocpartyApplication.getSharedInstance().getResources()
+                        .getString(R.string.user));
+            }
+            else {
+                collectionUserText.setText(BlocpartyApplication.getSharedInstance().getResources()
+                        .getString(R.string.users));
+            }
+
+
         }
     }
 }

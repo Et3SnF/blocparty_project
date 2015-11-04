@@ -45,5 +45,7 @@
     <string name="counter_slash">/</string>
     <string name="empty_user_text">No users to add here :(</string>
     <string name="empty_collection_text">There are no collections.... :|</string>
+    <string name="user">user</string>
+    <string name="users">users</string>
 
 </resources>

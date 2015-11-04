@@ -573,6 +573,18 @@ public class DataSource {
         return true;
     }
 
+    public int getCollectionItemCount(String field, String fieldValue) {
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().rawQuery("Select * from " + BPUtils.COLLECTION_TABLE
+                        + " where " + field + " like '" + fieldValue + "';", null);
+
+        if(cursor.moveToFirst()) {
+            return cursor.getCount();
+        }
+
+        return 0;
+    }
+    
     public void clearTable(String tableName) {
         BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
                 .execSQL("Delete from " + tableName + ";");
