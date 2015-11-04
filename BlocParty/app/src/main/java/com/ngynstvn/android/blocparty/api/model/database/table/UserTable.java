@@ -19,7 +19,6 @@ public class UserTable extends Table {
     private static final String COLUMN_USER_SOCIAL_NETWORK = "user_social_network";
     private static final String COLUMN_USER_PROFILE_ID = "user_profile_id";
     private static final String COLUMN_USER_PROFILE_PIC_URL = "user_profile_pic_url";
-    private static final String COLUMN_COLLECTION_ID = "collection_id";
 
     @Override
     public String getName() {
@@ -33,8 +32,7 @@ public class UserTable extends Table {
                 + COLUMN_USER_FULL_NAME + " TEXT, "
                 + COLUMN_USER_SOCIAL_NETWORK + " TEXT, "
                 + COLUMN_USER_PROFILE_ID + " INTEGER, "
-                + COLUMN_USER_PROFILE_PIC_URL + " TEXT, "
-                + COLUMN_COLLECTION_ID + " INTEGER);";
+                + COLUMN_USER_PROFILE_PIC_URL + " TEXT);";
     }
 
     public static class Builder implements Table.Builder {
@@ -61,11 +59,6 @@ public class UserTable extends Table {
             return this;
         }
 
-        public Table.Builder setColumnCollectionId(int id) {
-            contentValues.put(COLUMN_COLLECTION_ID, id);
-            return this;
-        }
-
         @Override
         public long insert(SQLiteDatabase database) {
             return database.insert(NAME, null, contentValues);
@@ -88,7 +81,4 @@ public class UserTable extends Table {
         return getString(cursor, COLUMN_USER_PROFILE_PIC_URL);
     }
 
-    public static int getColumnCollectionId(Cursor cursor) {
-        return getInteger(cursor, COLUMN_COLLECTION_ID);
-    }
 }

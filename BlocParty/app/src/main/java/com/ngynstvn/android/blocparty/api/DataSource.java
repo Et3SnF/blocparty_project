@@ -520,13 +520,14 @@ public class DataSource {
     }
 
     static Collection collectionFromCursor(Cursor cursor) {
-        return new Collection(CollectionTable.getRowId(cursor), CollectionTable.getColumnCollectionName(cursor));
+        return new Collection(CollectionTable.getRowId(cursor), CollectionTable.getColumnCollectionName(cursor),
+                CollectionTable.getColumnUserId(cursor));
     }
 
     static User userFromCursor(Cursor cursor) {
         return new User(UserTable.getRowId(cursor), UserTable.getColumnUserFullName(cursor),
                 UserTable.getColumnUserSocialNetwork(cursor), UserTable.getColumnUserProfileId(cursor),
-                UserTable.getColumnUserProfilePicUrl(cursor), UserTable.getColumnCollectionId(cursor));
+                UserTable.getColumnUserProfilePicUrl(cursor));
     }
 
     public boolean isDBEmpty(String tableName) {
@@ -574,7 +575,6 @@ public class DataSource {
                             .setColumnUserSocialNetwork(user.getUserSocNetwork())
                             .setColumnUserProfileId(user.getUserProfileId())
                             .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
-                            .setColumnCollectionId(user.getCollectionId())
                             .insert(databaseOpenHelper.getWritableDatabase());
                 }
                 else {

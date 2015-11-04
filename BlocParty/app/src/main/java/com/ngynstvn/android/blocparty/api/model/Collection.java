@@ -6,10 +6,12 @@ package com.ngynstvn.android.blocparty.api.model;
 public class Collection extends Model {
 
     private String collectionName;
+    private long userProfileId;
 
-    public Collection(long rowId, String collectionName) {
+    public Collection(long rowId, String collectionName, long userProfileId) {
         super(rowId);
         this.collectionName = collectionName;
+        this.userProfileId = userProfileId;
     }
 
     public void setCollectionName(String collectionName) {
@@ -18,5 +20,13 @@ public class Collection extends Model {
 
     public String getCollectionName() {
         return collectionName;
+    }
+
+    public void setUserProfileId(long userProfileId) {
+        this.userProfileId = userProfileId;
+    }
+
+    public long getUserProfileId() {
+        return userProfileId;
     }
 }

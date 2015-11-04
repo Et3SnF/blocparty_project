@@ -17,6 +17,7 @@ public class CollectionTable extends Table {
     private static final String NAME = BPUtils.COLLECTION_TABLE;
 
     private static final String COLUMN_COLLECTION_NAME = "collection_name";
+    private static final String COLUMN_USER_ID = "user_profile_id";
 
     @Override
     public String getName() {
@@ -27,7 +28,8 @@ public class CollectionTable extends Table {
     public String getCreateStatement() {
         return "CREATE TABLE " + getName() + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY, "
-                + COLUMN_COLLECTION_NAME + " TEXT);";
+                + COLUMN_COLLECTION_NAME + " TEXT, "
+                + COLUMN_USER_ID + " INTEGER);";
     }
 
     // Setters for Builder class
@@ -41,6 +43,11 @@ public class CollectionTable extends Table {
             return this;
         }
 
+        public Builder setUserId(long id) {
+            contentValues.put(COLUMN_COLLECTION_NAME, id);
+            return this;
+        }
+
         @Override
         public long insert(SQLiteDatabase database) {
             return database.insert(NAME, null, contentValues);
@@ -49,5 +56,9 @@ public class CollectionTable extends Table {
 
     public static String getColumnCollectionName(Cursor cursor) {
         return getString(cursor, COLUMN_COLLECTION_NAME);
+    }
+
+    public static long getColumnUserId(Cursor cursor) {
+        return getLong(cursor, COLUMN_USER_ID);
     }
 }

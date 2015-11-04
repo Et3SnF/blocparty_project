@@ -213,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
                 user.setUserFullName(postItem.getOpFullName());
                 user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
                 user.setUserProfileId(postItem.getOpProfileId());
-                user.setCollectionId(0); // default collection ID
 
                 if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
                     user.setUserSocNetwork("Instagram");

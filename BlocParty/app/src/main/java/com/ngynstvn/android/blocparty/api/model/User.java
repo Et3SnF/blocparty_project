@@ -9,7 +9,6 @@ public class User extends Model {
     private String userSocNetwork;
     private long userProfileId;
     private String userProfilePicUrl;
-    private int collectionId;
 
     // The value associated with the collection. This prevents misnaming a collection later later.
 
@@ -18,13 +17,12 @@ public class User extends Model {
     }
 
     public User(long rowId, String userFullName, String userSocNetwork, long userProfileId,
-                String userProfilePicUrl, int collectionId) {
+                String userProfilePicUrl) {
         super(rowId);
         this.userFullName = userFullName;
         this.userSocNetwork = userSocNetwork;
         this.userProfileId = userProfileId;
         this.userProfilePicUrl = userProfilePicUrl;
-        this.collectionId = collectionId;
     }
 
     public void setUserFullName(String userFullName) {
@@ -59,11 +57,4 @@ public class User extends Model {
         return userProfilePicUrl;
     }
 
-    public void setCollectionId(int collectionId) {
-        this.collectionId = collectionId;
-    }
-
-    public int getCollectionId() {
-        return collectionId;
-    }
 }
