@@ -162,9 +162,9 @@ public class DataSource {
                         public void onComplete(Profile response) {
 
                             Log.v(TAG, "Profile information: "
-                                    + "ID: " + response.getId() + " | \n"
-                                    + "First Name : " + response.getFirstName() + " | \n"
-                                    + "Last Name: " + response.getLastName() + " | \n"
+                                    + "ID: " + response.getId() + " | "
+                                    + "First Name : " + response.getFirstName() + " | "
+                                    + "Last Name: " + response.getLastName() + " | "
                                     + "Picture: " + response.getPicture());
                         }
                     });
@@ -266,11 +266,11 @@ public class DataSource {
                         Log.e(TAG, "Getting timeline...information");
 
                         for(twitter4j.Status status : statuses) {
-                            Log.v(TAG, "User: " + status.getUser().getName());
-                            Log.v(TAG, "User ID: " + status.getUser().getId());
-                            Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
-                            Log.v(TAG, "Status: " + status.getText());
-                            Log.v(TAG, "Post ID: " + status.getId());
+//                            Log.v(TAG, "User: " + status.getUser().getName());
+//                            Log.v(TAG, "User ID: " + status.getUser().getId());
+//                            Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
+//                            Log.v(TAG, "Status: " + status.getText());
+//                            Log.v(TAG, "Post ID: " + status.getId());
 
                             twOPName = status.getUser().getName();
                             twOPProfileId = status.getUser().getId();
@@ -278,7 +278,7 @@ public class DataSource {
                             twPostPublishDate = status.getCreatedAt().getTime();
 
                             if(status.getMediaEntities().length != 0) {
-                                Log.e(TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
+//                                Log.e(TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
                                 twPostImageUrl = status.getMediaEntities()[0].getMediaURL();
                                 twPostId = status.getMediaEntities()[0].getId();
                                 twPostCaption = status.getText();
@@ -378,8 +378,8 @@ public class DataSource {
 
                                             igOPName = mediaFeedData.getUser().getFullName();
                                             igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
-                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
-                                            Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));
+//                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
+//                                            Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));
                                             igPostId = Long.parseLong(mediaFeedData.getId().split("_")[1]);
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
@@ -402,7 +402,7 @@ public class DataSource {
 
                                             counter++;
 
-                                            Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
+//                                            Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
 
                                             addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
                                                     igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
