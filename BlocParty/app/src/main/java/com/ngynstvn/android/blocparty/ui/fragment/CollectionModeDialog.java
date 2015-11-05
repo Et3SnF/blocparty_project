@@ -90,16 +90,10 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
         recyclerView.setAdapter(collectionAdapter);
 
         builder.setView(view)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.v(TAG, "Collection Mode Ok Button Clicked");
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.v(TAG, "Collection Mode Cancel Button Clicked");
+                        Log.v(TAG, "Collection Close Button Clicked");
                     }
                 });
 
