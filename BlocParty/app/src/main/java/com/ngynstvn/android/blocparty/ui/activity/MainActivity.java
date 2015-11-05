@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isColDialogActive = false;
 
+    private static String currentCollectionName = null;
+
     /*
      * Interface Material
      */
@@ -180,6 +182,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         Log.e(TAG, "onStart() called");
         super.onStart();
+        currentCollectionName = sharedPreferences.getString(BPUtils.CURRENT_COLLECTION, null);
+        Log.v(TAG, "Current collection name: " + currentCollectionName);
+        isFilterActive = (currentCollectionName != null);
+        Log.v(TAG, "Is Filter Active?: " + isFilterActive);
     }
 
     @Override
@@ -296,10 +302,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+            postItemAdapter.notifyDataSetChanged();
+
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
                     BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+                    postItemAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
@@ -324,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
             topRightImage = (CircleImageView) findViewById(R.id.civ_top_right_pic_view);
             botLeftImage = (CircleImageView) findViewById(R.id.civ_bot_left_pic_view);
             botRightImage = (CircleImageView) findViewById(R.id.civ_bot_right_pic_view);
+            collectionName = (TextView) findViewById(R.id.tv_collection_name_view);
             closeFilteredButton = (Button) findViewById(R.id.btn_close_collection_view);
 
             linearLayoutManager = new LinearLayoutManager(this);
@@ -388,13 +399,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
+            postItemAdapter.notifyDataSetChanged();
+
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    // Create method to get filtered results here;
+                    BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
+                    postItemAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
+
+            collectionName.setText(currentCollectionName);
 
             closeFilteredButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -405,6 +422,10 @@ public class MainActivity extends AppCompatActivity {
                     allPostsLayout.setVisibility(View.VISIBLE);
                     filteredPostsLayout.setEnabled(false);
                     filteredPostsLayout.setVisibility(View.GONE);
+
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION);
+                    BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
+                    restartActivity();
                 }
             });
 
@@ -492,8 +513,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // ---- Other Methods ---- //
+
     private void showCollectionModeDialog() {
         CollectionModeDialog collectionModeDialog = CollectionModeDialog.newInstance();
         collectionModeDialog.show(getFragmentManager(), "collection_mode_dialog");
+    }
+
+    private void restartActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 }
