@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(MainActivity.class);
 
+    private int instance_counter = 0;
+
     private Toolbar toolbar;
     private Menu menu;
     private MenuItem menuItem;
@@ -470,6 +472,13 @@ public class MainActivity extends AppCompatActivity {
             BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
             BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
             postItemAdapter.notifyDataSetChanged();
+
+            if(sharedPreferences != null) {
+                instance_counter = sharedPreferences.getInt("counter", 0);
+            }
+
+            instance_counter++;
+            BPUtils.putSPrefIntValue(sharedPreferences, BPUtils.FILE_NAME, "counter", instance_counter);
 
             return true;
         }

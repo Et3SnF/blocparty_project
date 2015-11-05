@@ -113,10 +113,6 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         if(sharedPreferences != null) {
             instance_counter = sharedPreferences.getInt("counter", 1);
         }
-
-        instance_counter++;
-
-        BPUtils.putSPrefIntValue(sharedPreferences, BPUtils.FILE_NAME, "counter", instance_counter);
     }
 
     @Nullable
@@ -127,7 +123,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         welcomeMessage = (TextView) view.findViewById(R.id.tv_login_message);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_login_items);
 
-        if(instance_counter > 1 && welcomeMessage != null) {
+        if(instance_counter > 0 && welcomeMessage != null) {
             welcomeMessage.setVisibility(View.GONE);
         }
 
