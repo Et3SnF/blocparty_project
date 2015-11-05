@@ -59,7 +59,7 @@ public class InstagramUserFragment extends Fragment {
             BlocpartyApplication.getSharedDataSource().getIgUserArrayList().clear();
         }
 
-        BlocpartyApplication.getSharedDataSource().fetchIGUsers("user_social_network", "Instagram");
+        BlocpartyApplication.getSharedDataSource().fetchUsers("Instagram");
     }
 
     @Nullable

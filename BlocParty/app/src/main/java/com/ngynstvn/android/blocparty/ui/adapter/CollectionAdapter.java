@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.Collection;
@@ -49,7 +50,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
     @Override
     public int getItemCount() {
-//        Log.v(TAG, "getItemCount() called");
+//        Log.v(TAG, "getDBItemCount() called");
         return BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size();
     }
 
@@ -132,7 +133,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             collectionName.setText(collection.getCollectionName());
 
             int count = BlocpartyApplication.getSharedDataSource()
-                    .getCollectionItemCount("collection_name", collection.getCollectionName());
+                    .getDBItemCount(BPUtils.COLLECTION_TABLE, BPUtils.COLLECTION_NAME, collection.getCollectionName());
 
             collectionUserNum.setText(String.valueOf(count));
 

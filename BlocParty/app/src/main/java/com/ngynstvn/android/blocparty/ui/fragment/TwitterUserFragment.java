@@ -59,7 +59,7 @@ public class TwitterUserFragment extends Fragment {
             BlocpartyApplication.getSharedDataSource().getTwUserArrayList().clear();
         }
 
-        BlocpartyApplication.getSharedDataSource().fetchTWUsers("user_social_network", "Twitter");
+        BlocpartyApplication.getSharedDataSource().fetchUsers("Twitter");
     }
 
     @Nullable

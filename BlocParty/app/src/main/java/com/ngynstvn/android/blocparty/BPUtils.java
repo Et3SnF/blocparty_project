@@ -59,6 +59,8 @@ public class BPUtils {
     public static final String OP_PROFILE_ID = "op_profile_id";
     public static final String POST_ID = "post_id";
     public static final String PUBLISH_DATE = "publish_date";
+    public static final String USER_SOCIAL_NETWORK = "user_social_network";
+    public static final String USER_FULL_NAME = "user_full_name";
 
     // ----- Static Methods ----- //
 

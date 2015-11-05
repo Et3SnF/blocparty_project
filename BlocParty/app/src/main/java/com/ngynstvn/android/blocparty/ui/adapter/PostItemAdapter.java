@@ -51,7 +51,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     @Override
     public int getItemCount() {
-//        Log.v(TAG, "getItemCount() called");
+//        Log.v(TAG, "getDBItemCount() called");
 //        Log.v(TAG, "Array Size in PostItemAdapter: " + BlocpartyApplication.getSharedDataSource()
 //                .getPostItemArrayList().size());
         return BlocpartyApplication.getSharedDataSource().getPostItemArrayList().size();

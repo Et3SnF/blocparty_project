@@ -449,7 +449,11 @@ public class DataSource {
         postItemArrayList.clear();
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.POST_ITEM_TABLE + " order by publish_date desc limit 20;", null);
+
+        final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
+                + " order by " + BPUtils.PUBLISH_DATE + " desc;";
+
+        Cursor cursor = database.rawQuery(statement, null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -489,46 +493,38 @@ public class DataSource {
         cursor.close();
     }
 
-    public void fetchFBUsers(String field, String socialNetwork) {
+    public void fetchUsers(String socialNetwork) {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
 
-        if(cursor.moveToFirst()) {
-            do {
-                fbUserArrayList.add(userFromCursor(cursor));
+        final String statement = "Select * from " + BPUtils.USER_TABLE
+                + " where " + BPUtils.USER_SOCIAL_NETWORK + " like '" + socialNetwork + "'"
+                + " order by " + BPUtils.USER_FULL_NAME + ";";
+
+        Cursor cursor = database.rawQuery(statement, null);
+
+        if(socialNetwork.equalsIgnoreCase("Facebook")) {
+            if(cursor.moveToFirst()) {
+                do {
+                    fbUserArrayList.add(userFromCursor(cursor));
+                }
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
         }
-
-        cursor.close();
-    }
-
-    public void fetchTWUsers(String field, String socialNetwork) {
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
-
-        if(cursor.moveToFirst()) {
-            do {
-                twUserArrayList.add(userFromCursor(cursor));
+        else if(socialNetwork.equalsIgnoreCase("Twitter")) {
+            if(cursor.moveToFirst()) {
+                do {
+                    twUserArrayList.add(userFromCursor(cursor));
+                }
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
         }
-
-        cursor.close();
-    }
-
-    public void fetchIGUsers(String field, String socialNetwork) {
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + BPUtils.USER_TABLE + " where " + field
-                + " = '" + socialNetwork + "' order by " + "user_full_name" + ";", null);
-
-        if(cursor.moveToFirst()) {
-            do {
-                igUserArrayList.add(userFromCursor(cursor));
+        else if(socialNetwork.equalsIgnoreCase("Instagram")) {
+            if(cursor.moveToFirst()) {
+                do {
+                    igUserArrayList.add(userFromCursor(cursor));
+                }
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
         }
 
         cursor.close();
@@ -536,8 +532,12 @@ public class DataSource {
 
     public void fetchCollections() {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select distinct " + "collection_name" + " from "
-                + BPUtils.COLLECTION_TABLE + " order by " + "collection_name;", null);
+
+        final String statement = "Select distinct " + BPUtils.COLLECTION_NAME
+                + " from " + BPUtils.COLLECTION_TABLE
+                + " order by " + BPUtils.COLLECTION_NAME + ";";
+
+        Cursor cursor = database.rawQuery(statement, null);
 
         if(cursor.moveToFirst()) {
             do {
@@ -554,8 +554,8 @@ public class DataSource {
         ArrayList<User> userArrayList = new ArrayList<>();
 
         final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
-                + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "." + BPUtils.USER_PROFILE_ID
-                + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "."
+                + BPUtils.USER_PROFILE_ID + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
                 + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "';";
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
@@ -596,45 +596,7 @@ public class DataSource {
                 UserTable.getColumnUserProfilePicUrl(cursor));
     }
 
-    public boolean isDBEmpty(String tableName) {
-        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
-                .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
-
-        return cursor.getCount() == 0;
-    }
-
-    // DB Methods
-
-    public boolean isValueInDB(String tableName, String field, String fieldValue) {
-        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
-                .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field
-                        + " like '" + fieldValue + "'", null);
-
-        if(cursor.getCount() <= 0) {
-            cursor.close();
-            return false;
-        }
-
-        cursor.close();
-        return true;
-    }
-
-    public int getCollectionItemCount(String field, String fieldValue) {
-        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
-                .getReadableDatabase().rawQuery("Select * from " + BPUtils.COLLECTION_TABLE
-                        + " where " + field + " like '" + fieldValue + "';", null);
-
-        if(cursor.moveToFirst()) {
-            return cursor.getCount();
-        }
-
-        return 0;
-    }
-
-    public void clearTable(String tableName) {
-        BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
-                .execSQL("Delete from " + tableName + ";");
-    }
+    // Add Objects to DB
 
     public void addCollectionToDB(final String name, final String userProfileId) {
         Handler handler = new Handler();
@@ -672,6 +634,52 @@ public class DataSource {
                 return null;
             }
         }.execute();
+    }
+
+    // DB Methods
+
+    public boolean isDBEmpty(String tableName) {
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
+
+        return cursor.getCount() == 0;
+    }
+
+    public boolean isValueInDB(String tableName, String field, String fieldValue) {
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field
+                        + " like '" + fieldValue + "'", null);
+
+        if(cursor.getCount() <= 0) {
+            cursor.close();
+            return false;
+        }
+
+        cursor.close();
+        return true;
+    }
+
+    public int getDBItemCount(String tableName, String field, String fieldValue) {
+
+        final String statement = "Select * from " + tableName
+                + " where " + field + " like '" + fieldValue + "';";
+
+        Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
+                .getReadableDatabase().rawQuery(statement, null);
+
+        if(cursor.moveToFirst()) {
+            return cursor.getCount();
+        }
+
+        return 0;
+    }
+
+    public void clearTable(String tableName) {
+
+        final String statement = "Delete from " + tableName + ";";
+
+        BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper().getWritableDatabase()
+                .execSQL(statement);
     }
 
 }

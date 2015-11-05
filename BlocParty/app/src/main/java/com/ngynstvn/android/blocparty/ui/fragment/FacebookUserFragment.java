@@ -59,7 +59,7 @@ public class FacebookUserFragment extends Fragment {
             BlocpartyApplication.getSharedDataSource().getFbUserArrayList().clear();
         }
 
-        BlocpartyApplication.getSharedDataSource().fetchFBUsers("user_social_network", "Facebook");
+        BlocpartyApplication.getSharedDataSource().fetchUsers("Facebook");
     }
 
     @Nullable
