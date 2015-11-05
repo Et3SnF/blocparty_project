@@ -571,12 +571,7 @@ public class DataSource {
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
                 .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
 
-        if(cursor.getCount() == 0) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return cursor.getCount() == 0;
     }
 
     // DB Methods

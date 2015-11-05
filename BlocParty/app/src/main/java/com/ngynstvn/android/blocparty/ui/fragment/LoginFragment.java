@@ -3,6 +3,7 @@ package com.ngynstvn.android.blocparty.ui.fragment;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -28,10 +30,14 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
 
+    private static SharedPreferences sharedPreferences;
+    private static int instance_counter = 0;
+
     // Fields
 
     private LoginAdapter loginAdapter;
     private RecyclerView recyclerView;
+    private TextView welcomeMessage;
 
     /**
      *
@@ -98,8 +104,19 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
+
         loginAdapter = new LoginAdapter();
         loginAdapter.setLoginAdapterDelegate(this);
+
+        sharedPreferences = getActivity().getSharedPreferences(BPUtils.FILE_NAME, Context.MODE_PRIVATE);
+
+        if(sharedPreferences != null) {
+            instance_counter = sharedPreferences.getInt("counter", 1);
+        }
+
+        instance_counter++;
+
+        BPUtils.putSPrefIntValue(sharedPreferences, BPUtils.FILE_NAME, "counter", instance_counter);
     }
 
     @Nullable
@@ -107,7 +124,13 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "onCreateView() called");
         View view = inflater.inflate(R.layout.fragment_login, container, false);
+        welcomeMessage = (TextView) view.findViewById(R.id.tv_login_message);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_login_items);
+
+        if(instance_counter > 1 && welcomeMessage != null) {
+            welcomeMessage.setVisibility(View.GONE);
+        }
+
         return view;
     }
 
@@ -133,6 +156,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     public void onSaveInstanceState(Bundle outState) {
         Log.e(TAG, "onSaveInstanceState() called");
         super.onSaveInstanceState(outState);
+        outState.putInt("counter", instance_counter);
     }
 
     @Override

@@ -208,8 +208,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Display Collection Dialog once a new collection is saved
-
         if(isColDialogActive) {
             showCollectionModeDialog();
             isColDialogActive = false;

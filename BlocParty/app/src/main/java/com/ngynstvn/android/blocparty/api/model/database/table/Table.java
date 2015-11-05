@@ -12,7 +12,7 @@ public abstract class Table {
     // Builder interface to create builder class later
 
     public interface Builder {
-        public long insert(SQLiteDatabase database);
+        long insert(SQLiteDatabase database);
     }
 
     // Class Variables

@@ -15,8 +15,7 @@
         android:textColor="@color/black_60"
         android:gravity="center"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="4dp"
-        android:visibility="visible"/>
+        android:layout_marginBottom="4dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_login_items"

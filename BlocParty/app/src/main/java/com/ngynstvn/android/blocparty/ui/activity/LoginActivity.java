@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
@@ -81,8 +80,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     private static Instagram instagram;
     private static String igAuthCode;
 
-    private TextView welcomeMessage;
-
     /*
      * Interface Material
      */
@@ -134,15 +131,13 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         sharedPreferences = getSharedPreferences("log_states", 0);
 
         if(sharedPreferences != null) {
-            sharedPreferences.getInt("counter", 0);
+            instance_counter = sharedPreferences.getInt("counter", 0);
         }
 
         twitterAuthFragment = new TwitterAuthFragment();
         twitterAuthFragment.setTwitterAuthFragDelegate(this);
 
         instance_counter++;
-
-        welcomeMessage = (TextView) findViewById(R.id.tv_login_message);
 
         if(savedInstanceState != null) {
             String token = sharedPreferences.getString(BPUtils.IG_TOKEN, "");
@@ -235,7 +230,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("counter", instance_counter);
 
         if(twConsumerKey != null && twConsumerSecret != null && twToken != null && twTokenSecret != null) {
             outState.putString("twConsumerKey", twConsumerKey);
