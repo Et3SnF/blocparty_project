@@ -111,7 +111,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
         sharedPreferences = getActivity().getSharedPreferences(BPUtils.FILE_NAME, Context.MODE_PRIVATE);
 
         if(sharedPreferences != null) {
-            instance_counter = sharedPreferences.getInt("counter", 1);
+            instance_counter = sharedPreferences.getInt("counter", 0);
         }
     }
 
