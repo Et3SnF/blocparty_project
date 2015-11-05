@@ -65,6 +65,7 @@ public class DataSource {
     private static String twPostImageUrl = "";
     private static String twPostCaption = "";
     private static long twPostPublishDate = 0L;
+    private static int twPostLiked = 0;
 
     private static String igOPName = "";
     private static long igOPProfileId = 0L;
@@ -73,6 +74,7 @@ public class DataSource {
     private static String igPostImageUrl = "";
     private static String igPostCaption = "";
     private static long igPostPublishDate = 0L;
+    private static int igPostLiked = 0;
 
     private DatabaseOpenHelper databaseOpenHelper;
     private SQLiteDatabase database;
@@ -211,16 +213,9 @@ public class DataSource {
                                             }
 
                                             if(fbPostPublishDate != 0) {
-                                                new PostItemTable.Builder()
-                                                        .setOPFullName(fbOPName)
-                                                        .setOPProfileId(fbOPProfileId)
-                                                        .setProfilePicUrl(fbProfilePicUrl)
-                                                        .setPostId(fbPostId)
-                                                        .setPostImageUrl(fbPostImageUrl)
-                                                        .setPostCaption(fbPostCaption)
-                                                        .setPostPublishDate(fbPostPublishDate)
-                                                        .setIsPostLiked(fbPostLiked)
-                                                        .insert(database);
+                                                addPostItemToDB(fbOPName, fbOPProfileId, fbProfilePicUrl,
+                                                        fbPostId, fbPostImageUrl, fbPostCaption,
+                                                        fbPostPublishDate, fbPostLiked);
                                             }
                                         }
 
@@ -290,16 +285,9 @@ public class DataSource {
                             }
 
                             if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl) && twPostId != 0) {
-                                new PostItemTable.Builder()
-                                        .setOPFullName(twOPName)
-                                        .setOPProfileId(twOPProfileId)
-                                        .setProfilePicUrl(twProfilePicUrl)
-                                        .setPostId(twPostId)
-                                        .setPostImageUrl(twPostImageUrl)
-                                        .setPostCaption(twPostCaption)
-                                        .setPostPublishDate(twPostPublishDate)
-                                        .setIsPostLiked(0)
-                                        .insert(databaseOpenHelper.getWritableDatabase());
+
+                                addPostItemToDB(twOPName, twOPProfileId, twProfilePicUrl, twPostId,
+                                        twPostImageUrl, twPostCaption, twPostPublishDate, twPostLiked);
                             }
                         }
 
@@ -416,16 +404,8 @@ public class DataSource {
 
                                             Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
 
-                                            new PostItemTable.Builder()
-                                                    .setOPFullName(igOPName)
-                                                    .setOPProfileId(igOPProfileId)
-                                                    .setProfilePicUrl(igProfilePicUrl)
-                                                    .setPostId(igPostId)
-                                                    .setPostImageUrl(igPostImageUrl)
-                                                    .setPostCaption(igPostCaption)
-                                                    .setPostPublishDate(igPostPublishDate)
-                                                    .setIsPostLiked(0)
-                                                    .insert(databaseOpenHelper.getWritableDatabase());
+                                            addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
+                                                    igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
                                         }
                                     }
                                 }
@@ -451,7 +431,8 @@ public class DataSource {
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
 
         final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
-                + " order by " + BPUtils.PUBLISH_DATE + " desc;";
+                + " order by " + BPUtils.PUBLISH_DATE + " desc "
+                + " limit 20;";
 
         Cursor cursor = database.rawQuery(statement, null);
 
@@ -597,6 +578,26 @@ public class DataSource {
     }
 
     // Add Objects to DB
+
+    private void addPostItemToDB(String name, long profileId, String profImgUrl, long postId,
+                                 String postImgUrl, String postCaption, long publishDate, int isLiked) {
+
+        if(isLiked < 0 || isLiked > 1) {
+            Log.e(TAG, "isLiked value is not either 0 or 1. Setting isLiked to 0");
+            isLiked = 0;
+        }
+
+        new PostItemTable.Builder()
+                .setOPFullName(name)
+                .setOPProfileId(profileId)
+                .setProfilePicUrl(profImgUrl)
+                .setPostId(postId)
+                .setPostImageUrl(postImgUrl)
+                .setPostCaption(postCaption)
+                .setPostPublishDate(publishDate)
+                .setIsPostLiked(isLiked)
+                .insert(databaseOpenHelper.getWritableDatabase());
+    }
 
     public void addCollectionToDB(final String name, final String userProfileId) {
         Handler handler = new Handler();
