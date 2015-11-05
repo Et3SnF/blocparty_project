@@ -219,8 +219,13 @@ public class DataSource {
                                             }
                                         }
 
-                                    } catch (JSONException e) {
+                                    }
+                                    catch (JSONException e) {
                                         Log.e(TAG, "Unable to parse JSON info");
+                                        e.printStackTrace();
+                                    }
+                                    catch (NullPointerException e) {
+                                        Log.e(TAG, "JSON Object null. Hiccup...");
                                         e.printStackTrace();
                                     }
                                 }
