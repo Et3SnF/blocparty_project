@@ -299,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    BlocpartyApplication.getSharedDataSource().displayPostItems();
+                    BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });

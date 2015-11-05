@@ -441,8 +441,8 @@ public class DataSource {
 
     }
 
-    public void displayPostItems() {
-        Log.v(TAG, "displayPostItems() called");
+    public void fetchAllPostItems() {
+        Log.v(TAG, "fetchAllPostItems() called");
 
         // Clear the current ArrayList and then insert new items into it.
 
@@ -461,6 +461,32 @@ public class DataSource {
 
         cursor.close();
 
+    }
+
+    public void fetchFilteredPostItems(String collectionName) {
+
+        postItemArrayList.clear();
+
+        final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
+                + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " join " + BPUtils.POST_ITEM_TABLE + " on " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " = " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.OP_PROFILE_ID
+                + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "'"
+                + " group by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.POST_ID
+                + " order by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.PUBLISH_DATE + ";";
+
+        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery(statement, null);
+
+        if(cursor.moveToFirst()) {
+            do {
+                postItemArrayList.add(itemFromCursor(cursor));
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
     }
 
     public void fetchFBUsers(String field, String socialNetwork) {
@@ -523,14 +549,17 @@ public class DataSource {
         cursor.close();
     }
 
-    public ArrayList<User> fetchCollectionUsers(String condFieldValue) {
+    public ArrayList<User> fetchCollectionUsers(String collectionName) {
 
         ArrayList<User> userArrayList = new ArrayList<>();
 
+        final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
+                + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
+                + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "';";
+
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery("Select * from " + "collection_table" + " , " + "user_table" + " where "
-                + "user_table" + "." + "user_profile_id" + " = " + "collection_table" + "." + "user_profile_id" + " and " + "collection_table"
-                + "." + "collection_name" +  " = '" + condFieldValue + "';", null);
+        Cursor cursor = database.rawQuery(statement, null);
 
         if(cursor.moveToFirst()) {
             do {
