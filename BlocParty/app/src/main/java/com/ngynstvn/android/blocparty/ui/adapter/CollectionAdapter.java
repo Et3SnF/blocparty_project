@@ -56,10 +56,12 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
     /*
      * Interface Material
+     *
+     * Delegated to CollectionModeDialog.java
      */
 
     public interface CollectionAdapteraDelegate {
-
+        void onItemClicked(CollectionAdapter collectionAdapter, int position);
     }
 
     private WeakReference<CollectionAdapteraDelegate> collectionAdapteraDelegate;
@@ -111,9 +113,11 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.v(TAG, "Collection Item Clicked");
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Long press to modify",
-                            Toast.LENGTH_SHORT).show();
+                    Log.v(TAG, "Collection Filter Activated");
+
+                    if(collectionAdapteraDelegate != null) {
+                        getCollectionAdapterDelegate().onItemClicked(CollectionAdapter.this, getAdapterPosition());
+                    }
                 }
             });
 

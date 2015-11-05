@@ -22,6 +22,8 @@ public class BPUtils {
 
     public static final String FILE_NAME = "log_states";
     public static final String CHECKED_STATE = "checked_states";
+    public static final String COLLECTION_MODE = "collection_mode";
+    public static final String CURRENT_COLLECTION = "current_collection";
 
     // Facebook Variables
 

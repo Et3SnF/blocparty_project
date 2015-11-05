@@ -21,13 +21,14 @@ import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.ui.activity.AddCollectionActivity;
+import com.ngynstvn.android.blocparty.ui.activity.MainActivity;
 import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
 /**
  * Created by Ngynstvn on 10/27/15.
  */
 
-public class CollectionModeDialog extends DialogFragment {
+public class CollectionModeDialog extends DialogFragment implements CollectionAdapter.CollectionAdapteraDelegate {
 
     private static String TAG = BPUtils.classTag(CollectionModeDialog.class);
 
@@ -76,6 +77,9 @@ public class CollectionModeDialog extends DialogFragment {
 
         toolbar = (Toolbar) view.findViewById(R.id.tb_collection_dialog);
 
+        collectionAdapter = new CollectionAdapter();
+        collectionAdapter.setCollectionAdapteraDelegate(this);
+
         emptyCollectionText = (TextView) view.findViewById(R.id.tv_empty_collection);
 
         linearLayoutManager = new org.solovyev.android.views.llm.LinearLayoutManager(getActivity(),
@@ -83,7 +87,6 @@ public class CollectionModeDialog extends DialogFragment {
         recyclerView = (RecyclerView) view.findViewById(R.id.rl_collection_items);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        collectionAdapter = new CollectionAdapter();
         recyclerView.setAdapter(collectionAdapter);
 
         builder.setView(view)
@@ -185,5 +188,24 @@ public class CollectionModeDialog extends DialogFragment {
     public void onDetach() {
         Log.v(TAG, "onDetach() called");
         super.onDetach();
+    }
+
+    /**
+     *
+     * CollectionAdapter.CollectionAdapterDelegate Methods
+     *
+     */
+
+    @Override
+    public void onItemClicked(CollectionAdapter collectionAdapter, int position) {
+        Log.v(TAG, "onItemClicked() called");
+
+        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION,
+                BlocpartyApplication.getSharedDataSource().getCollectionArrayList()
+                        .get(position).getCollectionName());
+
+        dismiss();
+        startActivity(new Intent(getActivity(), MainActivity.class));
     }
 }
