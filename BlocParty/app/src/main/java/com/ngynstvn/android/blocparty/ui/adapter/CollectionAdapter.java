@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.model.Collection;
@@ -154,8 +153,14 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             ArrayList<User> userArrayList = new ArrayList<>();
 
             for(int i = 0; i < BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size(); i++) {
-                userArrayList = BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(BPUtils.USER_PROFILE_ID,
+                userArrayList = BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(
                         BlocpartyApplication.getSharedDataSource().getCollectionArrayList().get(i).getCollectionName());
+            }
+
+            // Safety measure
+
+            if(userArrayList.size() == 0) {
+                return;
             }
 
             User user1 = null;
@@ -179,7 +184,13 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 user1 = userArrayList.get(0);
                 user2 = userArrayList.get(1);
                 user3 = userArrayList.get(2);
-                user4 =  userArrayList.get(3);
+                user4 = userArrayList.get(3);
+            }
+            else {
+                user1 = userArrayList.get(0);
+                user2 = userArrayList.get(1);
+                user3 = userArrayList.get(2);
+                user4 = userArrayList.get(3);
             }
 
             if(user1 != null) {
@@ -208,8 +219,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
             if(user4 != null) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(image4);
-            }
-            else {
+            } else {
                 botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
                         .getResources().getColor(android.R.color.transparent));
             }

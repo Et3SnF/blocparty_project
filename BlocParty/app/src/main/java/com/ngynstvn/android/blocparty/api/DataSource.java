@@ -523,13 +523,13 @@ public class DataSource {
         cursor.close();
     }
 
-    public ArrayList<User> fetchCollectionUsers(String keyField, String condFieldValue) {
+    public ArrayList<User> fetchCollectionUsers(String condFieldValue) {
 
         ArrayList<User> userArrayList = new ArrayList<>();
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery("Select * from " + "collection_table" + " , " + "user_table" + " where "
-                + "user_table" + "." + keyField + " = " + "collection_table" + "." + keyField + " and " + "collection_table"
+                + "user_table" + "." + "user_profile_id" + " = " + "collection_table" + "." + "user_profile_id" + " and " + "collection_table"
                 + "." + "collection_name" +  " = '" + condFieldValue + "';", null);
 
         if(cursor.moveToFirst()) {
