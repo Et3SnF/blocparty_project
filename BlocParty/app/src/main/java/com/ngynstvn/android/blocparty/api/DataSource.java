@@ -382,6 +382,11 @@ public class DataSource {
 //                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
                                             igOPName = mediaFeedData.getUser().getFullName();
+
+                                            if(igOPName.length() == 0) {
+                                                igOPName = mediaFeedData.getUser().getUserName();
+                                            }
+
                                             igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
 //                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
 //                                            Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));

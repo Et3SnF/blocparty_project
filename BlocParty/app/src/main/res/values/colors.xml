@@ -30,6 +30,6 @@
     <color name="material_indigo_700_50">#80303F9F</color>
     <color name="toggle_button_off">#FFDADBDA</color>
     <color name="post_img_border">#CCDDDDDD</color>
-    <color name="collection_post_bar">#E0E0E0</color>
+    <color name="collection_post_bar">#80E0E0E0</color>
 
 </resources>
