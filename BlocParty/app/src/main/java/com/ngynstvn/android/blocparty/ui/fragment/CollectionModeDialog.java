@@ -198,8 +198,16 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                 BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION,
                 BlocpartyApplication.getSharedDataSource().getCollectionArrayList()
                         .get(position).getCollectionName());
-
+        restartActivity();
         dismiss();
-        startActivity(new Intent(getActivity(), MainActivity.class));
+    }
+
+    // ---- Other Methods ---- //
+
+    private void restartActivity() {
+        // only use this if you're not in MainActivity itself!
+        Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

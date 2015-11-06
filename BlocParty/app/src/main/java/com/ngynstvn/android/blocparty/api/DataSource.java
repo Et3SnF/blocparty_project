@@ -464,7 +464,7 @@ public class DataSource {
                 + " = " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.OP_PROFILE_ID
                 + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "'"
                 + " group by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.POST_ID
-                + " order by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.PUBLISH_DATE + ";";
+                + " order by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.PUBLISH_DATE + " desc;";
 
         SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
         Cursor cursor = database.rawQuery(statement, null);

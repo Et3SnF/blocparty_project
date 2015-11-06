@@ -182,6 +182,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         Log.e(TAG, "onStart() called");
         super.onStart();
+        currentCollectionName = sharedPreferences.getString(BPUtils.CURRENT_COLLECTION, null);
+        Log.v(TAG, "Current collection name: " + currentCollectionName);
+        isFilterActive = (currentCollectionName != null);
+        Log.v(TAG, "Is Filter Active?: " + isFilterActive);
     }
 
     @Override
@@ -298,10 +302,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+            postItemAdapter.notifyDataSetChanged();
+
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
                     BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
+                    postItemAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
@@ -391,10 +399,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
+            postItemAdapter.notifyDataSetChanged();
+
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    // Create method to get filtered results here;
+                    BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
+                    postItemAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
@@ -410,6 +422,10 @@ public class MainActivity extends AppCompatActivity {
                     allPostsLayout.setVisibility(View.VISIBLE);
                     filteredPostsLayout.setEnabled(false);
                     filteredPostsLayout.setVisibility(View.GONE);
+
+                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION);
+                    BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
+                    restartActivity();
                 }
             });
 
@@ -497,8 +513,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // ---- Other Methods ---- //
+
     private void showCollectionModeDialog() {
         CollectionModeDialog collectionModeDialog = CollectionModeDialog.newInstance();
         collectionModeDialog.show(getFragmentManager(), "collection_mode_dialog");
+    }
+
+    private void restartActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 }
