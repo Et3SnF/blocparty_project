@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isColDialogActive = false;
 
+    private static String currentCollectionName = null;
+
     /*
      * Interface Material
      */
@@ -324,6 +326,7 @@ public class MainActivity extends AppCompatActivity {
             topRightImage = (CircleImageView) findViewById(R.id.civ_top_right_pic_view);
             botLeftImage = (CircleImageView) findViewById(R.id.civ_bot_left_pic_view);
             botRightImage = (CircleImageView) findViewById(R.id.civ_bot_right_pic_view);
+            collectionName = (TextView) findViewById(R.id.tv_collection_name_view);
             closeFilteredButton = (Button) findViewById(R.id.btn_close_collection_view);
 
             linearLayoutManager = new LinearLayoutManager(this);
@@ -395,6 +398,8 @@ public class MainActivity extends AppCompatActivity {
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
+
+            collectionName.setText(currentCollectionName);
 
             closeFilteredButton.setOnClickListener(new View.OnClickListener() {
                 @Override
