@@ -378,6 +378,7 @@ public class DataSource {
                                     if(mediaFeedDatas != null) {
                                         for (MediaFeedData mediaFeedData : mediaFeedDatas) {
 //                                            Log.v(TAG, "User: " + mediaFeedData.getUser().getFullName());
+//                                            Log.v(TAG, "User ID: " + mediaFeedData.getUser().getId());
 //                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
 //                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
@@ -389,8 +390,8 @@ public class DataSource {
 
                                             igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
 //                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
-//                                            Log.v(TAG, "Inserted ID: " + Long.parseLong(mediaFeedData.getId().split("_")[1]));
-                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[1]);
+//                                            Log.v(TAG, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
+                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[0]);
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 

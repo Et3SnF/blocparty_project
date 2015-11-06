@@ -239,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
 
             recyclerView = (RecyclerView) findViewById(R.id.rv_activity_main_all);
             swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_activity_main_all);
+            swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.material_indigo_500));
 
             linearLayoutManager = new LinearLayoutManager(this);
 
@@ -336,6 +337,8 @@ public class MainActivity extends AppCompatActivity {
             botRightImage = (CircleImageView) findViewById(R.id.civ_bot_right_pic_view);
             collectionName = (TextView) findViewById(R.id.tv_collection_name_view);
             closeFilteredButton = (Button) findViewById(R.id.btn_close_collection_view);
+
+            swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.material_indigo_500));
 
             linearLayoutManager = new LinearLayoutManager(this);
 
