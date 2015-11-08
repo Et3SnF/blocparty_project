@@ -84,7 +84,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     // ----- Inner Class ----- //
 
-    class PostItemAdapterViewHolder extends RecyclerView.ViewHolder {
+    static class PostItemAdapterViewHolder extends RecyclerView.ViewHolder {
 
         private final String TAG = "(" + PostItemAdapterViewHolder.class.getSimpleName() + "): ";
 

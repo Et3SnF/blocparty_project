@@ -43,7 +43,7 @@ public class TWUserAdapter extends RecyclerView.Adapter<TWUserAdapter.TWUserAdap
         return BlocpartyApplication.getSharedDataSource().getTwUserArrayList().size();
     }
 
-    class TWUserAdapterViewHolder extends RecyclerView.ViewHolder {
+    static class TWUserAdapterViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView userProfilePic;
         TextView userName;

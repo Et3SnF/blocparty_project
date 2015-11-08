@@ -42,7 +42,7 @@ public class FBUserAdapter extends RecyclerView.Adapter<FBUserAdapter.FBUserAdap
         return BlocpartyApplication.getSharedDataSource().getFbUserArrayList().size();
     }
 
-    class FBUserAdapterViewHolder extends RecyclerView.ViewHolder {
+    static class FBUserAdapterViewHolder extends RecyclerView.ViewHolder {
 
         ImageView userProfilePic;
         TextView userName;

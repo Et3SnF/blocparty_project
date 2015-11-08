@@ -1,5 +1,8 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.annotation.TargetApi;
+import android.hardware.camera2.CameraManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,8 +23,11 @@ public class CameraActivity extends AppCompatActivity {
 //    private Toolbar toolbar;
 //    private Menu menu;
 
+    private CameraManager cameraManager;
+
     // ----- Lifecycle Methods ----- //
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
@@ -29,6 +35,7 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 //        toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
 //        setSupportActionBar(toolbar);
+        cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
     }
 
     @Override

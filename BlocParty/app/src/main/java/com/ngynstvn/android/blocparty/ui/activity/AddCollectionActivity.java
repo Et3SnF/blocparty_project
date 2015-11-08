@@ -1,5 +1,9 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,7 +20,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -46,6 +49,8 @@ public class AddCollectionActivity extends AppCompatActivity {
     private TextView collectionInputValueLimit;
     private TextView collectionInstr;
     private TextView userInstr;
+
+    private int errorCode = -1;
 
     // Character Tracking anonymous inner class
 
@@ -107,21 +112,21 @@ public class AddCollectionActivity extends AppCompatActivity {
                         String input = collectionInputBox.getText().toString();
 
                         if(collectionInputBox.getText().toString().length() == 0) {
-                            Toast.makeText(AddCollectionActivity.this, "Collection name cannot be " +
-                                    "empty", Toast.LENGTH_SHORT).show();
+                            errorCode = 0;
+                            ErrorDialog.newInstance(errorCode).show(getFragmentManager(), "0");
                             return false;
                         }
 
                         if(BlocpartyApplication.getSharedDataSource().isValueInDB(BPUtils.COLLECTION_TABLE,
                                 "collection_name", input)) {
-                            Toast.makeText(AddCollectionActivity.this, input + " is already a Collection " +
-                                    "name.", Toast.LENGTH_SHORT).show();
+                            errorCode = 1;
+                            ErrorDialog.newInstance(errorCode, input).show(getFragmentManager(), "1");
                             return false;
                         }
 
                         if(sPrefUserKeys.size() == 0) {
-                            Toast.makeText(AddCollectionActivity.this, "You must add at least one " +
-                                    "user to the collection.", Toast.LENGTH_SHORT).show();
+                            errorCode = 2;
+                            ErrorDialog.newInstance(errorCode, input).show(getFragmentManager(), "2");
                             return false;
                         }
 
@@ -217,5 +222,61 @@ public class AddCollectionActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //clears back stack
         intent.putExtra("show_dialog", true);
         startActivity(intent);
+    }
+
+    public static class ErrorDialog extends DialogFragment {
+
+        int errorCode = 0;
+        String variableValue;
+        String errorMessage;
+
+        public static ErrorDialog newInstance(int errorCode, String value) {
+            ErrorDialog errorDialog = new ErrorDialog();
+            Bundle bundle = new Bundle();
+            bundle.putInt("errorCode", errorCode);
+            bundle.putString("value", value);
+            errorDialog.setArguments(bundle);
+            return errorDialog;
+        }
+
+        public static ErrorDialog newInstance(int errorCode) {
+            ErrorDialog errorDialog = new ErrorDialog();
+            Bundle bundle = new Bundle();
+            bundle.putInt("errorCode", errorCode);
+            errorDialog.setArguments(bundle);
+            return errorDialog;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+            errorCode = getArguments().getInt("errorCode");
+            variableValue = getArguments().getString("value");
+
+            switch (errorCode) {
+                case 0:
+                    errorMessage = "Collection name cannot be empty.";
+                    break;
+                case 1:
+
+                    if(variableValue != null) {
+                        errorMessage = variableValue + " is already a Collection name.";
+                    }
+                    break;
+                case 2:
+                    errorMessage = "You must add at least one user to the collection.";
+                    break;
+            }
+
+            return new AlertDialog.Builder(getActivity())
+                    .setMessage(errorMessage)
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dismiss();
+                        }
+                    })
+                    .create();
+        }
     }
 }
