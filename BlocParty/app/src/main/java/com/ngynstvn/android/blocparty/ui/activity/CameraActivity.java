@@ -1,13 +1,8 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
-import android.annotation.TargetApi;
-import android.hardware.camera2.CameraManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
@@ -20,22 +15,13 @@ public class CameraActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(CameraActivity.class);
 
-//    private Toolbar toolbar;
-//    private Menu menu;
-
-    private CameraManager cameraManager;
-
     // ----- Lifecycle Methods ----- //
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-//        toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
-//        setSupportActionBar(toolbar);
-        cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+        setContentView(R.layout.activity_camera);
     }
 
     @Override
@@ -75,18 +61,5 @@ public class CameraActivity extends AppCompatActivity {
 
     // -----   -----  -----  -----  ----- //
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        Log.v(TAG, "onCreateOptionsMenu() called");
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        this.menu = menu;
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Log.v(TAG, "onOptionsItemSelected() called");
-        return super.onOptionsItemSelected(item);
-    }
 }
 

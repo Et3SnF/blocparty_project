@@ -27,5 +27,5 @@ public class CamTextureView extends TextureView {
     public CamTextureView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
-    
+
 }
