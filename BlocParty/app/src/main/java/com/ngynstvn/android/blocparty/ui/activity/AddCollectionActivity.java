@@ -262,6 +262,7 @@ public class AddCollectionActivity extends AppCompatActivity {
                     if(variableValue != null) {
                         errorMessage = variableValue + " is already a Collection name.";
                     }
+
                     break;
                 case 2:
                     errorMessage = "You must add at least one user to the collection.";
