@@ -39,6 +39,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private static final int inputLimit = 250;
     private static final int IMAGE_ERROR = 0;
+    private static final int UPLOAD_ERROR = 1;
 
     private SharedPreferences sharedPreferences;
     private Toolbar toolbar;
@@ -52,7 +53,6 @@ public class ImageUploadActivity extends AppCompatActivity {
     private RelativeLayout downloadedLayout;
     private Button downloadImageBtn;
     private ProgressBar downloadImgProgBar;
-
 
     private CheckBox fbUploadCheckbox;
     private CheckBox twUploadCheckbox;
@@ -217,6 +217,11 @@ public class ImageUploadActivity extends AppCompatActivity {
                 boolean canUploadToTW = sharedPreferences.getBoolean(BPUtils.TW_UPLOAD, false);
                 boolean canUploadToIG = sharedPreferences.getBoolean(BPUtils.IG_UPLOAD, false);
 
+                if(!canUploadToFB && !canUploadToTW && !canUploadToIG) {
+                    ErrorImageDialog.newInstance(UPLOAD_ERROR).show(getFragmentManager(), "post_error_dialog");
+                    return false;
+                }
+
                 if(canUploadToFB) {
                     uploadToFacebook();
                 }
@@ -261,6 +266,10 @@ public class ImageUploadActivity extends AppCompatActivity {
             switch (errorCode) {
                 case 0:
                     errorMessage = "There was an error processing the photo. Try taking another picture.";
+                    break;
+                case 1:
+                    errorMessage = "There must be at least one social network selected in order " +
+                            "to post this photo.";
                     break;
             }
 
