@@ -80,7 +80,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         setProgressBarIndeterminateVisibility(false);
         setContentView(R.layout.activity_image_upload);
 
-        toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
+        toolbar = (Toolbar) findViewById(R.id.tb_activity_image_upload);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Upload Image");
 

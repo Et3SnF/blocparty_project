@@ -5,283 +5,304 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/tb_activity_image_upload"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:background="@color/material_indigo_500"/>
+
     <!-- Preview Image Area -->
 
-    <FrameLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="230dp"
-        android:background="@color/black_12"
-        android:layout_marginBottom="16dp">
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/iv_preview_image"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="16dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </FrameLayout>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="230dp"
+                android:background="@color/black_12"
+                android:layout_marginBottom="16dp">
 
-    <!-- Caption Area -->
+                <ImageView
+                    android:id="@+id/iv_preview_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="16dp"
+                    android:background="@color/red_10"/>
 
-    <TextView
-        android:id="@+id/tv_caption_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/insert_caption_text"
-        android:textSize="16sp"
-        android:textColor="@color/black_87"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"
-        android:layout_marginBottom="8dp"/>
+            </FrameLayout>
 
-    <EditText
-        android:id="@+id/et_caption_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/black_87"
-        android:layout_gravity="center_horizontal"
-        android:maxLines="4"
-        android:maxEms="8"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="@color/black_12"
-        android:layout_marginBottom="8dp"/>
-
-    <!-- Download Area -->
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp">
-
-        <!-- Not Downloaded Layout -->
-
-        <RelativeLayout
-            android:id="@+id/rl_not_download_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            <!-- Caption Area -->
 
             <TextView
-                android:id="@+id/tv_download_text"
+                android:id="@+id/tv_caption_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/download_text"
+                android:text="@string/insert_caption_text"
                 android:textSize="16sp"
                 android:textColor="@color/black_87"
-                android:layout_centerVertical="true"/>
-
-            <Button
-                android:id="@+id/btn_download_image"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="@drawable/ic_file_download_black_24dp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"/>
-
-        </RelativeLayout>
-
-        <!-- Downloading layout -->
-
-        <RelativeLayout
-            android:id="@+id/rl_downloading_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/tv_downloading_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/downloading_text"
-                android:textSize="12sp"
-                android:textColor="@color/black_87"
-                android:layout_marginTop="8dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
                 android:layout_marginBottom="8dp"/>
 
-            <ProgressBar
-                android:id="@+id/pb_download_image"
+            <EditText
+                android:id="@+id/et_caption_input"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/tv_downloading_text"/>
-
-        </RelativeLayout>
-
-        <!-- Downloaded layout -->
-
-        <RelativeLayout
-            android:id="@+id/rl_downloaded_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/tv_downloaded_text"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/downloaded_text"
-                android:textSize="16sp"
-                android:textColor="@color/green_87"
-                android:layout_centerVertical="true"/>
+                android:textColor="@color/black_87"
+                android:layout_gravity="center_horizontal"
+                android:maxLines="4"
+                android:maxEms="8"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"/>
 
             <View
-                android:id="@+id/v_downloaded_check"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="@drawable/ic_check_black_24dp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"/>
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/black_12"
+                android:layout_marginBottom="8dp"/>
 
-        </RelativeLayout>
+            <!-- Download Area -->
 
-    </FrameLayout>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="@color/black_12"
-        android:layout_marginBottom="8dp"/>
+                <!-- Not Downloaded Layout -->
 
-    <!-- Share Area -->
+                <RelativeLayout
+                    android:id="@+id/rl_not_download_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tv_share_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/share_text"
-        android:textSize="18sp"
-        android:textStyle="italic"
-        android:textColor="@color/black_87"
-        android:layout_marginLeft="24dp"
-        android:layout_marginRight="24dp"
-        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:id="@+id/tv_download_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/download_text"
+                        android:textSize="16sp"
+                        android:textColor="@color/black_87"
+                        android:layout_centerVertical="true"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp">
+                    <Button
+                        android:id="@+id/btn_download_image"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/ic_file_download_black_24dp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"/>
 
-        <ImageView
-            android:id="@+id/iv_share_fb_profile"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginLeft="16dp"
-            android:background="@drawable/fb_logo"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_centerVertical="true"/>
+                </RelativeLayout>
 
-        <TextView
-            android:id="@+id/tv_facebook_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/facebook_text"
-            android:textSize="18sp"
-            android:textColor="@color/black_87"
-            android:layout_toRightOf="@+id/iv_share_fb_profile"
-            android:layout_toEndOf="@+id/iv_share_fb_profile"
-            android:layout_centerVertical="true"/>
+                <!-- Downloading layout -->
 
-        <CheckBox
-            android:id="@+id/cb_fb_share_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="16dp"/>
+                <RelativeLayout
+                    android:id="@+id/rl_downloading_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
 
-    </RelativeLayout>
+                    <TextView
+                        android:id="@+id/tv_downloading_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/downloading_text"
+                        android:textSize="12sp"
+                        android:textColor="@color/black_87"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp">
+                    <ProgressBar
+                        android:id="@+id/pb_download_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        android:layout_below="@id/tv_downloading_text"/>
 
-        <ImageView
-            android:id="@+id/iv_share_tw_profile"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginLeft="16dp"
-            android:background="@drawable/twitter_logo"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_centerVertical="true"/>
+                </RelativeLayout>
 
-        <TextView
-            android:id="@+id/tv_twitter_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/twitter_text"
-            android:textSize="18sp"
-            android:textColor="@color/black_87"
-            android:layout_toRightOf="@+id/iv_share_tw_profile"
-            android:layout_toEndOf="@+id/iv_share_tw_profile"
-            android:layout_centerVertical="true"/>
+                <!-- Downloaded layout -->
 
-        <CheckBox
-            android:id="@+id/cb_tw_share_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="16dp"/>
+                <RelativeLayout
+                    android:id="@+id/rl_downloaded_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
 
-    </RelativeLayout>
+                    <TextView
+                        android:id="@+id/tv_downloaded_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/downloaded_text"
+                        android:textSize="16sp"
+                        android:textColor="@color/green_87"
+                        android:layout_centerVertical="true"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp">
+                    <View
+                        android:id="@+id/v_downloaded_check"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/ic_check_black_24dp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"/>
 
-        <ImageView
-            android:id="@+id/iv_share_dl"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginLeft="16dp"
-            android:background="@drawable/ig_logo"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_centerVertical="true"/>
+                </RelativeLayout>
 
-        <TextView
-            android:id="@+id/tv_instagram_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/facebook_text"
-            android:textSize="18sp"
-            android:textColor="@color/black_87"
-            android:layout_toRightOf="@+id/iv_share_dl"
-            android:layout_toEndOf="@+id/iv_share_dl"
-            android:layout_centerVertical="true"/>
+            </FrameLayout>
 
-        <CheckBox
-            android:id="@+id/cb_ig_share_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="16dp"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/black_12"
+                android:layout_marginBottom="8dp"/>
 
-    </RelativeLayout>
+            <!-- Share Area -->
+
+            <TextView
+                android:id="@+id/tv_share_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/share_text"
+                android:textSize="18sp"
+                android:textStyle="italic"
+                android:textColor="@color/black_87"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:layout_marginBottom="8dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginRight="60dp">
+
+                <ImageView
+                    android:id="@+id/iv_share_fb_profile"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="16dp"
+                    android:background="@drawable/fb_logo"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_centerVertical="true"/>
+
+                <TextView
+                    android:id="@+id/tv_facebook_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/facebook_text"
+                    android:textSize="18sp"
+                    android:textColor="@color/black_87"
+                    android:layout_toRightOf="@+id/iv_share_fb_profile"
+                    android:layout_toEndOf="@+id/iv_share_fb_profile"
+                    android:layout_centerVertical="true"/>
+
+                <CheckBox
+                    android:id="@+id/cb_fb_share_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="16dp"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginRight="60dp">
+
+                <ImageView
+                    android:id="@+id/iv_share_tw_profile"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="16dp"
+                    android:background="@drawable/twitter_logo"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_centerVertical="true"/>
+
+                <TextView
+                    android:id="@+id/tv_twitter_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/twitter_text"
+                    android:textSize="18sp"
+                    android:textColor="@color/black_87"
+                    android:layout_toRightOf="@+id/iv_share_tw_profile"
+                    android:layout_toEndOf="@+id/iv_share_tw_profile"
+                    android:layout_centerVertical="true"/>
+
+                <CheckBox
+                    android:id="@+id/cb_tw_share_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="16dp"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginRight="60dp">
+
+                <ImageView
+                    android:id="@+id/iv_share_dl"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="16dp"
+                    android:background="@drawable/ig_logo"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_centerVertical="true"/>
+
+                <TextView
+                    android:id="@+id/tv_instagram_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/facebook_text"
+                    android:textSize="18sp"
+                    android:textColor="@color/black_87"
+                    android:layout_toRightOf="@+id/iv_share_dl"
+                    android:layout_toEndOf="@+id/iv_share_dl"
+                    android:layout_centerVertical="true"/>
+
+                <CheckBox
+                    android:id="@+id/cb_ig_share_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="16dp"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>

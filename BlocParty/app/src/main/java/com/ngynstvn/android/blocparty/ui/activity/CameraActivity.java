@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -434,7 +435,10 @@ public class CameraActivity extends AppCompatActivity {
         approveCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                finish();
+                Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
+                intent.putExtra("upload_image", imageFile);
+                startActivity(intent);
             }
         });
 
