@@ -376,6 +376,7 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        flashModeBtn.setEnabled(false);
         flashModeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
