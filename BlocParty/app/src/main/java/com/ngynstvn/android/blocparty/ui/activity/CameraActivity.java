@@ -35,11 +35,13 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -57,6 +59,7 @@ import java.util.List;
  * Created by Ngynstvn on 11/5/15.
  */
 
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class CameraActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(CameraActivity.class);
@@ -137,6 +140,7 @@ public class CameraActivity extends AppCompatActivity {
 
         }
     };
+    private ImageView capturedImage;
 
     // Setting up the camera device
     private CameraDevice cameraDevice;
@@ -297,6 +301,12 @@ public class CameraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            Toast.makeText(this, "Sorry the camera only supports Android OS Lollipop or higher", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
@@ -304,6 +314,7 @@ public class CameraActivity extends AppCompatActivity {
         // Basically get this whole cycle working...it all starts with TextureView
 
         textureView = (TextureView) findViewById(R.id.txv_camera_activity);
+        capturedImage = (ImageView) findViewById(R.id.iv_captured_image);
         topIconsHolder = (RelativeLayout) findViewById(R.id.rl_top_icons);
         exitCameraBtn = (Button) findViewById(R.id.btn_exit_camera);
         bottomIconsHolder = (RelativeLayout) findViewById(R.id.rl_bottom_icons);
@@ -318,6 +329,9 @@ public class CameraActivity extends AppCompatActivity {
         exitCameraBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!isTaskRoot()) {
+                    finish();
+                }
             }
         });
 
@@ -372,6 +386,19 @@ public class CameraActivity extends AppCompatActivity {
         cancelCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                capturedImage.setVisibility(View.GONE);
+
+                if(cameraDevice == null) {
+                    setupCamera(previewSize.getWidth(), previewSize.getHeight());
+                    openCamera();
+
+                    if(backgroundHandler == null) {
+                        openBackgroundThread();
+                    }
+                }
+
+                // View code here
 
                 int leftRightTransWidth = cancelCapBtnHolder.getMeasuredWidth();
 
@@ -832,6 +859,9 @@ public class CameraActivity extends AppCompatActivity {
         // Next create a Runnable to that saves the image in the background
 
         lockFocus();
+        closeCamera();
+        capturedImage.setVisibility(View.VISIBLE);
+        Picasso.with(this).load(imageFile).into(capturedImage);
     }
 
     private void captureStillImage() {

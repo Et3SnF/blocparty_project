@@ -5,10 +5,23 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextureView
-        android:id="@+id/txv_camera_activity"
+    <FrameLayout
+        android:id="@+id/fl_texture_view_and_iv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <TextureView
+            android:id="@+id/txv_camera_activity"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <ImageView
+            android:id="@+id/iv_captured_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
     <!-- Top Icons - Visible whenever in capture mode -->
 
