@@ -51,14 +51,14 @@
                 android:layout_height="24dp"
                 android:button="@drawable/post_liked_selector"
                 android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/btn_more_settings"
-                android:layout_toStartOf="@+id/btn_more_settings" />
+                android:layout_toLeftOf="@+id/btn_download_post_image"
+                android:layout_toStartOf="@+id/btn_download_post_image" />
 
             <CheckBox
-                android:id="@+id/btn_more_settings"
+                android:id="@+id/btn_download_post_image"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:button="@drawable/more_settings_selector"
+                android:button="@drawable/download_post_image_selector"
                 android:layout_alignTop="@+id/btn_like_button"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"

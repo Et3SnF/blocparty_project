@@ -94,7 +94,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         TextView postImageCaption;
         TextView postPublishDate;
         CheckBox postLikedBtn;
-        CheckBox postMoreSettings;
+        CheckBox postImgDownload;
         TextView postMediaType;
         LinearLayout postCaptionArea;
 
@@ -113,7 +113,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postImageCaption = (TextView) itemView.findViewById(R.id.tv_post_caption);
             postPublishDate = (TextView) itemView.findViewById(R.id.tv_publish_date);
             postLikedBtn = (CheckBox) itemView.findViewById(R.id.btn_like_button);
-            postMoreSettings = (CheckBox) itemView.findViewById(R.id.btn_more_settings);
+            postImgDownload = (CheckBox) itemView.findViewById(R.id.btn_download_post_image);
 
             postImage.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -130,10 +130,10 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
                 }
             });
 
-            postMoreSettings.setOnClickListener(new View.OnClickListener() {
+            postImgDownload.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "More Settings Clicked", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Download Post Image Clicked", Toast.LENGTH_SHORT).show();
                 }
             });
         }
