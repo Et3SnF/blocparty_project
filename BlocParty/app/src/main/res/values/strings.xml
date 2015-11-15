@@ -47,5 +47,8 @@
     <string name="empty_collection_text">There are no collections.... :|</string>
     <string name="user">user</string>
     <string name="users">users</string>
+    <string name="insert_caption_text">Insert caption:</string>
+    <string name="share_text">Share</string>
+    <string name="download_text">Download Image</string>
 
 </resources>
