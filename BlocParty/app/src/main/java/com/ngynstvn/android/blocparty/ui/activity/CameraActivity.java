@@ -376,6 +376,7 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        flashModeBtn.setVisibility(View.GONE);
         flashModeBtn.setEnabled(false);
         flashModeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -388,18 +389,11 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                capturedImage.setVisibility(View.GONE);
-
-                if(cameraDevice == null) {
-                    setupCamera(previewSize.getWidth(), previewSize.getHeight());
-                    openCamera();
-
-                    if(backgroundHandler == null) {
-                        openBackgroundThread();
-                    }
-                }
-
                 // View code here
+
+                if(imageFile != null) {
+                    deleteTempImageFile(imageFile);
+                }
 
                 int leftRightTransWidth = cancelCapBtnHolder.getMeasuredWidth();
 
@@ -430,7 +424,12 @@ public class CameraActivity extends AppCompatActivity {
                 if(!textureView.isEnabled()) {
                     textureView.setEnabled(true);
                 }
+
+                finish();
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
             }
+
         });
 
         approveCaptureBtn.setOnClickListener(new View.OnClickListener() {
@@ -860,6 +859,7 @@ public class CameraActivity extends AppCompatActivity {
         // Next create a Runnable to that saves the image in the background
 
         lockFocus();
+
         closeCamera();
         capturedImage.setVisibility(View.VISIBLE);
         Picasso.with(this).load(imageFile).into(capturedImage);
@@ -918,6 +918,20 @@ public class CameraActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private void deleteTempImageFile(File file) {
+
+        File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+
+        if(storageDirectory.exists()) {
+            file.delete();
+            return;
+        }
+
+        storageDirectory.mkdir();
+        Log.e(TAG, "Unable to find file due to lack of directory. Created new one.");
+
     }
 
 }
