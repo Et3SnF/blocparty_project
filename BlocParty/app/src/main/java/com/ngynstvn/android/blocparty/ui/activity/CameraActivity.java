@@ -435,10 +435,12 @@ public class CameraActivity extends AppCompatActivity {
         approveCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("upload_image", imageFile);
                 Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
-                intent.putExtra("upload_image", imageFile);
+                intent.putExtras(bundle);
                 startActivity(intent);
+                finish();
             }
         });
 
