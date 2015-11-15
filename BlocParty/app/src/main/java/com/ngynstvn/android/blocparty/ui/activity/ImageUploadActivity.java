@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +36,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(ImageUploadActivity.class);
 
+    private static final int inputLimit = 250;
     private static final int IMAGE_ERROR = 0;
 
     private SharedPreferences sharedPreferences;
@@ -42,7 +44,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private Menu menu;
 
     private ImageView previewImage;
-    private EditText captionInput;
+    private EditText captionInputBox;
     private Button downloadImageBtn;
     private CheckBox fbUploadCheckbox;
     private CheckBox twUploadCheckbox;
@@ -76,13 +78,15 @@ public class ImageUploadActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Upload Image");
 
         previewImage = (ImageView) findViewById(R.id.iv_preview_image);
-        captionInput = (EditText) findViewById(R.id.et_caption_input);
+        captionInputBox = (EditText) findViewById(R.id.et_caption_input);
         downloadImageBtn = (Button) findViewById(R.id.btn_download_image);
         fbUploadCheckbox = (CheckBox) findViewById(R.id.cb_fb_share_select);
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
 
         Picasso.with(this).load(imageFile).into(previewImage);
+
+        captionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(inputLimit)});
 
         downloadImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,8 +197,8 @@ public class ImageUploadActivity extends AppCompatActivity {
         else if(item.getItemId() == R.id.action_upload_image) {
             Log.e(TAG, "Upload Image Clicked");
 
-            if(captionInput != null) {
-                String input = captionInput.getText().toString();
+            if(captionInputBox != null) {
+                String input = captionInputBox.getText().toString();
 
                 // Find a way to associate image with the caption and the social networks
 
