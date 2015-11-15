@@ -15,12 +15,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
@@ -45,7 +46,14 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private ImageView previewImage;
     private EditText captionInputBox;
+
+    private RelativeLayout unDownloadLayout;
+    private RelativeLayout downloadingLayout;
+    private RelativeLayout downloadedLayout;
     private Button downloadImageBtn;
+    private ProgressBar downloadImgProgBar;
+
+
     private CheckBox fbUploadCheckbox;
     private CheckBox twUploadCheckbox;
     private CheckBox igUploadCheckbox;
@@ -57,7 +65,6 @@ public class ImageUploadActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "onCreate() called");
-        getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.SN_UPLOAD_STATES);
 
@@ -79,7 +86,11 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         previewImage = (ImageView) findViewById(R.id.iv_preview_image);
         captionInputBox = (EditText) findViewById(R.id.et_caption_input);
+        unDownloadLayout = (RelativeLayout) findViewById(R.id.rl_not_download_image);
+        downloadingLayout = (RelativeLayout) findViewById(R.id.rl_downloading_image);
+        downloadedLayout = (RelativeLayout) findViewById(R.id.rl_downloaded_image);
         downloadImageBtn = (Button) findViewById(R.id.btn_download_image);
+        downloadImgProgBar = (ProgressBar) findViewById(R.id.pb_download_image);
         fbUploadCheckbox = (CheckBox) findViewById(R.id.cb_fb_share_select);
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
@@ -303,7 +314,10 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            setProgressBarIndeterminateVisibility(true);
+            // I include everything for safety measure
+            unDownloadLayout.setVisibility(View.GONE);
+            downloadingLayout.setVisibility(View.VISIBLE);
+            downloadingLayout.setVisibility(View.GONE);
         }
 
         @Override
@@ -318,7 +332,9 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            setProgressBarIndeterminateVisibility(false);
+            unDownloadLayout.setVisibility(View.GONE);
+            downloadingLayout.setVisibility(View.GONE);
+            downloadingLayout.setVisibility(View.VISIBLE);
         }
     }
 

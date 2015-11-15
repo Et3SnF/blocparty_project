@@ -51,5 +51,7 @@
     <string name="share_text">Share</string>
     <string name="download_text">Download Image</string>
     <string name="action_upload_text">Upload</string>
+    <string name="downloading_text">Downloading...</string>
+    <string name="downloaded_text">DOWNLOADED</string>
 
 </resources>
