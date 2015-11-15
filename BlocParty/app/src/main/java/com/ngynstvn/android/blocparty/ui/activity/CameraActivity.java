@@ -17,7 +17,6 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
@@ -504,6 +503,14 @@ public class CameraActivity extends AppCompatActivity {
     protected void onDestroy() {
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
+
+        // Clear any temp image files when going to next activity
+
+        File imageDirectory = BPUtils.getImageDirectory();
+
+        if(imageDirectory.exists() && imageFile != null) {
+            imageFile.delete();
+        }
     }
 
     /**
@@ -906,7 +913,7 @@ public class CameraActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String imageFileName = "IMAGE_BP_" + timeStamp + "_";
 
-        File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+        File storageDirectory = BPUtils.getImageDirectory();
 
         if(!storageDirectory.exists()) {
             storageDirectory.mkdir();
@@ -922,7 +929,7 @@ public class CameraActivity extends AppCompatActivity {
 
     private void deleteTempImageFile(File file) {
 
-        File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+        File storageDirectory = BPUtils.getImageDirectory();
 
         if(storageDirectory.exists()) {
             file.delete();

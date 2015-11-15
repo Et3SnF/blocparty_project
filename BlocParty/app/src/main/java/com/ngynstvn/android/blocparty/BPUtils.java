@@ -2,9 +2,11 @@ package com.ngynstvn.android.blocparty;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -174,5 +176,9 @@ public class BPUtils {
             e.printStackTrace();
             return 0L;
         }
+    }
+
+    public static File getImageDirectory() {
+        return new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
     }
 }
