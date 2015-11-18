@@ -260,7 +260,7 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 BPUtils.logMethod(CLASS_TAG, "approveCaptureBtn");
-                getTempImgFileUri(tempImgFile);
+                openImgUploadActivity(tempImgFile);
             }
         });
 
@@ -704,19 +704,23 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
-    private void getTempImgFileUri(final File file) {
+    private void openImgUploadActivity(final File file) {
 
         cameraHandler.post(new Runnable() {
             @Override
             public void run() {
+
                 if(file != null) {
+                    // Get URI of the temp file saved
                     Log.v(TAG, "tempImage is not null");
                     URI imageUri = file.toURI();
                     Log.v(TAG, "URI: " + imageUri.getPath());
-//            Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
-//            intent.putExtra("image_uri", imageUri);
-//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            startActivity(intent);
+
+                    // Open activity based on URI
+                    Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
+                    intent.putExtra("image_uri", imageUri);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
                 }
                 else {
                     Log.v(TAG, "tempImage is null");
