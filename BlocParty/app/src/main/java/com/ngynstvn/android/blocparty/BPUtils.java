@@ -3,6 +3,7 @@ package com.ngynstvn.android.blocparty;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -73,10 +74,31 @@ public class BPUtils {
     public static final String USER_SOCIAL_NETWORK = "user_social_network";
     public static final String USER_FULL_NAME = "user_full_name";
 
+    // Camera Related
+
+    public static final String CAM_STATE = "cam_state";
+    public static final String FLASH_STATE = "flash_state";
+
     // ----- Static Methods ----- //
+
+    // Logging methods
 
     public static String classTag(Class className) {
         return "(" + className.getSimpleName() + "): ";
+    }
+
+    public static void logMethod(String className) {
+        final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String classTag = "(" + className + ")";
+        String message = stackTraceElements[3].getMethodName() + "() called | Thread: " + Thread.currentThread().getName();
+        Log.e(classTag, message);
+    }
+
+    public static void logMethod(String className, String additional) {
+        final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String classTag = "(" + className + ")";
+        String message = additional + "'s " + stackTraceElements[3].getMethodName() + "() called | Thread: " + Thread.currentThread().getName();
+        Log.e(classTag, message);
     }
 
     // SharedPreferences
