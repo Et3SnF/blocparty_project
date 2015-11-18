@@ -78,6 +78,7 @@ public class BPUtils {
 
     public static final String CAM_STATE = "cam_state";
     public static final String FLASH_STATE = "flash_state";
+    public static final String IMAGE_URI = "image_uri";
 
     // ----- Static Methods ----- //
 

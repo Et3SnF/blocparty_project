@@ -718,7 +718,7 @@ public class CameraActivity extends AppCompatActivity {
 
                     // Open activity based on URI
                     Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
-                    intent.putExtra("image_uri", imageUri);
+                    intent.putExtra(BPUtils.IMAGE_URI, imageUri);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                 }
