@@ -2,26 +2,12 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <FrameLayout
-        android:id="@+id/fl_texture_view_and_iv"
+        android:id="@+id/fl_camera_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextureView
-            android:id="@+id/txv_camera_activity"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-        <ImageView
-            android:id="@+id/iv_captured_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"/>
-
-    </FrameLayout>
+        android:layout_height="match_parent"/>
 
     <!-- Top Icons - Visible whenever in capture mode -->
 

@@ -1,73 +1,131 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureFailure;
-import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.TotalCaptureResult;
-import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
-import android.media.ImageReader;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
-import android.view.TextureView;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 
-/**
- * Created by Ngynstvn on 11/5/15.
- */
-
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class CameraActivity extends AppCompatActivity {
 
-    private static final String TAG = BPUtils.classTag(CameraActivity.class);
+    /**
+     * STEPS TO SETTING UP CAMERA 1
+     *
+     * 0. Inflate any views. Ensure that the Surface is added to a FrameLayout, not a SurfaceView.
+     * This will cause a headache by having the preview freeze after onResume() is called after onPause().
+     * 1. Detect if there is any camera hardware
+     * 2. If yes, get the Camera Instance
+     * 3. Instantiate the SurfaceView. Set Context as this.
+     * 4. Add the SurfaceView to the FrameLayout that will display the Surface
+     * 5. Get the SurfaceHolder using the SurfaceView
+     * 6. Add the SurfaceHolder.Callback listener to the SurfaceHolder.
+     * 7. Inside surfaceCreated(), let the camera set the preview display
+     * 8. Inside surfaceChanged(), get camera parameters, get appropriate preview sizes, fix orientation,
+     * set the preview size based on the optimized method.
+     * 9. Set the parameters using camera inside surfaceChanged().
+     * 10. Invoke displayPreview() using camera inside surfaceChanged().
+     *
+     * Note 1: surfaceChanged() is called first when the Surface is created for the very first time.
+     * This is called after when the SurfaceHolder has a listener added to it. Basically this listener
+     * keeps track of the state of the Surface and what type of changes need to be done when
+     * certain scenario occurs in this application.
+     *
+     */
 
-    // Camera State static variables
+    private static final String TAG = "(" + CameraActivity.class.getSimpleName() + ") ";
+    private static final String CLASS_TAG = CameraActivity.class.getSimpleName();
 
-    private static final int STATE_PREVIEW = 0;
-    private static final int STATE_WAKE_LOCK = 1;
+    private SharedPreferences sharedPreferences;
+
+    /**
+     *
+     * Camera Variables
+     *
+     */
+
+    private Camera camera;
+    private int currentCameraId = -1;
+    private static boolean isFrontCamActive = true;
+    private SurfaceView surfaceView;
+    private SurfaceHolder surfaceHolder; // connection to another object (Surface)
+    private Camera.Size previewSize = null;
+
+    private File tempImgFile;
+
+    private CameraThread cameraThread;
+    // Handler will be instantiated in run()
+    private Handler cameraHandler;
+
+    // Static block initializer. This is called first after when the class is instantiated.
+    // Called before a constructor. This is a great place to instantiate any list of static variables.
+
+    private static final SparseIntArray ORIENTATION_FIX = new SparseIntArray();
+
+    static {
+        ORIENTATION_FIX.append(Surface.ROTATION_0, 90);
+        ORIENTATION_FIX.append(Surface.ROTATION_90, 0);
+        ORIENTATION_FIX.append(Surface.ROTATION_180, 270);
+        ORIENTATION_FIX.append(Surface.ROTATION_270, 90);
+    }
+
+    private static final int ERROR_NO_CAMERA_HARDWARE = 1;
+    private static final int ERROR_NO_PHOTO_CAPTURE = 2;
+    private static final int ERROR_MISSING_TEMP_FILE = 3;
+
+    private static String currentFlashMode = Camera.Parameters.FLASH_MODE_OFF;
+    private static final String FLASH_MODE_OFF = Camera.Parameters.FLASH_MODE_OFF;
+    private static final String FLASH_MODE_ON = Camera.Parameters.FLASH_MODE_ON;
+    private static final String FLASH_MODE_AUTO = Camera.Parameters.FLASH_MODE_AUTO;
+
+    /**
+     *
+     * View Variables
+     *
+     */
+
+    private FrameLayout previewLayout;
 
     private RelativeLayout topIconsHolder;
     private Button exitCameraBtn;
@@ -77,261 +135,46 @@ public class CameraActivity extends AppCompatActivity {
     private Button cameraSwitchBtn;
     private Button flashModeBtn;
 
-    private RelativeLayout cancelCapBtnHolder;
-    private View cancelCaptureBtn;
-    private RelativeLayout approveCapBtnHolder;
-    private View approveCaptureBtn;
+    private RelativeLayout cancelCaptureBtn;
+    private RelativeLayout approveCaptureBtn;
 
     DisplayMetrics displayMetrics = new DisplayMetrics();
     private long transDuration = 200L;
     private long fadeDuration = 600L;
 
-    /**
-     *
-     * Camera Variables
-     *
-     * Sequence of Events :
-     * 1. Initialize TextureView by inflating the view
-     * 2. Activate TextureView adding the instance of a SurfaceTextureListener anonymous class
-     * 3. When SurfaceTexture is available, begin setting up the camera
-     * 4. Set up the camera by calling CameraManager, get the CameraCharacteristics, cameraId, and
-     * preview sizes (using StreamConfigurationMap with SCALER_STREAM_CONFIGURATION_MAP and a method
-     * to get the appropriate resolution)
-     * 5. Create an anonymous class implementation of CameraDevice.StateCallback to define the state of upcoming
-     * camera object
-     * 6. Start camera by opening it with CameraManager using the cameraId, CameraDevice.StateCallback
-     * and Handler to allow it to run in the background
-     * 7. When the camera is officially opened, get the assign CameraDevice object from the StateCallback (onOpened())
-     * 8. Once the cameraDevice object is assigned and initialized, create the preview session (Look
-     * at procedure above createCaptureSession() method
-     *
-     */
-
-    private Size previewSize;
-    private String cameraId;
-    private TextureView textureView;
-    private TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
-        @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-
-            // When this is available, get the width the height of the Texture for the preview
-            // NOTE: At start, I want to access the camera. Then remove any resources of the camera
-            // whenver I move to another application.
-            // onResume(), set up the camera
-            setupCamera(width, height);
-
-            // Now open the camera after setup
-
-            openCamera();
-        }
-
-        @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            return false;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
-        }
-    };
-    private ImageView capturedImage;
-
-    // Setting up the camera device
-    private CameraDevice cameraDevice;
-    private CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
-
-        // Provides that different states of what the cameraDevice will be in - opened, disconnected, and error
-
-        @Override
-        public void onOpened(CameraDevice camera) {
-            cameraDevice = camera;
-            createCameraPreviewSession();
-            Log.v(TAG, "Camera is now opened");
-        }
-
-        @Override
-        public void onDisconnected(CameraDevice camera) {
-            Log.v(TAG, "Camera is now disconnected");
-            camera.close();
-            cameraDevice = null;
-        }
-
-        @Override
-        public void onError(CameraDevice camera, int error) {
-            Log.e(TAG, "There was an error opening teh camera. Closing camera resources.");
-            camera.close();
-            cameraDevice = null;
-        }
-    };
-
-    // Preview Session variables
-
-    private CaptureRequest previewCaptureRequest;
-    private CaptureRequest.Builder previewCaptureRequestBuilder; // this is a helper to the CaptureRequest
-    private CameraCaptureSession cameraCaptureSession;
-    private CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request, long timestamp, long frameNumber) {
-            super.onCaptureStarted(session, request, timestamp, frameNumber);
-        }
-
-        @Override
-        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            process(result);
-        }
-
-        @Override
-        public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request, CaptureFailure failure) {
-            super.onCaptureFailed(session, request, failure);
-            Log.e(TAG, "Unable to capture photo");
-            Toast.makeText(getApplicationContext(), "Unable to capture photo.", Toast.LENGTH_SHORT).show();
-        }
-
-        private void process(CaptureResult captureResult) {
-            switch (currentState) {
-                case STATE_PREVIEW:
-                    // Just continue...
-                    break;
-                case STATE_WAKE_LOCK:
-                    // If the mode is waking the focus lock, get the auto focus state and perform
-                    // the following:
-                    // if auto focus state is locked
-
-                    Integer autoFocusState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-
-                    if(autoFocusState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED) {
-                        unlockFocus();
-                        Log.v(TAG, "Focus locked");
-
-                        // Capture image
-
-                        captureStillImage();
-                        Log.v(TAG, "Image Captured");
-                    }
-
-                    break;
-            }
-        }
-    };
-
-    // Set up background threads
-
-    private HandlerThread backgroundThread;
-    private Handler backgroundHandler;
-
-    // Lock Focus Variables
-
-    private int currentState;
-
-    // Image saving variables
-
-    private static File imageFile;
-    private static class ImageSaver implements Runnable {
-
-        private final Image image;
-
-        private ImageSaver(Image image) {
-            this.image = image;
-        }
-
-        @Override
-        public void run() {
-            // Create a byte buffer to contain the byte data returned from Camera2 Surface
-            ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
-
-            // Create array that contains the number of content data from the byteBuffer
-            byte[] bytes = new byte[byteBuffer.remaining()];
-
-            // Copy data from byteBuffer and populate it into the array
-            byteBuffer.get(bytes);
-
-            // Store that data
-
-            FileOutputStream fileOutputStream = null;
-
-            try {
-                fileOutputStream = new FileOutputStream(imageFile);
-                fileOutputStream.write(bytes);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            image.close();
-            if(fileOutputStream != null) {
-                try {
-                    fileOutputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // Once everything is written via the stream, close any resources. Now use it with ImageReader
-
-    }
-    private ImageReader imageReader;
-    private ImageReader.OnImageAvailableListener onImageAvailableListener = new ImageReader.OnImageAvailableListener() {
-        @Override
-        public void onImageAvailable(ImageReader reader) {
-            // Once that image is available, pass that image to the image saver runnable and save it as a file
-
-            backgroundHandler.post(new ImageSaver(reader.acquireNextImage()));
-        }
-    };
-
-    // Capturing Still Image Variables
-
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate() called");
+        BPUtils.logMethod(CLASS_TAG);
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            Toast.makeText(this, "Sorry the camera only supports Android OS Lollipop or higher", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
         // Basically get this whole cycle working...it all starts with TextureView
 
-        textureView = (TextureView) findViewById(R.id.txv_camera_activity);
-        capturedImage = (ImageView) findViewById(R.id.iv_captured_image);
+        previewLayout = (FrameLayout) findViewById(R.id.fl_camera_preview);
         topIconsHolder = (RelativeLayout) findViewById(R.id.rl_top_icons);
         exitCameraBtn = (Button) findViewById(R.id.btn_exit_camera);
         bottomIconsHolder = (RelativeLayout) findViewById(R.id.rl_bottom_icons);
         captureButton = findViewById(R.id.v_pic_capture);
         cameraSwitchBtn = (Button) findViewById(R.id.btn_camera_switch);
         flashModeBtn = (Button) findViewById(R.id.btn_flash_mode);
-        cancelCapBtnHolder = (RelativeLayout) findViewById(R.id.rl_cancel_picture);
-        approveCapBtnHolder = (RelativeLayout) findViewById(R.id.rl_approve_pic);
-        cancelCaptureBtn = findViewById(R.id.v_pic_cancel);
-        approveCaptureBtn = findViewById(R.id.v_pic_approve);
+        cancelCaptureBtn = (RelativeLayout) findViewById(R.id.rl_cancel_picture);
+        approveCaptureBtn = (RelativeLayout) findViewById(R.id.rl_approve_pic);
 
         exitCameraBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!isTaskRoot()) {
                     finish();
+                    return;
                 }
+
+                finish();
+                Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         });
 
@@ -351,37 +194,33 @@ public class CameraActivity extends AppCompatActivity {
                 topIconsHolder.setVisibility(View.GONE);
                 bottomIconsHolder.setVisibility(View.GONE);
 
-                cancelCapBtnHolder.setEnabled(true);
-                approveCapBtnHolder.setEnabled(true);
+                cancelCaptureBtn.setEnabled(true);
+                approveCaptureBtn.setEnabled(true);
 
-                int leftRightTransWidth = cancelCapBtnHolder.getMeasuredWidth();
+                int leftRightTransWidth = cancelCaptureBtn.getMeasuredWidth();
 
-                moveFadeAnimation(cancelCapBtnHolder, (-1 * leftRightTransWidth),
+                moveFadeAnimation(cancelCaptureBtn, (-1 * leftRightTransWidth),
                         displayMetrics.widthPixels, 0, 0, 0.00f, 1.00f, transDuration, fadeDuration);
 
-                moveFadeAnimation(approveCapBtnHolder, leftRightTransWidth, displayMetrics.widthPixels
+                moveFadeAnimation(approveCaptureBtn, leftRightTransWidth, displayMetrics.widthPixels
                         , 0, 0, 0.0f, 1.0f, transDuration, fadeDuration);
 
-                cancelCapBtnHolder.setVisibility(View.VISIBLE);
-                approveCapBtnHolder.setVisibility(View.VISIBLE);
-
-                textureView.setEnabled(false);
+                cancelCaptureBtn.setVisibility(View.VISIBLE);
+                approveCaptureBtn.setVisibility(View.VISIBLE);
             }
         });
 
         cameraSwitchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                switchCamera();
             }
         });
 
-        flashModeBtn.setVisibility(View.GONE);
-        flashModeBtn.setEnabled(false);
         flashModeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                toggleFlashMode();
             }
         });
 
@@ -389,24 +228,20 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                // View code here
+                restartCamera();
 
-                if(imageFile != null) {
-                    deleteTempImageFile(imageFile);
-                }
+                int leftRightTransWidth = cancelCaptureBtn.getMeasuredWidth();
 
-                int leftRightTransWidth = cancelCapBtnHolder.getMeasuredWidth();
-
-                moveFadeAnimation(cancelCapBtnHolder, displayMetrics.widthPixels
+                moveFadeAnimation(cancelCaptureBtn, displayMetrics.widthPixels
                         , (-1 * leftRightTransWidth), 0, 0, 1.00f, 0.00F, transDuration, fadeDuration);
 
-                moveFadeAnimation(approveCapBtnHolder, displayMetrics.widthPixels
+                moveFadeAnimation(approveCaptureBtn, displayMetrics.widthPixels
                         , leftRightTransWidth, 0, 0, 1.00F, 0.00F, transDuration, fadeDuration);
 
-                cancelCapBtnHolder.setVisibility(View.GONE);
-                approveCapBtnHolder.setVisibility(View.GONE);
-                cancelCapBtnHolder.setEnabled(false);
-                approveCapBtnHolder.setEnabled(false);
+                cancelCaptureBtn.setVisibility(View.GONE);
+                approveCaptureBtn.setVisibility(View.GONE);
+                cancelCaptureBtn.setEnabled(false);
+                approveCaptureBtn.setEnabled(false);
 
                 bottomIconsHolder.setEnabled(true);
                 topIconsHolder.setEnabled(true);
@@ -418,112 +253,537 @@ public class CameraActivity extends AppCompatActivity {
 
                 bottomIconsHolder.setVisibility(View.VISIBLE);
                 topIconsHolder.setVisibility(View.VISIBLE);
-
-                // Can case something seriously happened...
-
-                if(!textureView.isEnabled()) {
-                    textureView.setEnabled(true);
-                }
-
-                finish();
-                startActivity(getIntent());
-                overridePendingTransition(0, 0);
             }
-
         });
 
         approveCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("upload_image", imageFile);
-                Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
-                intent.putExtras(bundle);
-                startActivity(intent);
-                finish();
+                BPUtils.logMethod(CLASS_TAG, "approveCaptureBtn");
+                getTempImgFileUri(tempImgFile);
             }
         });
 
-        /**
-         *
-         * Camera Code below
-         *
-         */
-
-        textureView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v(TAG, "TextureView touched.");
-            }
-        });
     }
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStart();
     }
 
     @Override
     protected void onResume() {
-        Log.e(TAG, "onResume() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onResume();
-
-        openBackgroundThread();
-
-        if(textureView.isAvailable()) {
-            // If TextureView is still available, just set up the camera and then open the camera
-            setupCamera(previewSize.getWidth(), previewSize.getHeight());
-            openCamera();
-        }
-        else {
-            // If it's not available, make sure this is setup so things start working or else
-            // you will see a gray screen
-            textureView.setSurfaceTextureListener(surfaceTextureListener);
-        }
+        startCameraThread();
     }
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onPause();
 
-        // Clean up camera resources here so that I don't cause other camera applications to crash..
-        closeCamera();
-        closeBackgroundThread();
+        cameraHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                camera.stopPreview();
+                releaseCamera();
+            }
+        });
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.e(TAG, "onSaveInstanceState() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onStop() {
-        Log.e(TAG, "onStop() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDestroy();
+    }
 
-        // Clear any temp image files when going to next activity
+    /**
+     *
+     * Camera Setup Methods
+     *
+     */
 
-        File imageDirectory = BPUtils.getImageDirectory();
+    private boolean isCameraHardwareAvailable() {
+        BPUtils.logMethod(CLASS_TAG);
 
-        if(imageDirectory.exists() && imageFile != null) {
-            imageFile.delete();
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    private void openCamera(int cameraId) {
+        BPUtils.logMethod(CLASS_TAG);
+
+        try {
+            if(isCameraHardwareAvailable()) {
+                camera = Camera.open(cameraId);
+
+                if(camera != null) {
+                    Log.v(TAG, "Camera instantiated");
+                }
+                else {
+                    Log.v(TAG, "Camera instance is null");
+                }
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Camera instantiation error.");
+            e.printStackTrace();
         }
     }
+
+    private void releaseCamera() {
+        BPUtils.logMethod(CLASS_TAG);
+
+        if (camera != null) {
+            camera.release();
+            camera = null;
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                previewLayout.removeView(surfaceView);
+            }
+        });
+
+    }
+
+    private int getCurrentCameraId() {
+
+        BPUtils.logMethod(CLASS_TAG);
+
+        int numOfCameras = Camera.getNumberOfCameras();
+
+        if(numOfCameras == 0) {
+            Log.e(TAG, "There are no cameras on this phone.");
+            ErrorDialog.newInstance(ERROR_NO_CAMERA_HARDWARE);
+            return -1;
+        }
+
+        // Get last known state of camera. If nothing is found, set to back camera as default.
+
+        SharedPreferences sharedPreferences = CameraActivity.this
+                .getSharedPreferences(BPUtils.FILE_NAME, MODE_PRIVATE);
+
+        isFrontCamActive = sharedPreferences.getBoolean(BPUtils.CAM_STATE, false);
+
+        if(isFrontCamActive) {
+            return Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }
+        else {
+            return Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
+
+    }
+
+    private Camera.Size getPreferredPreviewSize(int width, int height, Camera.Parameters parameters) {
+
+        BPUtils.logMethod(CLASS_TAG);
+
+        ArrayList<Camera.Size> supportedPreviewSizes = (ArrayList<Camera.Size>) parameters.getSupportedPreviewSizes();
+
+        for(Camera.Size option : supportedPreviewSizes) {
+            //Landscape Preview Sizes
+
+            if(width > height) {
+
+                if(option.width > width && option.height > height) {
+                    supportedPreviewSizes.add(option);
+                }
+
+            }
+            else {
+                if(option.width > height && option.height > width) {
+                    supportedPreviewSizes.add(option);
+                }
+            }
+        }
+
+        if(supportedPreviewSizes.size() > 0) {
+            return Collections.max(supportedPreviewSizes, new Comparator<Camera.Size>() {
+                @Override
+                public int compare(Camera.Size lhs, Camera.Size rhs) {
+                    return Long.signum(lhs.width * lhs.height - rhs.width * rhs.height);
+                }
+            });
+        }
+
+        return parameters.getSupportedPreviewSizes().get(0);
+    }
+
+    private void startCameraThread() {
+        BPUtils.logMethod(CLASS_TAG);
+        cameraThread = new CameraThread();
+        cameraThread.start();
+    }
+
+    /**
+     *
+     * Camera Action Methods
+     *
+     */
+
+    private void takePhoto() {
+        cameraHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG);
+
+                if (camera != null) {
+                    camera.takePicture(null, null, new Camera.PictureCallback() {
+                        @Override
+                        public void onPictureTaken(byte[] data, Camera camera) {
+                            BPUtils.logMethod(CLASS_TAG, "takePhoto");
+                            createTempImgFile(data);
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            BPUtils.logMethod(CLASS_TAG, "takePhoto");
+                            ErrorDialog.newInstance(ERROR_NO_PHOTO_CAPTURE).show(getFragmentManager(), "no_capture_dialog");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void restartCamera() {
+
+        cameraHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (cameraThread.isAlive()) {
+                    camera.stopPreview();
+                    BPUtils.logMethod(CLASS_TAG);
+                    deleteTempImgFile(tempImgFile);
+                    camera.startPreview();
+                } else {
+
+                }
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void switchCamera() {
+        BPUtils.logMethod(CLASS_TAG);
+
+        BPUtils.logMethod(CLASS_TAG, "switchCamera");
+        // If the camera is facing back, change currentCameraId to be front
+        // else get camera id for back facing camera
+
+        if(currentCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+
+            cameraHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.CAM_STATE, false);
+
+                    releaseCamera();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startCameraThread();
+                        }
+                    });
+                }
+            });
+
+            fadeViewAnimation(flashModeBtn, 0.00F, 1.00F, 700L);
+            flashModeBtn.setVisibility(View.VISIBLE);
+
+            // First at back camera icon --> turns to front camera icon
+            fadeRotateYAxisViewAnimation(cameraSwitchBtn, 1.00F, 0.00F, 400L);
+            cameraSwitchBtn.setVisibility(View.GONE);
+            cameraSwitchBtn.setBackground(getResources().getDrawable(R.drawable.ic_camera_front_white_24dp));
+            fadeRotateYAxisViewAnimation(cameraSwitchBtn, 0.00F, 1.00F, 400L);
+            cameraSwitchBtn.setVisibility(View.VISIBLE);
+        }
+        else if (currentCameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
+
+            cameraHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.CAM_STATE, true);
+
+                    releaseCamera();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startCameraThread();
+                        }
+                    });
+                }
+            });
+
+            fadeViewAnimation(flashModeBtn, 1.00F, 0.00F, 700L);
+            flashModeBtn.setVisibility(View.GONE);
+
+            // First at front camera icon --> turns to back camera icon
+            fadeRotateYAxisViewAnimation(cameraSwitchBtn, 1.00F, 0.00F, 400L);
+            cameraSwitchBtn.setVisibility(View.GONE);
+            cameraSwitchBtn.setBackground(getResources().getDrawable(R.drawable.ic_camera_rear_white_24dp));
+            fadeRotateYAxisViewAnimation(cameraSwitchBtn, 0.00F, 1.00F, 400L);
+            cameraSwitchBtn.setVisibility(View.VISIBLE);
+        }
+
+        isFrontCamActive = !isFrontCamActive;
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void getLatestCamState(int cameraId) {
+        // Set the proper flash and camera switch icons
+
+        if(cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            cameraSwitchBtn.setBackground(getResources()
+                    .getDrawable(R.drawable.ic_camera_rear_white_24dp));
+            flashModeBtn.setVisibility(View.GONE);
+        }
+        else if(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
+            cameraSwitchBtn.setBackground(getResources()
+                    .getDrawable(R.drawable.ic_camera_front_white_24dp));
+            flashModeBtn.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void getFlashAction() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences(BPUtils.FILE_NAME, MODE_PRIVATE);
+        String mode = sharedPreferences.getString(BPUtils.FLASH_STATE, FLASH_MODE_OFF);
+
+        if(currentCameraId == Camera.CameraInfo.CAMERA_FACING_BACK && camera != null) {
+
+            Camera.Parameters cameraParameters = camera.getParameters();
+
+            if(mode.equalsIgnoreCase(FLASH_MODE_OFF)) {
+                cameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                camera.setParameters(cameraParameters);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_OFF);
+                    }
+                });
+
+            }
+            else if(mode.equalsIgnoreCase(FLASH_MODE_ON)) {
+                cameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                camera.setParameters(cameraParameters);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_ON);
+                    }
+                });
+            }
+            else if(mode.equalsIgnoreCase(FLASH_MODE_AUTO)) {
+                cameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                camera.setParameters(cameraParameters);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_AUTO);
+                    }
+                });
+            }
+
+        }
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void toggleFlashMode() {
+
+        if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_OFF)) {
+            currentFlashMode = FLASH_MODE_ON;
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_ON);
+            toggleFlashModeAnimation(flashModeBtn, 0.00F, 1.00F, 400L, R.drawable.ic_flash_on_white_24dp);
+        }
+        else if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_ON)) {
+            currentFlashMode = FLASH_MODE_AUTO;
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_AUTO);
+            toggleFlashModeAnimation(flashModeBtn, 0.00F, 1.00F, 400L, R.drawable.ic_flash_auto_white_24dp);
+        }
+        else if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_AUTO)) {
+            currentFlashMode = FLASH_MODE_OFF;
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_OFF);
+            toggleFlashModeAnimation(flashModeBtn, 0.00F, 1.00F, 400L, R.drawable.ic_flash_off_white_24dp);
+        }
+        else {
+            // Worst case scenario
+            currentFlashMode = FLASH_MODE_OFF;
+            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.FLASH_STATE, FLASH_MODE_OFF);
+            toggleFlashModeAnimation(flashModeBtn, 0.00F, 1.00F, 400L, R.drawable.ic_flash_off_white_24dp);
+        }
+
+        getFlashAction();
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void getLatestFlashState() {
+        BPUtils.logMethod(CLASS_TAG);
+        SharedPreferences sharedPreferences = getSharedPreferences(BPUtils.FILE_NAME, MODE_PRIVATE);
+        currentFlashMode = sharedPreferences.getString(BPUtils.FLASH_STATE, FLASH_MODE_OFF);
+
+        if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_OFF)) {
+            flashModeBtn.setBackground(getResources()
+                    .getDrawable(R.drawable.ic_flash_off_white_24dp));
+        }
+        else if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_ON)) {
+            flashModeBtn.setBackground(getResources()
+                    .getDrawable(R.drawable.ic_flash_on_white_24dp));
+        }
+        else if(currentFlashMode.equalsIgnoreCase(FLASH_MODE_AUTO)) {
+            flashModeBtn.setBackground(getResources()
+                    .getDrawable(R.drawable.ic_flash_auto_white_24dp));
+        }
+    }
+
+
+    /**
+     *
+     * Camera File Methods
+     *
+     */
+
+    private void createTempImgFile(byte[] bytes) {
+        BPUtils.logMethod(CLASS_TAG);
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "IMG_" + timeStamp;
+
+        try {
+            final File tempFile = File.createTempFile(fileName, ".jpg", getCacheDir());
+            Log.v(TAG, "Location of Cache Directory: " + getCacheDir().getAbsolutePath() + " | File Name: " + tempFile.getName());
+
+            // Create a stream to write to a file. Parameter takes a file of interest
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+
+            // Begin the writing process
+            fileOutputStream.write(bytes);
+            fileOutputStream.close();
+
+            tempImgFile = tempFile;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteTempImgFile(File file) {
+        if(file != null) {
+            file.delete();
+            Log.v(TAG, "Temporary File Deleted");
+        }
+        else {
+            Log.e(TAG, "Unable to delete file. Null.");
+        }
+    }
+
+    private void getTempImgFileUri(final File file) {
+
+        cameraHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(file != null) {
+                    Log.v(TAG, "tempImage is not null");
+                    URI imageUri = file.toURI();
+                    Log.v(TAG, "URI: " + imageUri.getPath());
+//            Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
+//            intent.putExtra("image_uri", imageUri);
+//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            startActivity(intent);
+                }
+                else {
+                    Log.v(TAG, "tempImage is null");
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ErrorDialog.newInstance(ERROR_MISSING_TEMP_FILE).show(getFragmentManager(),
+                                    "missing_tmp_file");
+                        }
+                    });
+
+                    restartCamera();
+                }
+            }
+        });
+    }
+
+//    private static File getOutputMediaFile(int type) {
+//        BPUtils.logMethod(CLASS_TAG);
+//
+//        // To be safe, you should check that the SDCard is mounted
+//        // using Environment.getExternalStorageState() before doing this.
+//
+//        File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+//        // This location works best if you want the created images to be shared
+//        // between applications and persist after your app has been uninstalled.
+//
+//        // Create the storage directory if it does not exist
+//        if (! storageDirectory.exists()){
+//            if (! storageDirectory.mkdirs()){
+//                Log.d(TAG, "Unable to create directory.");
+//                return null;
+//            }
+//        }
+//
+//        // Create a media file name
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//        File mediaFile;
+//        if (type == MEDIA_TYPE_IMAGE){
+//            mediaFile = new File(storageDirectory.getPath() + File.separator +
+//                    "IMG_"+ timeStamp + ".jpg");
+//        }
+//        else {
+//            return null;
+//        }
+//
+//        return mediaFile;
+//    }
 
     /**
      *
      * Animation Methods
      *
      */
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void toggleFlashModeAnimation(View view, float fromAlpha, float toAlpha, long time, int drawableRef) {
+
+        // fromAlpha must be less than toAlpha
+
+        fadeRotateViewAnimation(flashModeBtn, toAlpha, fromAlpha, time);
+        view.setVisibility(View.GONE);
+        view.setBackground(getResources().getDrawable(drawableRef));
+        fadeRotateViewAnimation(flashModeBtn, fromAlpha, toAlpha, time);
+        view.setVisibility(View.VISIBLE);
+    }
 
     private void moveFadeAnimation(ViewGroup viewGroup, float fromX, float toX, float fromY, float toY,
                                    float fromAlpha, float toAlpha, long time1, long time2) {
@@ -549,403 +809,208 @@ public class CameraActivity extends AppCompatActivity {
 
     }
 
+    private void fadeRotateViewAnimation(View view, float fromAlpha, float toAlpha, long time) {
+        AnimationSet animationSet = new AnimationSet(true);
+        AlphaAnimation fadeAnimation = new AlphaAnimation(fromAlpha, toAlpha);
+        RotateAnimation rotateAnimation = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF,
+                0.50F, Animation.RELATIVE_TO_SELF, 0.50F);
+
+        fadeAnimation.setDuration(time);
+        rotateAnimation.setDuration(time);
+
+        animationSet.addAnimation(fadeAnimation);
+        animationSet.addAnimation(rotateAnimation);
+
+        view.startAnimation(animationSet);
+    }
+
+    private void fadeRotateYAxisViewAnimation(View view, float fromAlpha, float toAlpha, long time1) {
+        AnimationSet animationSet = new AnimationSet(true);
+        AlphaAnimation fadeAnimation = new AlphaAnimation(fromAlpha, toAlpha);
+        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(view, "rotationY", 0.00F, 180.00F);
+
+        fadeAnimation.setDuration(time1);
+        objectAnimator.setDuration(time1);
+
+        animationSet.addAnimation(fadeAnimation);
+
+        view.startAnimation(animationSet);
+        objectAnimator.start();
+    }
+
+    private void fadeViewAnimation(View view, float fromAlpha, float toAlpha, long time) {
+        AnimationSet animationSet = new AnimationSet(true);
+        AlphaAnimation fadeAnimation = new AlphaAnimation(fromAlpha, toAlpha);
+
+        fadeAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        fadeAnimation.setDuration(time);
+
+        animationSet.addAnimation(fadeAnimation);
+
+        view.startAnimation(animationSet);
+    }
+
     /**
      *
-     * Camera Methods
+     * Camera Thread
      *
      */
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void setupCamera(int width, int height) {
-        // To get the camera resources, we first need a CameraManager
+    private class CameraThread extends Thread implements SurfaceHolder.Callback {
 
-        CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "CameraThread");
 
-        // Now time to call the resources and surround it with try/catch in case something goes wrong
+            // Prepare the looper. Need this in order to instantiate the handler in this thread.
+            Looper.prepare();
+            cameraHandler = new Handler();
 
-        try {
-            // With that cameraManager, we can find any information about our current camera
-            // First get the available cameras in the phone
-            // Then get the information of each camera (using CameraCharacteristics)
+            if(isCameraHardwareAvailable()) {
+                currentCameraId = getCurrentCameraId();
+                Log.v(TAG, "Current Camera ID: " + currentCameraId);
 
-            for(String cameraId : cameraManager.getCameraIdList()) {
-                CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
+                if(currentCameraId != -1) {
 
-                // For now were are just using the rear facing camera
+                    openCamera(currentCameraId);
 
-                if(cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT) {
-                    continue;
-                }
-
-                // Now get the StreamConfigurationMap which will give us the sizes of the preview output sizes
-                // based on the TextureView dimensions
-                // Then we will pick the preview size that is preferred
-                // Store the cameraId so we know which camera is being used at the moment and if we
-                // need to change it later, we can update this variable
-                StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-                previewSize = getPreferredPreviewSize(streamConfigurationMap.getOutputSizes(SurfaceTexture.class), width, height);
-                this.cameraId = cameraId;
-
-                // Below is for image dimensions for output
-
-                Size largestImageSize = Collections.max(Arrays.asList(streamConfigurationMap
-                        .getOutputSizes(ImageFormat.JPEG)), new Comparator<Size>() {
-                    @Override
-                    public int compare(Size lhs, Size rhs) {
-                        return Long.signum(lhs.getWidth() * lhs.getHeight() - rhs.getWidth() * rhs.getHeight());
-                    }
-                });
-
-                // Set up ImageReader to initialize the save image mechanism for each camera
-
-                imageReader = ImageReader.newInstance(largestImageSize.getWidth(),
-                        largestImageSize.getHeight(), ImageFormat.JPEG, 1);
-
-                // Set up callback listener related to ImageReader to know what state it's in
-
-                imageReader.setOnImageAvailableListener(onImageAvailableListener, backgroundHandler);
-
-                return;
-            }
-        }
-        catch (CameraAccessException e) {
-            Log.e(TAG, "There was an issue setting up the camera");
-            e.printStackTrace();
-        }
-        catch(NullPointerException e) {
-            Log.e(TAG, "There is no camera on the phone");
-            e.printStackTrace();
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private Size getPreferredPreviewSize(Size[] mapSizes, int width, int height) {
-
-        // This method will help return the correct sizes when taking a picture.
-        // Without this, one can get a portrait photo that is meant for landscape.
-        // Orientation is corrected here with the following iteration
-
-        List<Size> collectorSizes  = new ArrayList<Size>();
-
-        for(Size option : mapSizes) {
-            // Landscape image
-            if(width > height) {
-
-                // We are performing a check to see if whatever Size we get is larger
-                // than what the TextureView gives us (starting with the bare minimum preview size)
-                // We are basically ensuring we are getting correctly returned dimensions and orientations
-                // If the conditions are met, add them to the list of sizes
-
-                // TextureView: (980 x 640)
-                // if(1920 > 980 and 1080 > 640) --> add to list
-                // Added Size: (1920 x 1080)
-
-                if (option.getWidth() > width && option.getHeight() > height) {
-                    collectorSizes.add(option);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            surfaceView = new SurfaceView(CameraActivity.this);
+                            previewLayout.addView(surfaceView);
+                            surfaceHolder = surfaceView.getHolder();
+                            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+                            surfaceHolder.addCallback(CameraThread.this);
+                            getLatestCamState(currentCameraId);
+                            getLatestFlashState();
+                        }
+                    });
                 }
             }
-            // Portrait Mode (width < height)
             else {
+                Log.e(TAG, "No camera hardware detected in the device.");
 
-                // TextureView : (640 x 980)
-                // if (1080 > 980 and 1920 > 640) --> add to list
-                // Added size: (1080 x 1920)
+                ErrorDialog.newInstance(ERROR_NO_CAMERA_HARDWARE).show(getFragmentManager(), "no_cam_hardware");
 
-                if(option.getWidth() > height && option.getHeight() > width) {
-                    collectorSizes.add(option);
+                if(!isTaskRoot()) {
+                    finish();
                 }
             }
+
+            Looper.loop();
         }
 
-        // Now pick up the size that is closes to the TextureView dimensions
+        @Override
+        public void surfaceCreated(final SurfaceHolder holder) {
+            BPUtils.logMethod(CLASS_TAG);
+            // When the Surface is created, set the preview display. Don't start it here.
 
-        if(collectorSizes.size() > 0) {
-            return Collections.min(collectorSizes, new Comparator<Size>() {
+            cameraHandler.post(new Runnable() {
                 @Override
-                public int compare(Size lhs, Size rhs) {
-                    return Long.signum(lhs.getWidth() * lhs.getHeight() - rhs.getWidth() * rhs.getHeight());
+                public void run() {
+                    try {
+                        BPUtils.logMethod(CLASS_TAG, "surfaceCreated");
+                        if(camera != null) {
+                            camera.setPreviewDisplay(holder);
+                        }
+                    }
+                    catch (IOException e) {
+                        Log.e(TAG, "There was an error setting up the preview display");
+                        e.printStackTrace();
+                    }
                 }
             });
         }
 
-        // Worst case scenario
-        return mapSizes[0];
-    }
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, final int width, final int height) {
+            BPUtils.logMethod(CLASS_TAG);
+            // When the Surface is displayed for the first time, it calls this. Start preview here.
+            // Tell Surface client how big the drawing area will be (preview size)
 
-    private void openCamera() {
-        CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+            if(camera == null) {
+                Log.e(TAG, "Camera is null inside surfaceChanged()");
+                return;
+            }
 
-        // get the camera functionality and protect it
-        // Now, to open the camera, you need to have the cameraId and the stateCallback created
-        // earlier. If not, how would the manager know which camera is opened and what state it is in?
-        // It won't.
-
-        try {
-            cameraManager.openCamera(cameraId, cameraDeviceStateCallback, backgroundHandler);
-            // NOTE: null --> for now we're just going to use the UI thread to open this
-        }
-        catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-        catch (SecurityException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void closeCamera() {
-        if(cameraCaptureSession != null) {
-            cameraCaptureSession.close();
-            cameraCaptureSession = null;
-        }
-
-        if(cameraDevice != null) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
-
-        // Clean up image reader resource
-
-        if(imageReader != null) {
-            imageReader.close();
-            imageReader = null;
-        }
-    }
-
-    /**
-     *
-     * To create the CameraPreviewSession, it will require the following:
-     *
-     * SurfaceTexture, Surface, CaptureRequestBuilder, CaptureRequest, CameraCaptureSession,
-     * CameraCaptureSession.StateCallback (to begin the capture session),
-     * CameraCaptureSession.CaptureCallback (to get camera session states and get ready)
-     *
-     * Procedure:
-     * 1. Create SurfaceTexture object using the textureView created at the beginning
-     * 2. Set the DefaultBufferSize of the surfaceTexture to the previewSize created from the beginning
-     * (get the width and height using the invocation of the Size object of previewSize)
-     * 3. Create the Surface object, which requires the SurfaceTexture as parameter
-     * 4. Create the CaptureRequestBuilder object using the cameraDevice. Use TEMPLATE_PREVIEW
-     * as parameter
-     * 5. Add the Surface as target to the CaptureRequestBuilder (this will allow the image to show image on view)
-     * 6. Create capture session using cameraDevice. It has to take in a list of Surface objects (1 in this case),
-     * the StateCallback of the CameraCaptureSession to know the states, and Handler
-     * 7. Inside onConfigured, create the CaptureRequest by simply building the CaptureRequestBuilder
-     * 8. Then set the CameraCaptureSession variable
-     * 9. Initialize the CameraCaptureSession using the setRepeatingRequest that takes the
-     * CaptureRequest, a CameraCaptureSession.CaptureCallback, and a Handler as parameters
-     *
-     * */
-
-    private void createCameraPreviewSession() {
-        try {
-
-            SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
-            surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
-            Surface previewSurface = new Surface(surfaceTexture);
-
-            previewCaptureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            previewCaptureRequestBuilder.addTarget(previewSurface);
-
-            // The list should contain surfaces for a particular purpose: preview, capture, and video
-
-            cameraDevice.createCaptureSession(Arrays.asList(previewSurface, imageReader.getSurface()),
-                    new CameraCaptureSession.StateCallback() {
-                        @Override
-                        public void onConfigured(CameraCaptureSession session) {
-
-                            if(cameraDevice == null) {
-                                return;
-                            }
-
-                            try {
-                                previewCaptureRequest = previewCaptureRequestBuilder.build();
-                                cameraCaptureSession = session;
-                                cameraCaptureSession.setRepeatingRequest(previewCaptureRequest,
-                                        cameraCaptureSessionCaptureCallback, backgroundHandler);
-                            }
-                            catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        @Override
-                        public void onConfigureFailed(CameraCaptureSession session) {
-                            Log.e(TAG, "Unable to create camera session.");
-                        }
-                    }, null);
-
-        }
-        catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *
-     * We are filling anything that was originally running on the UI thread (any capture
-     * session / open camera) by opening background threads and then decongestng the UI
-     * thread using a backgroundHandler, which needs HandlerThread's Looper
-     *
-     */
-
-    private void openBackgroundThread() {
-        backgroundThread = new HandlerThread("CameraBackgroundThread");
-        backgroundThread.start();
-        backgroundHandler = new Handler(backgroundThread.getLooper());
-    }
-
-    private void closeBackgroundThread() {
-
-        backgroundThread.quitSafely();
-
-        try {
-            // I want to block the UI thread until the desired thread to be closed is properly released
-            backgroundThread.join();
-            backgroundThread = null;
-            backgroundHandler = null;
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *
-     * Focus Methods - Method for focusing before picture is taken
-     *
-     */
-
-    private void lockFocus() {
-
-        // To lock the focus, ensure that the current camera state is on Focus Lock.
-        // Create a CaptureRequestBuilder and then create a request to trigger the autofocus
-        // This is a key/value pair that needs to match otherwise this will not work.
-        // Build the CaptureRequestBuilder and create CameraCaptureSession by capturing.
-        // It takes in a CaptureRequest, CameraCaptureSession.CaptureCallBack and a Handler as parameters
-
-        try {
-            currentState = STATE_WAKE_LOCK;
-            previewCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_TRIGGER_START);
-            cameraCaptureSession.capture(previewCaptureRequestBuilder.build(), cameraCaptureSessionCaptureCallback, backgroundHandler);
-        }
-        catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void unlockFocus() {
-
-        // After a focus, it must be unlocked otherwise the camera will just keep focusing.
-        // Once it's unlocked it will be back to preview state but focused in at a certain area
-
-        // Create CaptureRequestBuilder to cancel the auto focus trigger
-        // Then create CameraCaptureSession by capturing
-        // It takes in a CaptureRequest, CameraCaptureSession.CaptureCallBack and a Handler as parameters
-
-        try {
-            currentState = STATE_PREVIEW;
-            previewCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_TRIGGER_CANCEL);
-            cameraCaptureSession.capture(previewCaptureRequestBuilder.build(), cameraCaptureSessionCaptureCallback, backgroundHandler);
-        }
-        catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *
-     * At this point, if we want to capture an image or video record, a Surface is created for each one
-     * Then each capture method will require the same proceeding objects - CaptureRequest and then a CameraCaptureSession
-     *
-     */
-
-    private void takePhoto() {
-
-        imageFile = createImageFile();
-
-        if(imageFile == null) {
-            Log.e(TAG, "Unable to save image file");
-            Toast.makeText(getApplicationContext(), "Unable to save image file.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Next create a Runnable to that saves the image in the background
-
-        lockFocus();
-
-        closeCamera();
-        capturedImage.setVisibility(View.VISIBLE);
-        Picasso.with(this).load(imageFile).into(capturedImage);
-    }
-
-    private void captureStillImage() {
-
-        try {
-            CaptureRequest.Builder captureStillBuilder = cameraDevice
-                    .createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureStillBuilder.addTarget(imageReader.getSurface());
-
-            // Fix alignment of preview and the actual image itself
-
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            captureStillBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-
-            // CameraCaptureSession CaptureCallback
-
-            CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
+            cameraHandler.post(new Runnable() {
                 @Override
-                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                    super.onCaptureCompleted(session, request, result);
-                    // When it is complete, unlock the focus and prepare to take another picture
-                    unlockFocus();
+                public void run() {
+                    Camera.Parameters cameraParameters = camera.getParameters();
+                    previewSize = getPreferredPreviewSize(width, height, cameraParameters);
+                    Log.v(TAG, "Current Preview Size: (" + previewSize.width + ", " + previewSize.height + ")");
+
+                    cameraParameters.setPreviewSize(previewSize.width, previewSize.height);
+                    camera.setParameters(cameraParameters);
+
+                    try {
+                        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+                        camera.setDisplayOrientation(ORIENTATION_FIX.get(rotation));
+                        camera.startPreview();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Camera was unable to start preview");
+                        e.printStackTrace();
+                        releaseCamera();
+                    }
                 }
-            };
-
-            cameraCaptureSession.capture(captureStillBuilder.build(), captureCallback, null);
-        }
-        catch (CameraAccessException e) {
-            e.printStackTrace();
+            });
         }
 
+        @Override
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            BPUtils.logMethod(CLASS_TAG);
+            // Handled by onPause()
+            // onPause() gets called before this.
+        }
     }
 
     /**
      *
-     * File Related Methods
+     * ErrorDialog
      *
      */
 
-    private File createImageFile() {
-        String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        String imageFileName = "IMAGE_BP_" + timeStamp + "_";
+    public static class ErrorDialog extends DialogFragment {
 
-        File storageDirectory = BPUtils.getImageDirectory();
+        int errorCode = 0;
+        String errorMessage;
 
-        if(!storageDirectory.exists()) {
-            storageDirectory.mkdir();
+        public static ErrorDialog newInstance(int errorCode) {
+            ErrorDialog errorDialog = new ErrorDialog();
+            Bundle bundle = new Bundle();
+            bundle.putInt("errorCode", errorCode);
+            errorDialog.setArguments(bundle);
+            return errorDialog;
         }
 
-        try {
-            return File.createTempFile(imageFileName, ".jpg", storageDirectory);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+            errorCode = getArguments().getInt("errorCode");
+
+            switch (errorCode) {
+                case ERROR_NO_CAMERA_HARDWARE:
+                    errorMessage = "No camera hardware detected in the camera.";
+                    break;
+                case ERROR_NO_PHOTO_CAPTURE:
+                    errorMessage = "Unable to capture photo.";
+                    break;
+                case ERROR_MISSING_TEMP_FILE:
+                    errorMessage = "There was an issue with the previous capture. Try again.";
+                    break;
+            }
+
+            return new AlertDialog.Builder(getActivity())
+                    .setMessage(errorMessage)
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dismiss();
+                        }
+                    })
+                    .create();
         }
     }
-
-    private void deleteTempImageFile(File file) {
-
-        File storageDirectory = BPUtils.getImageDirectory();
-
-        if(storageDirectory.exists()) {
-            file.delete();
-            return;
-        }
-
-        storageDirectory.mkdir();
-        Log.e(TAG, "Unable to find file due to lack of directory. Created new one.");
-
-    }
-
 }
-

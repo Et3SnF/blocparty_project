@@ -483,7 +483,8 @@ public class MainActivity extends AppCompatActivity {
 
         if(item.getItemId() == R.id.action_camera_mode) {
             Log.v(TAG, "Camera button clicked");
-            startActivity(new Intent(this, CameraActivity.class));
+            Intent intent = new Intent(this, CameraActivity.class);
+            startActivity(intent);
             return true;
         }
 
