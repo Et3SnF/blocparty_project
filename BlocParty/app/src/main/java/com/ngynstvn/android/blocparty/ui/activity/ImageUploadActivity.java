@@ -1,8 +1,6 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -73,17 +71,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         imageFileURI = (URI) getIntent().getSerializableExtra(BPUtils.IMAGE_URI);
 
         if(imageFileURI == null) {
-            new AlertDialog.Builder(ImageUploadActivity.this)
-                    .setMessage("There was an error processing the photo. Try taking another picture.")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(ImageUploadActivity.this, CameraActivity.class);
-                            startActivity(intent);
-                        }
-                    })
-                    .create();
-
+            displayErrorDialog(IMAGE_ERROR);
             return;
         }
 
@@ -230,7 +218,7 @@ public class ImageUploadActivity extends AppCompatActivity {
                 boolean canUploadToIG = sharedPreferences.getBoolean(BPUtils.IG_UPLOAD, false);
 
                 if(!canUploadToFB && !canUploadToTW && !canUploadToIG) {
-                    ErrorImageDialog.newInstance(UPLOAD_ERROR).show(getFragmentManager(), "post_error_dialog");
+                    displayErrorDialog(UPLOAD_ERROR);
                     return false;
                 }
 
@@ -257,44 +245,39 @@ public class ImageUploadActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // ----- Dialog ----- //
+    // ----- Error Dialog Popup (Not Fragment) ----- //
 
-    public static class ErrorImageDialog extends DialogFragment {
+    private void displayErrorDialog(final int errorCode) {
 
-        public static ErrorImageDialog newInstance(int errorCode) {
-            ErrorImageDialog errorImageDialog = new ErrorImageDialog();
-            Bundle bundle = new Bundle();
-            bundle.putInt("errorCode", errorCode);
-            errorImageDialog.setArguments(bundle);
-            return errorImageDialog;
+        String errorMessage = null;
+
+        switch (errorCode) {
+            case IMAGE_ERROR:
+                errorMessage = "There was an error processing the photo. Try taking another picture.";
+                break;
+            case UPLOAD_ERROR:
+                errorMessage = "There must be at least one social network selected in order " +
+                        "to post this photo.";
+                break;
         }
 
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
-            int errorCode = getArguments().getInt("errorCode");
-            String errorMessage = null;
+        alertDialog
+                .setMessage(errorMessage)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-            switch (errorCode) {
-                case 0:
-                    errorMessage = "There was an error processing the photo. Try taking another picture.";
-                    break;
-                case 1:
-                    errorMessage = "There must be at least one social network selected in order " +
-                            "to post this photo.";
-                    break;
-            }
-
-            return new AlertDialog.Builder(getActivity())
-                    .setMessage(errorMessage)
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dismiss();
+                        if (errorCode == IMAGE_ERROR) {
+                            startActivity(new Intent(ImageUploadActivity.this, CameraActivity.class));
                         }
-                    })
-                    .create();
-        }
+
+                        dialog.dismiss();
+                    }
+                });
+
+        alertDialog.create();
     }
 
     /**
