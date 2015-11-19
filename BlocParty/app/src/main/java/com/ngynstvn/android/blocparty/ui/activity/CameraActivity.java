@@ -107,7 +107,7 @@ public class CameraActivity extends AppCompatActivity {
         ORIENTATION_FIX.append(Surface.ROTATION_0, 90);
         ORIENTATION_FIX.append(Surface.ROTATION_90, 0);
         ORIENTATION_FIX.append(Surface.ROTATION_180, 270);
-        ORIENTATION_FIX.append(Surface.ROTATION_270, 90);
+        ORIENTATION_FIX.append(Surface.ROTATION_270, 180);
     }
 
     private static final int ERROR_NO_CAMERA_HARDWARE = 1;
@@ -719,7 +719,6 @@ public class CameraActivity extends AppCompatActivity {
                     // Open activity based on URI
                     Intent intent = new Intent(CameraActivity.this, ImageUploadActivity.class);
                     intent.putExtra(BPUtils.IMAGE_URI, imageUri);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                 }
                 else {

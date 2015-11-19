@@ -28,6 +28,7 @@ import com.ngynstvn.android.blocparty.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.net.URI;
 
 /**
  * Created by Ngynstvn on 11/5/15.
@@ -58,6 +59,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox twUploadCheckbox;
     private CheckBox igUploadCheckbox;
 
+    private URI imageFileURI;
     private File imageFile;
 
     // ----- Lifecycle Methods ----- //
@@ -68,12 +70,20 @@ public class ImageUploadActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.SN_UPLOAD_STATES);
 
-        imageFile = (File) getIntent().getSerializableExtra("upload_image");
+        imageFileURI = (URI) getIntent().getSerializableExtra(BPUtils.IMAGE_URI);
 
-        if(imageFile == null) {
-            ErrorImageDialog.newInstance(IMAGE_ERROR).show(getFragmentManager(), "error_img_dialog");
-            Intent intent = new Intent(this, CameraActivity.class);
-            startActivity(intent);
+        if(imageFileURI == null) {
+            new AlertDialog.Builder(ImageUploadActivity.this)
+                    .setMessage("There was an error processing the photo. Try taking another picture.")
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(ImageUploadActivity.this, CameraActivity.class);
+                            startActivity(intent);
+                        }
+                    })
+                    .create();
+
             return;
         }
 
@@ -95,7 +105,8 @@ public class ImageUploadActivity extends AppCompatActivity {
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
 
-        Picasso.with(this).load(imageFile).into(previewImage);
+        imageFile = new File(imageFileURI.getPath());
+        Picasso.with(this).load(imageFile).rotate(90).fit().into(previewImage);
 
         captionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(inputLimit)});
 
@@ -200,6 +211,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         if(item.getItemId() == R.id.action_cancel_image_upload) {
             Log.e(TAG, "Cancel Image Upload Clicked");
+            finish();
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
