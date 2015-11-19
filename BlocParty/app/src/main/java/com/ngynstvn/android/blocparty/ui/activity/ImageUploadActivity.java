@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
@@ -25,8 +26,15 @@ import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Ngynstvn on 11/5/15.
@@ -59,7 +67,6 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox igUploadCheckbox;
 
     private URI imageFileURI;
-    private File imageFile;
 
     // ----- Lifecycle Methods ----- //
 
@@ -94,8 +101,8 @@ public class ImageUploadActivity extends AppCompatActivity {
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
 
-        imageFile = new File(imageFileURI.getPath());
-        Picasso.with(this).load(imageFile).rotate(90).fit().into(previewImage);
+        Log.v(TAG, "Loaded Uri toString(): " + imageFileURI.toString());
+        Picasso.with(this).load(imageFileURI.toString()).rotate(90).fit().into(previewImage);
 
         captionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(inputLimit)});
 
@@ -315,39 +322,81 @@ public class ImageUploadActivity extends AppCompatActivity {
      *
      */
 
-    private class DownloadImageTask extends AsyncTask<Void, Void, Void> {
+    private class DownloadImageTask extends AsyncTask<Void, Integer, Void> {
 
         @Override
         protected void onPreExecute() {
             // I include everything for safety measure
             unDownloadLayout.setVisibility(View.GONE);
             downloadingLayout.setVisibility(View.VISIBLE);
-            downloadingLayout.setVisibility(View.GONE);
+            downloadedLayout.setVisibility(View.GONE);
         }
 
         @Override
         protected Void doInBackground(Void... params) {
+            String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String imageFileName = "IMAGE_BP_" + timeStamp + ".jpg";
+
+            try {
+                String uriPath = imageFileURI.getPath();
+                String destinationDirectory = Environment.getExternalStorageDirectory() + "/Blocparty/";
+
+                File storageDirectory = new File(destinationDirectory);
+
+                if(!storageDirectory.exists()) {
+                    storageDirectory.mkdir();
+                }
+
+                // Initiate input stream buffer by having a stream of bytes from a file.
+                // In this case the stream of bytes from a file comes from the uri (which actually
+                // opens a file using that provided path)
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(new File(imageFileURI)));
+
+                // Initiate output stream buffer by having a stream of bytes from a file that is
+                // is going to be outputted. It needs a particular path of the desired file
+                // or a File object. This line will allow the bytes to be written onto a file.
+
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new
+                        FileOutputStream(destinationDirectory + imageFileName));
+
+                // Initiate the bytes array so that the BufferedInputStream could insert bytes into
+                // the bytes array (from read() method) and then the BufferedOutputStream will
+                // use that bytes array to write to the desired file to save.
+
+                byte[] bytes = new byte[(int) new File(imageFileURI).length()];
+                Log.v(TAG, "Bytes Length: " + bytes.length); // nearly 2 MB per picture
+                int progress = 0;
+
+                do {
+                    bufferedOutputStream.write(bytes);
+
+                    // Keep track as to how much bytes has been written out of the total bytes
+                    // Set the progress
+                    progress++;
+                    publishProgress((int) (((float) progress / bytes.length) * 100));
+                }
+                while (bufferedInputStream.read(bytes) != -1);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return null;
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {
-            downloadImgProgBar.setProgress(0);
+        protected void onProgressUpdate(Integer... progress) {
+            Log.v(TAG, "Progress Update: " + progress[0]);
+            downloadImgProgBar.setProgress(progress[0]);
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             unDownloadLayout.setVisibility(View.GONE);
             downloadingLayout.setVisibility(View.GONE);
-            downloadingLayout.setVisibility(View.VISIBLE);
+            downloadedLayout.setVisibility(View.VISIBLE);
         }
     }
-
-//    File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
-//
-//    if(!storageDirectory.exists()) {
-//        storageDirectory.mkdir();
-//    }
 
     private class FBUploadPostTask extends AsyncTask<Void, Void, Void> {
 

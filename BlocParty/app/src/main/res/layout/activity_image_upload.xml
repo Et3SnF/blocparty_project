@@ -124,6 +124,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:indeterminate="false"
+                    style="?android:progressBarStyleHorizontal"
+                    android:max="100"
+                    android:progress="0"
                     android:layout_below="@id/tv_downloading_text"/>
 
             </RelativeLayout>
