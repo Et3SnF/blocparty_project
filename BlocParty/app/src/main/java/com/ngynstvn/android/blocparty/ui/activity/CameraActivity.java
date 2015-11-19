@@ -738,38 +738,6 @@ public class CameraActivity extends AppCompatActivity {
         });
     }
 
-//    private static File getOutputMediaFile(int type) {
-//        BPUtils.logMethod(CLASS_TAG);
-//
-//        // To be safe, you should check that the SDCard is mounted
-//        // using Environment.getExternalStorageState() before doing this.
-//
-//        File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
-//        // This location works best if you want the created images to be shared
-//        // between applications and persist after your app has been uninstalled.
-//
-//        // Create the storage directory if it does not exist
-//        if (! storageDirectory.exists()){
-//            if (! storageDirectory.mkdirs()){
-//                Log.d(TAG, "Unable to create directory.");
-//                return null;
-//            }
-//        }
-//
-//        // Create a media file name
-//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-//        File mediaFile;
-//        if (type == MEDIA_TYPE_IMAGE){
-//            mediaFile = new File(storageDirectory.getPath() + File.separator +
-//                    "IMG_"+ timeStamp + ".jpg");
-//        }
-//        else {
-//            return null;
-//        }
-//
-//        return mediaFile;
-//    }
-
     /**
      *
      * Animation Methods

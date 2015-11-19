@@ -35,6 +35,7 @@ import java.net.URI;
 public class ImageUploadActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(ImageUploadActivity.class);
+    private static final String CLASS_TAG = CameraActivity.class.getSimpleName();
 
     private static final int inputLimit = 250;
     private static final int IMAGE_ERROR = 0;
@@ -314,7 +315,7 @@ public class ImageUploadActivity extends AppCompatActivity {
      *
      */
 
-    private class DownloadImageTask extends AsyncTask<Void, Byte, Void> {
+    private class DownloadImageTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -330,8 +331,8 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Byte... byteValue) {
-            // Set the Progress here
+        protected void onProgressUpdate(Void... values) {
+            downloadImgProgBar.setProgress(0);
         }
 
         @Override
@@ -341,6 +342,12 @@ public class ImageUploadActivity extends AppCompatActivity {
             downloadingLayout.setVisibility(View.VISIBLE);
         }
     }
+
+//    File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+//
+//    if(!storageDirectory.exists()) {
+//        storageDirectory.mkdir();
+//    }
 
     private class FBUploadPostTask extends AsyncTask<Void, Void, Void> {
 
