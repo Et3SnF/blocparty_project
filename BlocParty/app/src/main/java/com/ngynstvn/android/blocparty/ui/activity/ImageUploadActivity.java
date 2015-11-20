@@ -486,7 +486,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
             // Create Uri
             // Uri uri = Uri.parse(imageFileURI.toString()); OR:
-            
+
             File uploadImage = new File(imageUri);
             Uri uri = Uri.fromFile(uploadImage);
 

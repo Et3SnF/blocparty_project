@@ -1,8 +1,12 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -28,7 +32,16 @@ import com.sromku.simple.fb.SimpleFacebook;
 
 import org.jinstagram.Instagram;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import twitter4j.Twitter;
@@ -527,5 +540,92 @@ public class MainActivity extends AppCompatActivity {
     private void restartActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    /**
+     *
+     * Download Post Image Task
+     *
+     */
+
+    private class DownloadPostImageTask extends Thread {
+
+        private PostItem postItem = null;
+
+        public DownloadPostImageTask(PostItem postItem) {
+            this.postItem = postItem;
+        }
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(BPUtils.classTag(DownloadPostImageTask.class), getClass().getSimpleName());
+
+            String fileName = "IMG_BP_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".jpg";
+            final File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+
+            if(!storageDirectory.exists()) {
+                storageDirectory.mkdir();
+            }
+
+            try {
+                URL imageUrl = new URL(postItem.getPostImageUrl());
+                Uri imageUri = Uri.parse(imageUrl.toURI().toString());
+
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                File file = new File(storageDirectory, fileName);
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+                byte[] bytes = new byte[(int) new File(imageUrl.toURI()).length()];
+
+                if(inputStream != null) {
+                    do {
+                        // Third parameter is very important!
+                        byteArrayOutputStream.write(bytes, 0, inputStream.read(bytes));
+                        fileOutputStream.write(byteArrayOutputStream.toByteArray());
+                    }
+                    while (inputStream.read(bytes) != -1);
+
+                    inputStream.close();
+                    byteArrayOutputStream.flush();
+                    byteArrayOutputStream.close();
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                displayDialog("The image has been saved to " + storageDirectory.getCanonicalPath());
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+            catch (URISyntaxException | IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayDialog("There was an issue downloading the image. Try again.");
+                    }
+                });
+            }
+        }
+    }
+
+    private void displayDialog(String message) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 }
