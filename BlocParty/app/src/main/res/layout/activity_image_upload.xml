@@ -318,7 +318,7 @@
                 android:id="@+id/tv_instagram_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/facebook_text"
+                android:text="@string/instagram_text"
                 android:textSize="18sp"
                 android:textColor="@color/black_87"
                 android:layout_toRightOf="@+id/iv_share_dl"

@@ -44,7 +44,7 @@ import java.util.Date;
 public class ImageUploadActivity extends AppCompatActivity {
 
     private static final String TAG = BPUtils.classTag(ImageUploadActivity.class);
-    private static final String CLASS_TAG = CameraActivity.class.getSimpleName();
+    private static final String CLASS_TAG = ImageUploadActivity.class.getSimpleName();
 
     private static final int inputLimit = 250;
     private static final int IMAGE_ERROR = 0;
@@ -68,8 +68,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox twUploadCheckbox;
     private CheckBox igUploadCheckbox;
 
-    private URI imageFileURI;
-    private File imageFile;
+    private static URI imageFileURI;
 
     // ----- Lifecycle Methods ----- //
 
@@ -80,7 +79,6 @@ public class ImageUploadActivity extends AppCompatActivity {
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.SN_UPLOAD_STATES);
 
         imageFileURI = (URI) getIntent().getSerializableExtra(BPUtils.IMAGE_URI);
-        imageFile = new File(imageFileURI);
 
         if(imageFileURI == null) {
             displayErrorDialog(IMAGE_ERROR);
@@ -232,7 +230,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
                 if(!canUploadToFB && !canUploadToTW && !canUploadToIG) {
                     displayErrorDialog(UPLOAD_ERROR);
-                    return false;
+                    return true;
                 }
 
                 if(canUploadToFB) {
@@ -274,7 +272,7 @@ public class ImageUploadActivity extends AppCompatActivity {
                 break;
         }
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(ImageUploadActivity.this);
 
         alertDialog
                 .setMessage(errorMessage)
@@ -288,9 +286,10 @@ public class ImageUploadActivity extends AppCompatActivity {
 
                         dialog.dismiss();
                     }
-                });
+                })
+                .show();
 
-        alertDialog.create();
+
     }
 
     /**
@@ -318,12 +317,13 @@ public class ImageUploadActivity extends AppCompatActivity {
     }
 
     private void uploadToInstagram() {
-
+        InstagramUploadTask instagramUploadTask = new InstagramUploadTask(imageFileURI);
+        instagramUploadTask.start();
     }
 
     /**
      *
-     * AsyncTask classes
+     * Download Task
      *
      */
 
@@ -413,6 +413,12 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     * Upload Tasks
+     *
+     */
+
     private class FBUploadPostTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -459,27 +465,38 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
     }
 
-    private class IGUploadPostTask extends AsyncTask<Void, Void, Void> {
+    private class InstagramUploadTask extends Thread {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        private URI imageUri = null;
+
+        public InstagramUploadTask(URI imageUri) {
+            this.imageUri = imageUri;
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
-            return null;
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, getClass().getSimpleName());
+
+            // Instagram does not allow third party application to upload to their site like that.
+            // To at least do something, an intent is going to be used and then share via the app
+            // or on the website
+
+            Intent instagramShare = new Intent(Intent.ACTION_SEND);
+            instagramShare.setType("image/*"); // all image formats
+
+            // Create Uri
+            // Uri uri = Uri.parse(imageFileURI.toString()); OR:
+            
+            File uploadImage = new File(imageUri);
+            Uri uri = Uri.fromFile(uploadImage);
+
+            // Add Uri to the Intent. EXTRA_STREAM is used in conjunction with ACTION_SEND
+            instagramShare.putExtra(Intent.EXTRA_STREAM, uri);
+
+            // Start Intent
+            startActivity(Intent.createChooser(instagramShare, "Share to:"));
         }
 
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-        }
     }
 }
 
