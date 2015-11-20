@@ -107,7 +107,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
 
         Log.v(TAG, "Loaded Uri toString(): " + imageFileURI.toString());
-        Picasso.with(this).load(imageFileURI.toString()).rotate(90).fit().into(previewImage);
+        Picasso.with(this).load(imageFileURI.toString()).fit().into(previewImage);
 
         captionInputBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(inputLimit)});
 

@@ -894,11 +894,10 @@ public class CameraActivity extends AppCompatActivity {
                 public void run() {
                     try {
                         BPUtils.logMethod(CLASS_TAG, "surfaceCreated");
-                        if(camera != null) {
+                        if (camera != null) {
                             camera.setPreviewDisplay(holder);
                         }
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         Log.e(TAG, "There was an error setting up the preview display");
                         e.printStackTrace();
                     }
@@ -921,14 +920,27 @@ public class CameraActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     Camera.Parameters cameraParameters = camera.getParameters();
+
+                    // Fixes rotation
+                    int rotation = getWindowManager().getDefaultDisplay().getRotation();
+
                     previewSize = getPreferredPreviewSize(width, height, cameraParameters);
                     Log.v(TAG, "Current Preview Size: (" + previewSize.width + ", " + previewSize.height + ")");
 
                     cameraParameters.setPreviewSize(previewSize.width, previewSize.height);
+
+                    // Fix rotation issues for both cameras. Each have their own issues.
+
+                    if(currentCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        cameraParameters.setRotation(ORIENTATION_FIX.get(rotation) + 180);
+                    }
+                    else if(currentCameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                        cameraParameters.setRotation(ORIENTATION_FIX.get(rotation));
+                    }
+
                     camera.setParameters(cameraParameters);
 
                     try {
-                        int rotation = getWindowManager().getDefaultDisplay().getRotation();
                         camera.setDisplayOrientation(ORIENTATION_FIX.get(rotation));
                         camera.startPreview();
                     } catch (Exception e) {
