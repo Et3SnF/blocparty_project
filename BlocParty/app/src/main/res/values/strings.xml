@@ -53,5 +53,7 @@
     <string name="action_upload_text">Upload</string>
     <string name="downloading_text">Downloading...</string>
     <string name="downloaded_text">DOWNLOADED</string>
+    <string name="dummy_percent_value">100</string>
+    <string name="percent_sign">%</string>
 
 </resources>
