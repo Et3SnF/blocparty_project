@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
@@ -673,12 +674,22 @@ public class CameraActivity extends AppCompatActivity {
     private void createTempImgFile(byte[] bytes) {
         BPUtils.logMethod(CLASS_TAG);
 
+        String tempDirPath = Environment.getExternalStorageDirectory() + "/Pictures/bp_tmp/";
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String fileName = "IMG_" + timeStamp;
 
         try {
-            final File tempFile = File.createTempFile(fileName, ".jpg", getCacheDir());
-            Log.v(TAG, "Location of Cache Directory: " + getCacheDir().getAbsolutePath() + " | File Name: " + tempFile.getName());
+            Log.v(TAG, "Path: " + tempDirPath);
+            File tempDirectory = new File(tempDirPath);
+
+            if(!tempDirectory.exists()) {
+                tempDirectory.mkdir();
+            }
+
+            File tempFile = File.createTempFile(fileName, ".jpg", tempDirectory);
+
+            Log.v(TAG, "Location of Temp Directory: " + tempDirPath
+                    + " | File Name: " + tempFile.getName());
 
             // Create a stream to write to a file. Parameter takes a file of interest
             FileOutputStream fileOutputStream = new FileOutputStream(tempFile);

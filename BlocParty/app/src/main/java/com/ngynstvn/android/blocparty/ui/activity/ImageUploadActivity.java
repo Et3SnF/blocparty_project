@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,17 +22,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
 import com.squareup.picasso.Picasso;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,6 +61,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private RelativeLayout downloadingLayout;
     private RelativeLayout downloadedLayout;
     private Button downloadImageBtn;
+    private TextView progressValue;
     private ProgressBar downloadImgProgBar;
 
     private CheckBox fbUploadCheckbox;
@@ -67,6 +69,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox igUploadCheckbox;
 
     private URI imageFileURI;
+    private File imageFile;
 
     // ----- Lifecycle Methods ----- //
 
@@ -77,6 +80,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.SN_UPLOAD_STATES);
 
         imageFileURI = (URI) getIntent().getSerializableExtra(BPUtils.IMAGE_URI);
+        imageFile = new File(imageFileURI);
 
         if(imageFileURI == null) {
             displayErrorDialog(IMAGE_ERROR);
@@ -96,6 +100,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         downloadingLayout = (RelativeLayout) findViewById(R.id.rl_downloading_image);
         downloadedLayout = (RelativeLayout) findViewById(R.id.rl_downloaded_image);
         downloadImageBtn = (Button) findViewById(R.id.btn_download_image);
+        progressValue = (TextView) findViewById(R.id.tv_progress_value);
         downloadImgProgBar = (ProgressBar) findViewById(R.id.pb_download_image);
         fbUploadCheckbox = (CheckBox) findViewById(R.id.cb_fb_share_select);
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
@@ -337,45 +342,54 @@ public class ImageUploadActivity extends AppCompatActivity {
             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             String imageFileName = "IMAGE_BP_" + timeStamp + ".jpg";
 
+            Log.v(TAG, "Current Temp Image URI: " + imageFileURI.getPath());
+            String destinationDirectory = Environment.getExternalStorageDirectory() + "/Blocparty/";
+            Log.v(TAG, "Destination Directory: " + destinationDirectory);
+
+            File storageDirectory = new File(destinationDirectory);
+
+            if(!storageDirectory.exists()) {
+                storageDirectory.mkdir();
+            }
+
+            // Convert the current java.net.uri to an array of bytes
+
             try {
-                String uriPath = imageFileURI.getPath();
-                String destinationDirectory = Environment.getExternalStorageDirectory() + "/Blocparty/";
+                // Declare an an array of bytes to be written on
 
-                File storageDirectory = new File(destinationDirectory);
+                byte[] buffer = new byte[(int) new File(imageFileURI).length()];
+                Uri androidUri = Uri.parse(imageFileURI.toString());
+                InputStream inputStream = getContentResolver().openInputStream(androidUri);
 
-                if(!storageDirectory.exists()) {
-                    storageDirectory.mkdir();
+                // Declare the stream to write to a byte array
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                File savedImage = new File(storageDirectory, imageFileName);
+                FileOutputStream fileOutputStream = new FileOutputStream(savedImage);
+
+                // Write to the bytes array until nothing can be written on. In this case, the
+                // InputStream will return -1 as a flag to tell that it stopped.
+
+                int currentProgress = 0;
+
+                if(inputStream != null) {
+                    do {
+                        byteArrayOutputStream.write(buffer, 0, inputStream.read(buffer));
+                        fileOutputStream.write(byteArrayOutputStream.toByteArray());
+
+                        // Update progress
+                        currentProgress++;
+                        Log.v(TAG, "Raw Progress Value: " + currentProgress);
+                        publishProgress((int) ((float) (currentProgress / buffer.length) * 100));
+                    }
+                    while(inputStream.read(buffer) != -1);
+
+                    // Flush and close any streams
+                    inputStream.close();
+                    byteArrayOutputStream.flush();
+                    byteArrayOutputStream.close();
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
                 }
-
-                // Initiate input stream buffer by having a stream of bytes from a file.
-                // In this case the stream of bytes from a file comes from the uri (which actually
-                // opens a file using that provided path)
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(new File(imageFileURI)));
-
-                // Initiate output stream buffer by having a stream of bytes from a file that is
-                // is going to be outputted. It needs a particular path of the desired file
-                // or a File object. This line will allow the bytes to be written onto a file.
-
-                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new
-                        FileOutputStream(destinationDirectory + imageFileName));
-
-                // Initiate the bytes array so that the BufferedInputStream could insert bytes into
-                // the bytes array (from read() method) and then the BufferedOutputStream will
-                // use that bytes array to write to the desired file to save.
-
-                byte[] bytes = new byte[(int) new File(imageFileURI).length()];
-                Log.v(TAG, "Bytes Length: " + bytes.length); // nearly 2 MB per picture
-                int progress = 0;
-
-                do {
-                    bufferedOutputStream.write(bytes);
-
-                    // Keep track as to how much bytes has been written out of the total bytes
-                    // Set the progress
-                    progress++;
-                    publishProgress((int) (((float) progress / bytes.length) * 100));
-                }
-                while (bufferedInputStream.read(bytes) != -1);
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -388,6 +402,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         protected void onProgressUpdate(Integer... progress) {
             Log.v(TAG, "Progress Update: " + progress[0]);
             downloadImgProgBar.setProgress(progress[0]);
+            progressValue.setText(String.valueOf(progress[0]));
         }
 
         @Override
