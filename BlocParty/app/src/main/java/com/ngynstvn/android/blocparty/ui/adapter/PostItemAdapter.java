@@ -30,9 +30,35 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     private static final String TAG = "(" + PostItemAdapter.class.getSimpleName() + "): ";
 
-    public PostItemAdapter() {
-        Log.v(TAG, "PostItemAdapter() called");
+    /*
+     * Interface Material
+     */
+
+    public interface PostItemAdapterDelegate {
+        void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition);
     }
+
+    private WeakReference<PostItemAdapterDelegate> postItemAdapterDelegate;
+
+    public void setPostItemAdapterDelegate(PostItemAdapterDelegate postItemAdapterDelegate) {
+        this.postItemAdapterDelegate = new WeakReference<PostItemAdapterDelegate>(postItemAdapterDelegate);
+    }
+
+    public PostItemAdapterDelegate getPostItemAdapterDelegate() {
+
+        /**
+         * Delegated to MainActivity.java
+         * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemImageDownloaded(PostItemAdapter, int)
+         */
+
+        if(postItemAdapterDelegate == null) {
+            return null;
+        }
+
+        return postItemAdapterDelegate.get();
+    }
+
+    // --------------------- //
 
     @Override
     public PostItemAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
@@ -57,34 +83,9 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         return BlocpartyApplication.getSharedDataSource().getPostItemArrayList().size();
     }
 
-    /*
-     * Interface Material
-     */
-
-    public interface PostItemAdapterDelegate {
-        void onLoginSwitchActivated(PostItemAdapter postItemAdapter, int adapterPosition);
-    }
-
-    private WeakReference<PostItemAdapterDelegate> postItemAdapterDelegate;
-
-    public void setPostItemAdapterDelegate(PostItemAdapterDelegate postItemAdapterDelegate) {
-        this.postItemAdapterDelegate = new WeakReference<PostItemAdapterDelegate>(postItemAdapterDelegate);
-    }
-
-    public PostItemAdapterDelegate getLoginAdapterDelegate() {
-
-        if(postItemAdapterDelegate == null) {
-            return null;
-        }
-
-        return postItemAdapterDelegate.get();
-    }
-
-    // --------------------- //
-
     // ----- Inner Class ----- //
 
-    static class PostItemAdapterViewHolder extends RecyclerView.ViewHolder {
+    class PostItemAdapterViewHolder extends RecyclerView.ViewHolder {
 
         private final String TAG = "(" + PostItemAdapterViewHolder.class.getSimpleName() + "): ";
 
@@ -133,7 +134,9 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postImgDownload.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Download Post Image Clicked", Toast.LENGTH_SHORT).show();
+                    if(postItemAdapterDelegate != null) {
+                        getPostItemAdapterDelegate().onPostItemImageDownloaded(PostItemAdapter.this, getAdapterPosition());
+                    }
                 }
             });
         }

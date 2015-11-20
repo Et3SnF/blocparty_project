@@ -47,7 +47,7 @@ import twitter4j.TwitterException;
 
 public class DataSource {
 
-    private static final String TAG = BPUtils.classTag(DataSource.class);
+    private static final String CLASS_TAG = BPUtils.classTag(DataSource.class);
 
     private static String fbOPName = "";
     private static long fbOPProfileId = 0L;
@@ -88,7 +88,7 @@ public class DataSource {
     // Instantiate the database
 
     public DataSource(Context context) {
-        Log.v(TAG, "DataSource instantiated");
+        Log.v(CLASS_TAG, "DataSource instantiated");
 
         PostItemTable postItemTable = new PostItemTable();
         CollectionTable collectionTable = new CollectionTable();
@@ -112,6 +112,7 @@ public class DataSource {
     }
 
     public ArrayList<PostItem> getPostItemArrayList() {
+        BPUtils.logMethod(CLASS_TAG);
         return postItemArrayList;
     }
 
@@ -136,7 +137,7 @@ public class DataSource {
         public void fetchFacebookInformation(final SimpleFacebook simpleFacebook) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
-            Log.v(TAG, "Facebook is logged in. Getting photos.");
+            Log.v(CLASS_TAG, "Facebook is logged in. Getting photos.");
 
             // Get Profile Information
 
@@ -161,7 +162,7 @@ public class DataSource {
                         @Override
                         public void onComplete(Profile response) {
 
-                            Log.v(TAG, "Profile information: "
+                            Log.v(CLASS_TAG, "Profile information: "
                                     + "ID: " + response.getId() + " | "
                                     + "First Name : " + response.getFirstName() + " | "
                                     + "Last Name: " + response.getLastName() + " | "
@@ -181,7 +182,7 @@ public class DataSource {
                             new GraphRequest.GraphJSONObjectCallback() {
                                 @Override
                                 public void onCompleted(JSONObject object, GraphResponse response) {
-                                    Log.v(TAG, "Raw response: " + response.getRawResponse());
+                                    Log.v(CLASS_TAG, "Raw response: " + response.getRawResponse());
 
                                     try {
 
@@ -221,11 +222,11 @@ public class DataSource {
 
                                     }
                                     catch (JSONException e) {
-                                        Log.e(TAG, "Unable to parse JSON info");
+                                        Log.e(CLASS_TAG, "Unable to parse JSON info");
                                         e.printStackTrace();
                                     }
                                     catch (NullPointerException e) {
-                                        Log.e(TAG, "JSON Object null. Hiccup...");
+                                        Log.e(CLASS_TAG, "JSON Object null. Hiccup...");
                                         e.printStackTrace();
                                     }
                                 }
@@ -243,13 +244,13 @@ public class DataSource {
 
         }
         else {
-            Log.v(TAG, "Facebook is not logged in. Unable to get information.");
+            Log.v(CLASS_TAG, "Facebook is not logged in. Unable to get information.");
         }
     }
 
     public void fetchTwitterInformation(final Twitter twitter) {
 
-        Log.v(TAG, "fetchTwitterInformation() called");
+        Log.v(CLASS_TAG, "fetchTwitterInformation() called");
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
 
@@ -264,18 +265,18 @@ public class DataSource {
 
                         if(statuses == null) {
                             cancel(true);
-                            Log.e(TAG, "Fetching timeline cancelled");
+                            Log.e(CLASS_TAG, "Fetching timeline cancelled");
                             return null;
                         }
 
-                        Log.e(TAG, "Getting timeline...information");
+                        Log.e(CLASS_TAG, "Getting timeline...information");
 
                         for(twitter4j.Status status : statuses) {
-//                            Log.v(TAG, "User: " + status.getUser().getName());
-//                            Log.v(TAG, "User ID: " + status.getUser().getId());
-//                            Log.v(TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
-//                            Log.v(TAG, "Status: " + status.getText());
-//                            Log.v(TAG, "Post ID: " + status.getId());
+//                            Log.v(CLASS_TAG, "User: " + status.getUser().getName());
+//                            Log.v(CLASS_TAG, "User ID: " + status.getUser().getId());
+//                            Log.v(CLASS_TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
+//                            Log.v(CLASS_TAG, "Status: " + status.getText());
+//                            Log.v(CLASS_TAG, "Post ID: " + status.getId());
 
                             twOPName = status.getUser().getName();
                             twOPProfileId = status.getUser().getId();
@@ -283,7 +284,7 @@ public class DataSource {
                             twPostPublishDate = status.getCreatedAt().getTime();
 
                             if(status.getMediaEntities().length != 0) {
-//                                Log.e(TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
+//                                Log.e(CLASS_TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
                                 twPostImageUrl = status.getMediaEntities()[0].getMediaURL();
                                 twPostId = status.getMediaEntities()[0].getId();
                                 twPostCaption = status.getText();
@@ -299,17 +300,17 @@ public class DataSource {
                         return null;
                     }
                     catch (TwitterException e) {
-                        Log.v(TAG, "There was an issue getting the timeline");
+                        Log.v(CLASS_TAG, "There was an issue getting the timeline");
                         e.printStackTrace();
                         return null;
                     }
                     catch(IllegalStateException e) {
-                        Log.v(TAG, "Twitter is not properly authenticated");
+                        Log.v(CLASS_TAG, "Twitter is not properly authenticated");
                         e.printStackTrace();
                         return null;
                     }
                     catch(NullPointerException e) {
-                        Log.v(TAG, "There was an issue getting Twitter information");
+                        Log.v(CLASS_TAG, "There was an issue getting Twitter information");
                         e.printStackTrace();
                         return null;
                     }
@@ -321,7 +322,7 @@ public class DataSource {
     public void fetchInstagramInformation(final Instagram instagram) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
-            Log.e(TAG, "Instagram is logged in. Getting profile info.");
+            Log.e(CLASS_TAG, "Instagram is logged in. Getting profile info.");
 
             new AsyncTask<Void, Void, UserInfo>() {
                 @Override
@@ -336,7 +337,7 @@ public class DataSource {
                         return instagram.getCurrentUserInfo();
                     }
                     catch (InstagramException e) {
-                        Log.e(TAG, "There was an issue getting UserInfo object");
+                        Log.e(CLASS_TAG, "There was an issue getting UserInfo object");
                         e.printStackTrace();
                         BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
                         return null;
@@ -347,9 +348,9 @@ public class DataSource {
                 protected void onPostExecute(UserInfo userInfo) {
 
                     if (userInfo != null) {
-                            Log.v(TAG, userInfo.getData().getUsername());
-                            Log.v(TAG, userInfo.getData().getProfilePicture());
-                            Log.v(TAG, userInfo.getData().getFullName());
+                            Log.v(CLASS_TAG, userInfo.getData().getUsername());
+                            Log.v(CLASS_TAG, userInfo.getData().getProfilePicture());
+                            Log.v(CLASS_TAG, userInfo.getData().getFullName());
 
                             new AsyncTask<Void, Void, List<MediaFeedData>>() {
                                 @Override
@@ -363,7 +364,7 @@ public class DataSource {
                                     }
                                     catch (InstagramException e) {
                                         e.printStackTrace();
-                                        Log.v(TAG, "There was something wrong with the MediaFeed object");
+                                        Log.v(CLASS_TAG, "There was something wrong with the MediaFeed object");
                                         BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                                                 BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
                                         return null;
@@ -377,10 +378,10 @@ public class DataSource {
 
                                     if(mediaFeedDatas != null) {
                                         for (MediaFeedData mediaFeedData : mediaFeedDatas) {
-//                                            Log.v(TAG, "User: " + mediaFeedData.getUser().getFullName());
-//                                            Log.v(TAG, "User ID: " + mediaFeedData.getUser().getId());
-//                                            Log.v(TAG, "Created time: " + mediaFeedData.getCreatedTime());
-//                                            Log.v(TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
+//                                            Log.v(CLASS_TAG, "User: " + mediaFeedData.getUser().getFullName());
+//                                            Log.v(CLASS_TAG, "User ID: " + mediaFeedData.getUser().getId());
+//                                            Log.v(CLASS_TAG, "Created time: " + mediaFeedData.getCreatedTime());
+//                                            Log.v(CLASS_TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
 
                                             igOPName = mediaFeedData.getUser().getFullName();
 
@@ -389,31 +390,31 @@ public class DataSource {
                                             }
 
                                             igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
-//                                            Log.v(TAG, "Raw ID: " + mediaFeedData.getId());
-//                                            Log.v(TAG, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
+//                                            Log.v(CLASS_TAG, "Raw ID: " + mediaFeedData.getId());
+//                                            Log.v(CLASS_TAG, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
                                             igPostId = Long.parseLong(mediaFeedData.getId().split("_")[0]);
                                             igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
                                             igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
 
                                             try {
-//                                                Log.v(TAG, "Text: " + mediaFeedData.getCaption().getText());
+//                                                Log.v(CLASS_TAG, "Text: " + mediaFeedData.getCaption().getText());
                                                 igPostCaption = mediaFeedData.getCaption().getText();
                                             } catch (NullPointerException e) {
                                                 igPostCaption = "";
-                                                Log.v(TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
+                                                Log.v(CLASS_TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
                                             }
 
                                             try {
-//                                                Log.v(TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
+//                                                Log.v(CLASS_TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
                                                 igPostPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
                                             }
                                             catch (NullPointerException e) {
-                                                Log.v(TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
+                                                Log.v(CLASS_TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
                                             }
 
                                             counter++;
 
-//                                            Log.v(TAG, "Instagram Items Inserted into DB: " + counter);
+//                                            Log.v(CLASS_TAG, "Instagram Items Inserted into DB: " + counter);
 
                                             addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
                                                     igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
@@ -427,13 +428,13 @@ public class DataSource {
             }.execute();
         }
         else {
-            Log.v(TAG, "Something went wrong in retrieving Instagram data");
+            Log.v(CLASS_TAG, "Something went wrong in retrieving Instagram data");
         }
 
     }
 
     public void fetchAllPostItems() {
-        Log.v(TAG, "fetchAllPostItems() called");
+        Log.v(CLASS_TAG, "fetchAllPostItems() called");
 
         // Clear the current ArrayList and then insert new items into it.
 
@@ -450,7 +451,7 @@ public class DataSource {
         if(cursor.moveToFirst()) {
             do {
                 postItemArrayList.add(itemFromCursor(cursor));
-//                Log.v(TAG, "Current arrayList size: " + postItemArrayList.size());
+//                Log.v(CLASS_TAG, "Current arrayList size: " + postItemArrayList.size());
             }
             while (cursor.moveToNext());
         }
@@ -594,7 +595,7 @@ public class DataSource {
                                  String postImgUrl, String postCaption, long publishDate, int isLiked) {
 
         if(isLiked < 0 || isLiked > 1) {
-            Log.e(TAG, "isLiked value is not either 0 or 1. Setting isLiked to 0");
+            Log.e(CLASS_TAG, "isLiked value is not either 0 or 1. Setting isLiked to 0");
             isLiked = 0;
         }
 
