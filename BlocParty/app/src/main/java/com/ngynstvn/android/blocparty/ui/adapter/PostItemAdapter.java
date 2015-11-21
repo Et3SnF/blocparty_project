@@ -120,7 +120,18 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
                 @Override
                 public void onClick(View v) {
                     Log.v(TAG, "Post Image clicked");
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Image Clicked", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Hold down image " +
+                            "to download to device.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            postImage.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if(postItemAdapterDelegate.get() != null) {
+                        getPostItemAdapterDelegate().onPostItemImageDownloaded(PostItemAdapter.this, getAdapterPosition());
+                    }
+                    return true;
                 }
             });
 
@@ -134,7 +145,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postImgDownload.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(postItemAdapterDelegate != null) {
+                    if(postItemAdapterDelegate.get() != null) {
                         getPostItemAdapterDelegate().onPostItemImageDownloaded(PostItemAdapter.this, getAdapterPosition());
                     }
                 }
