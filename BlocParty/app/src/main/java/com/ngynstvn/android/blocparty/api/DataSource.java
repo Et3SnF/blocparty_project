@@ -199,11 +199,11 @@ public class DataSource {
                                             }
 
                                             if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")){
-                                                fbPostId = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
-                                                fbPostImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
-                                                        .getJSONObject(0).getString("source");
+                                                    fbPostId = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
+                                                    fbPostImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
+                                                            .getJSONObject(0).getString("source");
 
-                                                try{
+                                                    try{
                                                     fbPostCaption = jsonArray.getJSONObject(i).getString("name");
                                                 }
                                                 catch (JSONException e) {
@@ -213,10 +213,30 @@ public class DataSource {
                                                 fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
                                             }
 
+                                            // Get the album id for the blocparty_project photos
+
                                             if(fbPostPublishDate != 0) {
                                                 addPostItemToDB(fbOPName, fbOPProfileId, fbProfilePicUrl,
                                                         fbPostId, fbPostImageUrl, fbPostCaption,
                                                         fbPostPublishDate, fbPostLiked);
+                                            }
+                                        }
+
+                                        // Find the photo id belonging to the Timeline Photos album
+
+                                        JSONArray idArray = object.optJSONObject("albums").getJSONArray("data");
+
+                                        for(int i = 0; i < idArray.length(); i++) {
+                                            if(idArray.getJSONObject(i).getString("name").equalsIgnoreCase("Timeline Photos")) {
+
+                                                BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils
+                                                                .FB_TP_ID), BPUtils.FB_TP_ID,
+                                                        BPUtils.FB_TP_ALB_ID, idArray.getJSONObject(i)
+                                                                .getString("id"));
+
+                                                Log.v(CLASS_TAG, "Album: " + idArray.getJSONObject(i).getString("name"));
+                                                Log.v(CLASS_TAG, "Album ID: " + idArray.getJSONObject(i).getString("id"));
+                                                break;
                                             }
                                         }
 
@@ -233,7 +253,7 @@ public class DataSource {
                             });
 
                     Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,photos{album,images,id,name,picture,link,created_time}");
+                    parameters.putString("fields", "id,name,albums{id,name},photos{album,images,id,name,link,created_time}");
                     request.setParameters(parameters);
                     request.executeAsync();
 

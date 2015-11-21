@@ -20,7 +20,6 @@ public class BlocpartyApplication extends Application {
 
     private static final String TAG = "(" + BlocpartyApplication.class.getSimpleName() + "): ";
 
-    private static final String APP_ID = "449190111920808";
     private static final String APP_NAMESPACE = "partybloc";
 
     private InstagramService instagramService;

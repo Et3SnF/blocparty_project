@@ -39,7 +39,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
@@ -286,6 +285,11 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
 
             BPUtils.clearSPrefTable(sharedPreferences, BPUtils.SN_UPLOAD_STATES);
+            BPUtils.clearSPrefTable(BPUtils.newSPrefInstance(BPUtils.FB_TP_ID), BPUtils.FB_TP_ID);
+
+            Intent intent = new Intent(ImageUploadActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
 
             return true;
         }
@@ -485,8 +489,8 @@ public class ImageUploadActivity extends AppCompatActivity {
                     .setName(caption)
                     .build();
 
-            SimpleFacebook.getInstance().publish((List<Photo>) photo, onPublishListener);
-
+            String albumId = BPUtils.newSPrefInstance(BPUtils.FB_TP_ID).getString(BPUtils.FB_TP_ALB_ID, null);
+            SimpleFacebook.getInstance().publish(photo, albumId, onPublishListener);
         }
     }
 

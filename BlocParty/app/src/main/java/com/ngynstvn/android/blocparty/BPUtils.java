@@ -28,7 +28,7 @@ public class BPUtils {
     public static final String FILE_NAME = "log_states";
     public static final String CHECKED_STATE = "checked_states";
     public static final String SN_UPLOAD_STATES = "checked_states";
-    public static final String COLLECTION_MODE = "collection_mode";
+    public static final String FB_TP_ID = "FB_TP_ID";
     public static final String CURRENT_COLLECTION = "current_collection";
 
     // Upload Variables
@@ -36,6 +36,7 @@ public class BPUtils {
     public static final String FB_UPLOAD = "fb_upload";
     public static final String TW_UPLOAD = "tw_upload";
     public static final String IG_UPLOAD = "ig_upload";
+    public static final String FB_TP_ALB_ID = "fb_timeline_photos_album_id";
 
     // Facebook Variables
 
