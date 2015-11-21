@@ -600,8 +600,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 // can find the image in the app that contains all of the pictures (Gallery)
 
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                Uri imageUri = Uri.fromFile(savedImageFile);
-                mediaScanIntent.setData(imageUri);
+                Uri savedImageUri = Uri.fromFile(savedImageFile);
+                mediaScanIntent.setData(savedImageUri);
                 MainActivity.this.sendBroadcast(mediaScanIntent);
 
                 runOnUiThread(new Runnable() {
