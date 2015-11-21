@@ -43,6 +43,8 @@ import java.util.Date;
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
 
 /**
  * Created by Ngynstvn on 11/5/15.
@@ -76,7 +78,6 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox igUploadCheckbox;
 
     private SimpleFacebook simpleFacebook;
-    private Twitter twitter;
 
     private RelativeLayout fbUploadLayout;
     private RelativeLayout twUploadLayout;
@@ -508,19 +509,27 @@ public class ImageUploadActivity extends AppCompatActivity {
         public void run() {
             BPUtils.logMethod(CLASS_TAG);
 
-            Twitter twitter = null;
+            String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                    .getString(BPUtils.TW_CONSUMER_KEY, null);
+            String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                    .getString(BPUtils.TW_CONSUMER_SECRET, null);
+            String token = getString(R.string.tat);
+            String tokenSecret = getString(R.string.tats);
 
             try {
+                Twitter twitter = new TwitterFactory().getInstance();
+                twitter.setOAuthConsumer(consumerKey, consumerKeySecret);
+                AccessToken accessToken = new AccessToken(token, tokenSecret);
+                twitter.setOAuthAccessToken(accessToken);
+
                 StatusUpdate statusUpdate = new StatusUpdate(caption);
                 statusUpdate.setMedia(new File(imageURI));
                 twitter.updateStatus(statusUpdate);
             }
             catch (TwitterException e) {
                 e.printStackTrace();
-                BPUtils.displayDialog(ImageUploadActivity.this, "There was an issue updating " +
-                        "status to Twitter.");
+                Log.v(TAG, "There was an issue posting the status");
             }
-
         }
     }
 
