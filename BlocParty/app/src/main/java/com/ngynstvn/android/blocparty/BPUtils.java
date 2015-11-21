@@ -1,6 +1,8 @@
 package com.ngynstvn.android.blocparty;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
@@ -203,5 +205,17 @@ public class BPUtils {
 
     public static File getImageDirectory() {
         return new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+    }
+
+    public static void displayDialog(Context context, String message) {
+        new AlertDialog.Builder(context)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 }

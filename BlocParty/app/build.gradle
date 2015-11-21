@@ -31,7 +31,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.android.support:cardview-v7:23.0.1'
     compile 'com.android.support:recyclerview-v7:23.0.1'
-    compile 'com.sromku:simple-fb:4.1.0'
+    compile 'com.sromku:simple-fb:4.1.1'
     compile project('libs:ToggleButtonLib')
     compile files('libs/Twitter4J/twitter4j-core-4.0.4.jar')
     compile files('libs/Twitter4J/twitter4j-stream-4.0.4.jar')

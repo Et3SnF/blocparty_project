@@ -27,6 +27,9 @@ import android.widget.TextView;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.R;
 import com.squareup.picasso.Picasso;
+import com.sromku.simple.fb.SimpleFacebook;
+import com.sromku.simple.fb.entities.Photo;
+import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,6 +39,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+
+import twitter4j.StatusUpdate;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
 
 /**
  * Created by Ngynstvn on 11/5/15.
@@ -67,6 +75,13 @@ public class ImageUploadActivity extends AppCompatActivity {
     private CheckBox fbUploadCheckbox;
     private CheckBox twUploadCheckbox;
     private CheckBox igUploadCheckbox;
+
+    private SimpleFacebook simpleFacebook;
+    private Twitter twitter;
+
+    private RelativeLayout fbUploadLayout;
+    private RelativeLayout twUploadLayout;
+    private RelativeLayout igUploadLayout;
 
     private static URI imageFileURI;
 
@@ -103,6 +118,9 @@ public class ImageUploadActivity extends AppCompatActivity {
         fbUploadCheckbox = (CheckBox) findViewById(R.id.cb_fb_share_select);
         twUploadCheckbox = (CheckBox) findViewById(R.id.cb_tw_share_select);
         igUploadCheckbox = (CheckBox) findViewById(R.id.cb_ig_share_select);
+        fbUploadLayout = (RelativeLayout) findViewById(R.id.rl_fb_upload_layout);
+        twUploadLayout = (RelativeLayout) findViewById(R.id.rl_tw_upload_layout);
+        igUploadLayout = (RelativeLayout) findViewById(R.id.rl_ig_upload_layout);
 
         Log.v(TAG, "Loaded Uri toString(): " + imageFileURI.toString());
         Picasso.with(this).load(imageFileURI.toString()).fit().into(previewImage);
@@ -156,6 +174,18 @@ public class ImageUploadActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
+            fbUploadLayout.setVisibility(View.VISIBLE);
+        }
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
+            twUploadLayout.setVisibility(View.VISIBLE);
+        }
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IG_LOGIN, false)) {
+            igUploadLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -168,6 +198,14 @@ public class ImageUploadActivity extends AppCompatActivity {
     protected void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+        simpleFacebook = SimpleFacebook.getInstance(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        BPUtils.logMethod(CLASS_TAG);
+        simpleFacebook.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -234,15 +272,15 @@ public class ImageUploadActivity extends AppCompatActivity {
                 }
 
                 if(canUploadToFB) {
-                    uploadToFacebook();
+                    uploadToFacebook(imageFileURI, input);
                 }
 
                 if(canUploadToTW) {
-                    uploadToTwitter();
+                    uploadToTwitter(imageFileURI, input);
                 }
 
                 if(canUploadToIG) {
-                    uploadToInstagram();
+                    uploadToInstagram(imageFileURI);
                 }
 
             }
@@ -308,16 +346,18 @@ public class ImageUploadActivity extends AppCompatActivity {
      *
      */
 
-    private void uploadToFacebook() {
-
+    private void uploadToFacebook(URI imageURI, String caption) {
+        FacebookUploadTask facebookUploadTask = new FacebookUploadTask(imageURI, caption);
+        facebookUploadTask.start();
     }
 
-    private void uploadToTwitter() {
-
+    private void uploadToTwitter(URI imageURI, String caption) {
+        TwitterUploadTask twitterUploadTask = new TwitterUploadTask(imageURI, caption);
+        twitterUploadTask.start();
     }
 
-    private void uploadToInstagram() {
-        InstagramUploadTask instagramUploadTask = new InstagramUploadTask(imageFileURI);
+    private void uploadToInstagram(URI imageURI) {
+        InstagramUploadTask instagramUploadTask = new InstagramUploadTask(imageURI);
         instagramUploadTask.start();
     }
 
@@ -419,49 +459,64 @@ public class ImageUploadActivity extends AppCompatActivity {
      *
      */
 
-    private class FBUploadPostTask extends AsyncTask<Void, Void, Void> {
+    private class FacebookUploadTask extends Thread {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        private URI imageUri = null;
+        private String caption = null;
+
+        public FacebookUploadTask(URI imageUri, String caption) {
+            this.imageUri = imageUri;
+            this.caption = caption;
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
-            return null;
-        }
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG);
 
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
+            OnPublishListener onPublishListener = new OnPublishListener() {
+                @Override
+                public void onComplete(String response) {
+                    super.onComplete(response);
+                }
+            };
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+            Photo photo = new Photo.Builder()
+                    .setImage(new File(imageUri))
+                    .setName(caption)
+                    .build();
+
+            SimpleFacebook.getInstance().publish((List<Photo>) photo, onPublishListener);
+
         }
     }
 
-    private class TWUploadPostTask extends AsyncTask<Void, Void, Void> {
+    private class TwitterUploadTask extends Thread {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        private URI imageURI = null;
+        private String caption = null;
+
+        public TwitterUploadTask(URI imageURI, String caption) {
+            this.imageURI = imageURI;
+            this.caption = caption;
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
-            return null;
-        }
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG);
 
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
+            Twitter twitter = null;
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+            try {
+                StatusUpdate statusUpdate = new StatusUpdate(caption);
+                statusUpdate.setMedia(new File(imageURI));
+                twitter.updateStatus(statusUpdate);
+            }
+            catch (TwitterException e) {
+                e.printStackTrace();
+                BPUtils.displayDialog(ImageUploadActivity.this, "There was an issue updating " +
+                        "status to Twitter.");
+            }
+
         }
     }
 

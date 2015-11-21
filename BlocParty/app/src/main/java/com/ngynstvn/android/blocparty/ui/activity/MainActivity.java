@@ -619,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        displayDialog("The image has been successfully saved.");
+                        BPUtils.displayDialog(MainActivity.this, "The image has been successfully saved.");
                     }
                 });
             }
@@ -628,22 +628,10 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        displayDialog("There was an issue downloading the image. Try again.");
+                        BPUtils.displayDialog(MainActivity.this, "There was an issue downloading the image. Try again.");
                     }
                 });
             }
         }
-    }
-
-    private void displayDialog(String message) {
-        new AlertDialog.Builder(MainActivity.this)
-                .setMessage(message)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
-                .show();
     }
 }

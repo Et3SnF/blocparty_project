@@ -216,11 +216,15 @@
             android:layout_marginRight="24dp"
             android:layout_marginBottom="8dp"/>
 
+        <!--Facebook Upload Layout -->
+
         <RelativeLayout
+            android:id="@+id/rl_fb_upload_layout"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginLeft="60dp"
-            android:layout_marginRight="60dp">
+            android:layout_marginRight="60dp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/iv_share_fb_profile"
@@ -256,11 +260,15 @@
 
         </RelativeLayout>
 
+        <!-- Twitter Upload Layout -->
+
         <RelativeLayout
+            android:id="@+id/rl_tw_upload_layout"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginLeft="60dp"
-            android:layout_marginRight="60dp">
+            android:layout_marginRight="60dp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/iv_share_tw_profile"
@@ -296,11 +304,15 @@
 
         </RelativeLayout>
 
+        <!-- Instagram Upload Layout -->
+
         <RelativeLayout
+            android:id="@+id/rl_ig_upload_layout"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginLeft="60dp"
-            android:layout_marginRight="60dp">
+            android:layout_marginRight="60dp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/iv_share_dl"
