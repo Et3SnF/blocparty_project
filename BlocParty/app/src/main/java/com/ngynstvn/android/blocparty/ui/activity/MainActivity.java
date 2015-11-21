@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -32,13 +31,12 @@ import com.sromku.simple.fb.SimpleFacebook;
 
 import org.jinstagram.Instagram;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.URISyntaxException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,7 +50,7 @@ import twitter4j.conf.ConfigurationBuilder;
  * Created by Ngynstvn on 10/14/15.
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PostItemAdapter.PostItemAdapterDelegate {
 
     private static final String TAG = BPUtils.classTag(MainActivity.class);
 
@@ -147,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
         postItemAdapter = new PostItemAdapter();
+        postItemAdapter.setPostItemAdapterDelegate(this);
 
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
         isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
@@ -550,62 +549,60 @@ public class MainActivity extends AppCompatActivity {
 
     private class DownloadPostImageTask extends Thread {
 
-        private PostItem postItem = null;
+        private int adapterPosition;
 
-        public DownloadPostImageTask(PostItem postItem) {
-            this.postItem = postItem;
+        public DownloadPostImageTask(int adapterPosition) {
+            this.adapterPosition = adapterPosition;
         }
 
         @Override
         public void run() {
             BPUtils.logMethod(BPUtils.classTag(DownloadPostImageTask.class), getClass().getSimpleName());
 
-            String fileName = "IMG_BP_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".jpg";
-            final File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+            String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String imageFileName = "IMAGE_BP_" + timeStamp + ".jpg";
+            File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
 
             if(!storageDirectory.exists()) {
                 storageDirectory.mkdir();
             }
 
+            PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList()
+                    .get(adapterPosition);
+
+            URL imageURL = null;
+            HttpURLConnection httpURLConnection = null;
+            InputStream inputStream = null;
+            File savedImageFile = null;
+            FileOutputStream fileOutputStream = null;
+
             try {
-                URL imageUrl = new URL(postItem.getPostImageUrl());
-                Uri imageUri = Uri.parse(imageUrl.toURI().toString());
+                imageURL = new URL(postItem.getPostImageUrl());
+                httpURLConnection = (HttpURLConnection) imageURL.openConnection();
+                inputStream = httpURLConnection.getInputStream();
+                savedImageFile = new File(storageDirectory, imageFileName);
+                fileOutputStream = new FileOutputStream(savedImageFile);
 
-                InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                File file = new File(storageDirectory, fileName);
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                int read = -1;
+                byte[] buffer = new byte[httpURLConnection.getContentLength()];
 
-                byte[] bytes = new byte[(int) new File(imageUrl.toURI()).length()];
-
-                if(inputStream != null) {
-                    do {
-                        // Third parameter is very important!
-                        byteArrayOutputStream.write(bytes, 0, inputStream.read(bytes));
-                        fileOutputStream.write(byteArrayOutputStream.toByteArray());
-                    }
-                    while (inputStream.read(bytes) != -1);
-
-                    inputStream.close();
-                    byteArrayOutputStream.flush();
-                    byteArrayOutputStream.close();
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                displayDialog("The image has been saved to " + storageDirectory.getCanonicalPath());
-                            }
-                            catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                while ((read = inputStream.read(buffer)) != -1) {
+                    fileOutputStream.write(buffer, 0, read);
                 }
+
+                httpURLConnection.disconnect();
+                inputStream.close();
+                fileOutputStream.flush();
+                fileOutputStream.close();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayDialog("The image has been successfully saved.");
+                    }
+                });
             }
-            catch (URISyntaxException | IOException e) {
+            catch (IOException e) {
                 e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -627,5 +624,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    /**
+     *
+     * PostItemAdapterDelegate Implemented Methods
+     *
+     */
+
+    @Override
+    public void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition) {
+        DownloadPostImageTask downloadPostImageTask = new DownloadPostImageTask(adapterPosition);
+        downloadPostImageTask.start();
     }
 }
