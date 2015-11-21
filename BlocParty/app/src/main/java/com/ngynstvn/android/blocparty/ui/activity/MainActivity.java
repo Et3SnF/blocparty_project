@@ -544,6 +544,18 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     /**
      *
+     * PostItemAdapterDelegate Implemented Methods
+     *
+     */
+
+    @Override
+    public void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition) {
+        DownloadPostImageTask downloadPostImageTask = new DownloadPostImageTask(adapterPosition);
+        downloadPostImageTask.start();
+    }
+
+    /**
+     *
      * Download Post Image Task
      *
      */
@@ -633,17 +645,5 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     }
                 })
                 .show();
-    }
-
-    /**
-     *
-     * PostItemAdapterDelegate Implemented Methods
-     *
-     */
-
-    @Override
-    public void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition) {
-        DownloadPostImageTask downloadPostImageTask = new DownloadPostImageTask(adapterPosition);
-        downloadPostImageTask.start();
     }
 }
