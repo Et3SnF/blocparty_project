@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -594,6 +595,14 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 inputStream.close();
                 fileOutputStream.flush();
                 fileOutputStream.close();
+
+                // Make the image accessible via the System's media provider so that the user
+                // can find the image in the app that contains all of the pictures (Gallery)
+
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                Uri imageUri = Uri.fromFile(savedImageFile);
+                mediaScanIntent.setData(imageUri);
+                MainActivity.this.sendBroadcast(mediaScanIntent);
 
                 runOnUiThread(new Runnable() {
                     @Override
