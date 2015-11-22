@@ -38,6 +38,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import twitter4j.ResponseList;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
@@ -297,6 +298,7 @@ public class DataSource {
                         // Timeline information
 
                         List<twitter4j.Status> statuses = twitter.getHomeTimeline();
+                        ResponseList<twitter4j.Status> favoritesList = null;
 
                         if(statuses == null) {
                             cancel(true);
@@ -323,6 +325,20 @@ public class DataSource {
                                 twPostImageUrl = status.getMediaEntities()[0].getMediaURL();
                                 twPostId = status.getMediaEntities()[0].getId();
                                 twPostCaption = status.getText();
+                            }
+
+                            if(status.getFavoriteCount() > 0) {
+                                // Get favorites list of posts from logged in user to determine
+                                // if db needs to be updated
+                                favoritesList = twitter.getFavorites(twitter.getId());
+                                for(int i = 0; i < favoritesList.size(); i++) {
+                                    if(favoritesList.get(i).getMediaEntities()[0].getId() == twPostId) {
+                                        twPostLiked = 1;
+                                    }
+                                }
+                            }
+                            else {
+                                twPostLiked = 0;
                             }
 
                             if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, twPostImageUrl) && twPostId != 0) {
