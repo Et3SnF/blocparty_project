@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -643,6 +644,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             }
             else if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
                 Log.v(CLASS_TAG, "Detected Instagram Heart");
+                Toast.makeText(BlocpartyApplication.getSharedInstance(), "Heart post is not supported " +
+                        "at the moment. Please use Instagram app.", Toast.LENGTH_SHORT).show();
             }
 
             BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
