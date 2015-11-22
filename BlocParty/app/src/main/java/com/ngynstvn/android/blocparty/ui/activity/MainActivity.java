@@ -630,12 +630,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     AccessToken accessToken = new AccessToken(token, tokenSecret);
                     twitter.setOAuthAccessToken(accessToken);
 
-                    Log.v(CLASS_TAG, "Post ID: " + postItem.getPostId());
-
                     if(isLiked) {
+                        Log.v(CLASS_TAG, "Twitter Status Favorite Checked");
                         twitter.createFavorite(postItem.getPostId());
                     }
                     else {
+                        Log.v(CLASS_TAG, "Twitter Status Unfavored Checked");
                         twitter.destroyFavorite(postItem.getPostId());
                     }
                 }
