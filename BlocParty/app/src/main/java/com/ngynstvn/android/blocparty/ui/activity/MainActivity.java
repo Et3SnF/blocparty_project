@@ -34,12 +34,14 @@ import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -648,6 +650,43 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 Log.v(CLASS_TAG, "Detected Instagram Heart");
                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "Heart post is not supported " +
                         "at the moment. Please use Instagram app.", Toast.LENGTH_SHORT).show();
+
+                String mediaId = String.valueOf(postItem.getPostId());
+                String igToken = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null);
+
+                // Perform the client request to get access to the cURL
+
+                StringBuffer stringBuffer = new StringBuffer();
+                BufferedReader bufferedReader = null;
+
+                try {
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.instagram.com/v1/media/"
+                            + mediaId + "/likes").openConnection();
+                    httpURLConnection.setRequestProperty("access_token=", igToken);
+                    httpURLConnection.setRequestMethod("POST");
+                    httpURLConnection.setUseCaches(false);
+
+                    if (httpURLConnection.getResponseCode() != 200) {
+                        throw new IOException(httpURLConnection.getResponseMessage());
+                    }
+
+//                    bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+//                    String input;
+//
+//                    while((input = bufferedReader.readLine()) != null) {
+//                        stringBuffer.append(input);
+//                    }
+
+                    bufferedReader.close();
+                    httpURLConnection.disconnect();
+
+                    Log.v(CLASS_TAG, "OUTPUT: " + stringBuffer.toString());
+                }
+                catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
