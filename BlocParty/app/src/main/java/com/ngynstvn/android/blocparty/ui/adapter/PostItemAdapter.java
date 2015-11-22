@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,6 +37,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     public interface PostItemAdapterDelegate {
         void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition);
+        void onPostItemLiked(PostItemAdapter postItemAdapter, int adapterPosition, boolean isLiked);
     }
 
     private WeakReference<PostItemAdapterDelegate> postItemAdapterDelegate;
@@ -49,6 +51,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
         /**
          * Delegated to MainActivity.java
          * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemImageDownloaded(PostItemAdapter, int)
+         * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemLiked(PostItemAdapter, int, boolean)
          */
 
         if(postItemAdapterDelegate == null) {
@@ -128,17 +131,19 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             postImage.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(postItemAdapterDelegate.get() != null) {
+                    if (postItemAdapterDelegate.get() != null) {
                         getPostItemAdapterDelegate().onPostItemImageDownloaded(PostItemAdapter.this, getAdapterPosition());
                     }
                     return true;
                 }
             });
 
-            postLikedBtn.setOnClickListener(new View.OnClickListener() {
+            postLikedBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onClick(View v) {
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Liked Button Clicked", Toast.LENGTH_SHORT).show();
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(postItemAdapterDelegate.get() != null) {
+                        getPostItemAdapterDelegate().onPostItemLiked(PostItemAdapter.this, getAdapterPosition(), isChecked);
+                    }
                 }
             });
 
@@ -172,6 +177,8 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
             if(postItem.getPostImageUrl().length() != 0) {
                 Picasso.with(BlocpartyApplication.getSharedInstance()).load(postItem.getPostImageUrl()).into(postImage);
             }
+
+            postLikedBtn.setChecked(postItem.isLiked());
 
             // For media text at bottom left corner
 

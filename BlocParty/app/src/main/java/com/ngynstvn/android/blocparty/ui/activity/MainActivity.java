@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -27,6 +28,8 @@ import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
 import com.ngynstvn.android.blocparty.ui.fragment.CollectionModeDialog;
 import com.sromku.simple.fb.SimpleFacebook;
+import com.sromku.simple.fb.entities.Like;
+import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
@@ -43,6 +46,7 @@ import java.util.Date;
 import de.hdodenhof.circleimageview.CircleImageView;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
 import twitter4j.conf.ConfigurationBuilder;
 
 /**
@@ -51,7 +55,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity implements PostItemAdapter.PostItemAdapterDelegate {
 
-    private static final String TAG = BPUtils.classTag(MainActivity.class);
+    private static final String CLASS_TAG = BPUtils.classTag(MainActivity.class);
 
     private int instance_counter = 0;
 
@@ -134,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate() called");
+        Log.e(CLASS_TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
@@ -191,17 +195,17 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart() called");
+        Log.e(CLASS_TAG, "onStart() called");
         super.onStart();
         currentCollectionName = sharedPreferences.getString(BPUtils.CURRENT_COLLECTION, null);
-        Log.v(TAG, "Current collection name: " + currentCollectionName);
+        Log.v(CLASS_TAG, "Current collection name: " + currentCollectionName);
         isFilterActive = (currentCollectionName != null);
-        Log.v(TAG, "Is Filter Active?: " + isFilterActive);
+        Log.v(CLASS_TAG, "Is Filter Active?: " + isFilterActive);
     }
 
     @Override
     protected void onResume() {
-        Log.e(TAG, "onResume() called");
+        Log.e(CLASS_TAG, "onResume() called");
         super.onResume();
         simpleFacebook = SimpleFacebook.getInstance(this);
 
@@ -223,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 BlocpartyApplication.getSharedDataSource().fetchInstagramInformation(instagram);
             }
             else {
-                Log.e(TAG, "Instagram variable is null. Unable to fetch feed");
+                Log.e(CLASS_TAG, "Instagram variable is null. Unable to fetch feed");
             }
         }
 
@@ -265,9 +269,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
-//                Log.v(TAG, "TotalItemCount: " + totalItemCount);
-                    Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
+//                Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
+//                Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
                         postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
@@ -296,21 +300,21 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 //                    if (totalItemCount > previousTotal) {
 //                        loading = false;
 //                        previousTotal = totalItemCount;
-//                        Log.v(TAG, "Previous Total: " + previousTotal);
+//                        Log.v(CLASS_TAG, "Previous Total: " + previousTotal);
 //                    }
 //                }
 //
 //                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-//                    Log.v(TAG, "End has been reached...loading more...");
+//                    Log.v(CLASS_TAG, "End has been reached...loading more...");
 //                    postItemAdapter.notifyDataSetChanged();
 //                    loading = true;
 //                }
 //
-//                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-//                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+//                Log.v(CLASS_TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+//                Log.v(CLASS_TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
 //                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
 //                        + (firstVisibleItem + visibleThreshold));
-//                Log.v(TAG, "Current loading state: " + loading);
+//                Log.v(CLASS_TAG, "Current loading state: " + loading);
                 }
             });
 
@@ -364,9 +368,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                Log.v(TAG, "VisibleItemCount: " + visibleItemCount);
-//                Log.v(TAG, "TotalItemCount: " + totalItemCount);
-                    Log.v(TAG, "Visible Item Position: " + firstVisibleItem);
+//                Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
+//                Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
                         postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
@@ -395,21 +399,21 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 //                    if (totalItemCount > previousTotal) {
 //                        loading = false;
 //                        previousTotal = totalItemCount;
-//                        Log.v(TAG, "Previous Total: " + previousTotal);
+//                        Log.v(CLASS_TAG, "Previous Total: " + previousTotal);
 //                    }
 //                }
 //
 //                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-//                    Log.v(TAG, "End has been reached...loading more...");
+//                    Log.v(CLASS_TAG, "End has been reached...loading more...");
 //                    postItemAdapter.notifyDataSetChanged();
 //                    loading = true;
 //                }
 //
-//                Log.v(TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-//                Log.v(TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
+//                Log.v(CLASS_TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
+//                Log.v(CLASS_TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
 //                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
 //                        + (firstVisibleItem + visibleThreshold));
-//                Log.v(TAG, "Current loading state: " + loading);
+//                Log.v(CLASS_TAG, "Current loading state: " + loading);
                 }
             });
 
@@ -430,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             closeFilteredButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.v(TAG, "Close Collection View button clicked");
+                    Log.v(CLASS_TAG, "Close Collection View button clicked");
                     isFilterActive = false;
                     allPostsLayout.setEnabled(true);
                     allPostsLayout.setVisibility(View.VISIBLE);
@@ -462,19 +466,19 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause() called");
+        Log.e(CLASS_TAG, "onPause() called");
         super.onPause();
     }
 
     @Override
     protected void onStop() {
-        Log.e(TAG, "onStop() called");
+        Log.e(CLASS_TAG, "onStop() called");
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy() called");
+        Log.e(CLASS_TAG, "onDestroy() called");
         super.onDestroy();
     }
 
@@ -482,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.v(TAG, "onCreateOptionsMenu() called");
+        Log.v(CLASS_TAG, "onCreateOptionsMenu() called");
         getMenuInflater().inflate(R.menu.menu_main, menu);
         this.menu = menu;
         return super.onCreateOptionsMenu(menu);
@@ -490,17 +494,17 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.v(TAG, "onOptionsItemSelected() called");
+        Log.v(CLASS_TAG, "onOptionsItemSelected() called");
 
         if(item.getItemId() == R.id.action_camera_mode) {
-            Log.v(TAG, "Camera button clicked");
+            Log.v(CLASS_TAG, "Camera button clicked");
             Intent intent = new Intent(this, CameraActivity.class);
             startActivity(intent);
             return true;
         }
 
         if(item.getItemId() == R.id.action_login_mode) {
-            Log.v(TAG, "Login button clicked");
+            Log.v(CLASS_TAG, "Login button clicked");
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
 
             // Clear the DB, ArrayList, and ViewHolder once you're here so everything has a fresh start
@@ -520,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
         }
 
         if(item.getItemId() == R.id.action_collection_mode) {
-            Log.v(TAG, "Collection Button Clicked");
+            Log.v(CLASS_TAG, "Collection Button Clicked");
             showCollectionModeDialog();
             return true;
         }
@@ -550,6 +554,90 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     public void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition) {
         DownloadPostImageTask downloadPostImageTask = new DownloadPostImageTask(adapterPosition);
         downloadPostImageTask.start();
+    }
+
+    @Override
+    public void onPostItemLiked(PostItemAdapter postItemAdapter, int adapterPosition, boolean isLiked) {
+        LikePostItem likePostItem = new LikePostItem(adapterPosition, isLiked);
+        likePostItem.start();
+    }
+
+    /**
+     *
+     * Post Item Liked Thread
+     *
+     */
+
+    private class LikePostItem extends Thread {
+
+        private int adapterPosition;
+        private boolean isLiked;
+
+        public LikePostItem(int adapterPosition, boolean isLiked) {
+            this.adapterPosition = adapterPosition;
+            this.isLiked = isLiked;
+        }
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG);
+
+            // Set up the MessageQueue in case something requires it
+            Looper.prepare();
+
+            PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(adapterPosition);
+
+            if(postItem.getPostImageUrl().contains("fbcdn.net")) {
+
+                OnPublishListener onPublishListener = new OnPublishListener() {
+                    @Override
+                    public void onComplete(String response) {
+                        Log.v(CLASS_TAG, "Published Like Successfully");
+                        Log.v(CLASS_TAG, "Response: " + response);
+                    }
+
+                    @Override
+                    public void onFail(String reason) {
+                        Log.e(CLASS_TAG, "There was an issue liking the Facebook post.");
+                    }
+                };
+
+                Like like = new Like.Builder().build();
+                Log.v(CLASS_TAG, "Post Item ID: " + postItem.getPostId());
+                SimpleFacebook.getInstance().publish(String.valueOf(postItem.getPostId()), like,
+                        onPublishListener);
+                BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
+            }
+            else if(postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+                TwitterFactory twitterFactory = new TwitterFactory();
+                Twitter twitter = twitterFactory.getInstance();
+
+                String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_CONSUMER_KEY, null);
+                String consumerSecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_CONSUMER_SECRET, null);
+
+                twitter.setOAuthConsumer(consumerKey, consumerSecret);
+
+                String token = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_ACCESS_TOKEN, "");
+                String tokenSecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_ACCESS_TOKEN_SECRET, "");
+
+                AccessToken accessToken = new AccessToken(token, tokenSecret);
+
+                twitter.setOAuthAccessToken(accessToken);
+
+
+            }
+            else if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+
+            }
+
+            BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
+
+            Looper.loop();
+        }
     }
 
     /**

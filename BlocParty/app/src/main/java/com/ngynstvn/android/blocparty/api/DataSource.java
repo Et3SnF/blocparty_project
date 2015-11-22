@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
@@ -35,6 +36,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,6 +188,19 @@ public class DataSource {
                                     Log.v(CLASS_TAG, "Raw response: " + response.getRawResponse());
 
                                     try {
+                                        PrintWriter printWriter = new PrintWriter(Environment
+                                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                                                .getAbsolutePath() + "/raw.txt");
+
+                                        if(response.getRawResponse() != null) {
+                                            printWriter.write(response.getRawResponse());
+                                        }
+                                        printWriter.close();
+                                    } catch (FileNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    try {
 
                                         JSONArray jsonArray = object.optJSONObject("photos").getJSONArray("data");
 
@@ -253,7 +269,7 @@ public class DataSource {
                             });
 
                     Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,albums{id,name},photos{album,images,id,name,link,created_time}");
+                    parameters.putString("fields", "id,name,albums{id,name},photos{album,images,id,name,link,created_time, likes}");
                     request.setParameters(parameters);
                     request.executeAsync();
 
@@ -629,6 +645,17 @@ public class DataSource {
                 .setPostPublishDate(publishDate)
                 .setIsPostLiked(isLiked)
                 .insert(databaseOpenHelper.getWritableDatabase());
+    }
+
+    public void updatePostItemLike(long postId, boolean isLiked) {
+
+        int isLikedValue = isLiked ? 1 : 0;
+
+        String statement = "Update " + BPUtils.POST_ITEM_TABLE + " set " + BPUtils.IS_POST_LIKED
+                + " = " + isLikedValue + " where " + BPUtils.POST_ID + " = " + String.valueOf(postId);
+        Cursor cursor = databaseOpenHelper.getWritableDatabase().rawQuery(statement, null);
+
+        cursor.close();
     }
 
     public void addCollectionToDB(final String name, final String userProfileId) {
