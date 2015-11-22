@@ -607,8 +607,6 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 Log.v(CLASS_TAG, "Post Item ID: " + postItem.getPostId());
                 SimpleFacebook.getInstance().publish(String.valueOf(postItem.getPostId()), like,
                         onPublishListener);
-
-                BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
             }
             else if(postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
                 Log.v(CLASS_TAG, "Detected Twitter Favorite");

@@ -215,17 +215,17 @@ public class DataSource {
 
                                                 fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
 
-//                                                if(jsonArray.getJSONObject(i).getJSONObject("likes") != null) {
-//                                                    JSONArray likesArray = jsonArray.getJSONObject(i).getJSONObject("likes").getJSONArray("data");
-//                                                    Log.v(CLASS_TAG, "Likes Array: " + likesArray.toString());
-//
-//                                                    if(likesArray.toString().contains(String.valueOf(fbOPProfileId))) {
-//                                                        fbPostLiked = 1;
-//                                                    }
-//                                                }
-//                                                else {
-//                                                    fbPostLiked = 0;
-//                                                }
+                                                try {
+                                                    JSONArray likesArray = jsonArray.getJSONObject(i).getJSONObject("likes").getJSONArray("data");
+                                                    Log.v(CLASS_TAG, "Likes Array: " + likesArray.toString());
+
+                                                    if(likesArray.toString().contains(String.valueOf(fbOPProfileId))) {
+                                                        fbPostLiked = 1;
+                                                    }
+                                                }
+                                                catch (JSONException e) {
+                                                    fbPostLiked = 0;
+                                                }
                                             }
 
                                             // Get the album id for the blocparty_project photos
@@ -605,7 +605,14 @@ public class DataSource {
 
     static PostItem itemFromCursor(Cursor cursor) {
 
-        boolean isLiked = PostItemTable.getIsPostLiked(cursor) != 0;
+        boolean isLiked = false;
+
+        if(PostItemTable.getIsPostLiked(cursor) == 1) {
+            isLiked = true;
+        }
+        else {
+            isLiked = false;
+        }
 
         return new PostItem(PostItemTable.getRowId(cursor), PostItemTable.getColumnOPFullName(cursor),
                 PostItemTable.getColumnOpProfileId(cursor), PostItemTable.getColumnOpProfilePicUrl(cursor),
@@ -648,7 +655,14 @@ public class DataSource {
 
     public void updatePostItemLike(long postId, boolean isLiked) {
 
-        int isLikedValue = isLiked ? 1 : 0;
+        int isLikedValue = 0;
+
+        if(isLiked) {
+            isLikedValue = 1;
+        }
+        else {
+            isLikedValue = 0;
+        }
 
         String statement = "Update " + BPUtils.POST_ITEM_TABLE + " set " + BPUtils.IS_POST_LIKED
                 + " = " + isLikedValue + " where " + BPUtils.POST_ID + " = " + String.valueOf(postId);
