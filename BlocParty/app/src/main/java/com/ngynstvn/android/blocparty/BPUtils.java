@@ -10,6 +10,8 @@ import android.util.Log;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -219,5 +221,21 @@ public class BPUtils {
                     }
                 })
                 .show();
+    }
+
+    public static void saveRawJSONResponse(String fileName, String rawResponse) {
+        try {
+            PrintWriter printWriter = new PrintWriter(Environment
+                    .getExternalStorageDirectory().getAbsolutePath() + "/" + fileName);
+
+            if(rawResponse != null) {
+                printWriter.write(rawResponse);
+            }
+
+            printWriter.close();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }

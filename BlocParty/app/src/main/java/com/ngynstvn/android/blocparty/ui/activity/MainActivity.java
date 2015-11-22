@@ -588,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(adapterPosition);
 
             if(postItem.getPostImageUrl().contains("fbcdn.net")) {
+                Log.v(CLASS_TAG, "Detected Facebook Like");
 
                 OnPublishListener onPublishListener = new OnPublishListener() {
                     @Override
@@ -606,9 +607,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 Log.v(CLASS_TAG, "Post Item ID: " + postItem.getPostId());
                 SimpleFacebook.getInstance().publish(String.valueOf(postItem.getPostId()), like,
                         onPublishListener);
+
                 BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
             }
             else if(postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+                Log.v(CLASS_TAG, "Detected Twitter Favorite");
+
                 TwitterFactory twitterFactory = new TwitterFactory();
                 Twitter twitter = twitterFactory.getInstance();
 
@@ -631,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
             }
             else if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
-
+                Log.v(CLASS_TAG, "Detected Instagram Heart");
             }
 
             BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);

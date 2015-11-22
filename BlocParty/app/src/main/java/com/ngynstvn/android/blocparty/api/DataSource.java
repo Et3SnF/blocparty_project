@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
@@ -36,8 +35,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,20 +182,10 @@ public class DataSource {
                             new GraphRequest.GraphJSONObjectCallback() {
                                 @Override
                                 public void onCompleted(JSONObject object, GraphResponse response) {
+                                    BPUtils.logMethod(CLASS_TAG);
                                     Log.v(CLASS_TAG, "Raw response: " + response.getRawResponse());
 
-                                    try {
-                                        PrintWriter printWriter = new PrintWriter(Environment
-                                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                                                .getAbsolutePath() + "/raw.txt");
-
-                                        if(response.getRawResponse() != null) {
-                                            printWriter.write(response.getRawResponse());
-                                        }
-                                        printWriter.close();
-                                    } catch (FileNotFoundException e) {
-                                        e.printStackTrace();
-                                    }
+//                                    BPUtils.saveRawJSONResponse("facebook_response.txt", response.getRawResponse());
 
                                     try {
 
@@ -219,7 +206,7 @@ public class DataSource {
                                                     fbPostImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
                                                             .getJSONObject(0).getString("source");
 
-                                                    try{
+                                                try{
                                                     fbPostCaption = jsonArray.getJSONObject(i).getString("name");
                                                 }
                                                 catch (JSONException e) {
@@ -227,6 +214,18 @@ public class DataSource {
                                                 }
 
                                                 fbPostPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
+
+//                                                if(jsonArray.getJSONObject(i).getJSONObject("likes") != null) {
+//                                                    JSONArray likesArray = jsonArray.getJSONObject(i).getJSONObject("likes").getJSONArray("data");
+//                                                    Log.v(CLASS_TAG, "Likes Array: " + likesArray.toString());
+//
+//                                                    if(likesArray.toString().contains(String.valueOf(fbOPProfileId))) {
+//                                                        fbPostLiked = 1;
+//                                                    }
+//                                                }
+//                                                else {
+//                                                    fbPostLiked = 0;
+//                                                }
                                             }
 
                                             // Get the album id for the blocparty_project photos
