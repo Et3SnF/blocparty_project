@@ -45,6 +45,7 @@ import java.util.Date;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.conf.ConfigurationBuilder;
@@ -618,19 +619,27 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                         .getString(BPUtils.TW_CONSUMER_KEY, null);
                 String consumerSecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
                         .getString(BPUtils.TW_CONSUMER_SECRET, null);
-
-                twitter.setOAuthConsumer(consumerKey, consumerSecret);
-
                 String token = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
                         .getString(BPUtils.TW_ACCESS_TOKEN, "");
                 String tokenSecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
                         .getString(BPUtils.TW_ACCESS_TOKEN_SECRET, "");
 
-                AccessToken accessToken = new AccessToken(token, tokenSecret);
+                try {
+                    twitter.setOAuthConsumer(consumerKey, consumerSecret);
+                    AccessToken accessToken = new AccessToken(token, tokenSecret);
+                    twitter.setOAuthAccessToken(accessToken);
 
-                twitter.setOAuthAccessToken(accessToken);
-
-
+                    if(isLiked) {
+                        twitter.createFavorite(postItem.getPostId());
+                    }
+                    else {
+                        twitter.destroyFavorite(postItem.getPostId());
+                    }
+                }
+                catch (TwitterException e) {
+                    Log.v(CLASS_TAG, "There was and issue with favoring status.");
+                    e.printStackTrace();
+                }
             }
             else if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
                 Log.v(CLASS_TAG, "Detected Instagram Heart");
