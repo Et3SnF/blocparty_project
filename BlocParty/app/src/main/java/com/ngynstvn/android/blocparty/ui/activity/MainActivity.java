@@ -14,12 +14,10 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.transition.Explode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,11 +36,14 @@ import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -147,9 +148,6 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(CLASS_TAG, "onCreate() called");
-        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-        getWindow().setExitTransition(new Explode());
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
@@ -670,37 +668,33 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 String mediaId = String.valueOf(postItem.getPostId());
                 String igToken = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null);
 
-                // Perform the client request to get access to the cURL
-
-                StringBuffer stringBuffer = new StringBuffer();
-                BufferedReader bufferedReader = null;
+                String urlString = "https://api.instagram.com/v1/media/" + mediaId + "/likes";
 
                 try {
-                    HttpURLConnection httpURLConnection = (HttpURLConnection) new URL("https://api.instagram.com/v1/media/"
-                            + mediaId + "/likes").openConnection();
-                    httpURLConnection.setRequestProperty("access_token=", igToken);
+                    URL url = new URL(urlString);
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                     httpURLConnection.setRequestMethod("POST");
-                    httpURLConnection.setUseCaches(false);
+                    httpURLConnection.setRequestProperty("access_token=", igToken);
+                    httpURLConnection.connect();
+                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
+                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    if (httpURLConnection.getResponseCode() != 200) {
-                        throw new IOException(httpURLConnection.getResponseMessage());
+                    StringBuilder stringContent = new StringBuilder();
+
+                    String line = null;
+
+                    while((line = bufferedReader.readLine()) != null) {
+                        stringContent.append(line);
                     }
 
-//                    bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-//                    String input;
-//
-//                    while((input = bufferedReader.readLine()) != null) {
-//                        stringBuffer.append(input);
-//                    }
-
-                    bufferedReader.close();
-                    httpURLConnection.disconnect();
-
-                    Log.v(CLASS_TAG, "OUTPUT: " + stringBuffer.toString());
+                    PrintWriter printWriter = new PrintWriter(Environment.getExternalStorageDirectory() + "rawData.txt");
+                    printWriter.write(stringContent.toString());
                 }
                 catch (MalformedURLException e) {
                     e.printStackTrace();
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                 }
             }
