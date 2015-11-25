@@ -36,17 +36,12 @@ import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -666,37 +661,42 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                         "at the moment. Please use Instagram app.", Toast.LENGTH_SHORT).show();
 
                 String mediaId = String.valueOf(postItem.getPostId());
-                String igToken = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null);
 
                 String urlString = "https://api.instagram.com/v1/media/" + mediaId + "/likes";
 
-                try {
-                    URL url = new URL(urlString);
-                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                    httpURLConnection.setRequestMethod("POST");
-                    httpURLConnection.setRequestProperty("access_token=", igToken);
-                    httpURLConnection.connect();
-                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
-                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    StringBuilder stringContent = new StringBuilder();
-
-                    String line = null;
-
-                    while((line = bufferedReader.readLine()) != null) {
-                        stringContent.append(line);
-                    }
-
-                    PrintWriter printWriter = new PrintWriter(Environment.getExternalStorageDirectory() + "rawData.txt");
-                    printWriter.write(stringContent.toString());
-                }
-                catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    URL url = new URL(urlString);
+//                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+//                    httpURLConnection.setRequestMethod("POST");
+//                    httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data");
+//                    httpURLConnection.connect();
+//                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
+//                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+//                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+//
+//                    StringBuilder stringContent = new StringBuilder();
+//
+//                    String line = null;
+//
+//                    while((line = bufferedReader.readLine()) != null) {
+//                        stringContent.append(line);
+//                    }
+//
+//                    httpURLConnection.disconnect();
+//                    inputStream.close();
+//                    bufferedReader.close();
+//
+//                    Log.e(CLASS_TAG, stringContent.toString());
+//                }
+//                catch (MalformedURLException e) {
+//                    e.printStackTrace();
+//                }
+//                catch(FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
 
             BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
