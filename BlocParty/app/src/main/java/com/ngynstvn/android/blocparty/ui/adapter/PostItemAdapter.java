@@ -11,7 +11,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -36,6 +35,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
      */
 
     public interface PostItemAdapterDelegate {
+        void onPostItemImagePanZoomed(PostItemAdapter postItemAdapter, int adapterPosition);
         void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition);
         void onPostItemLiked(PostItemAdapter postItemAdapter, int adapterPosition, boolean isLiked);
     }
@@ -52,6 +52,7 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
          * Delegated to MainActivity.java
          * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemImageDownloaded(PostItemAdapter, int)
          * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemLiked(PostItemAdapter, int, boolean)
+         * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#onPostItemImagePanZoomed(PostItemAdapter, int)
          */
 
         if(postItemAdapterDelegate == null) {
@@ -123,8 +124,9 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
                 @Override
                 public void onClick(View v) {
                     Log.v(TAG, "Post Image clicked");
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Hold down image " +
-                            "to download to device.", Toast.LENGTH_SHORT).show();
+                    if (postItemAdapterDelegate.get() != null) {
+                        getPostItemAdapterDelegate().onPostItemImagePanZoomed(PostItemAdapter.this, getAdapterPosition());
+                    }
                 }
             });
 

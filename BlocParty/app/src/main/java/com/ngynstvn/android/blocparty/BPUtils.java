@@ -86,6 +86,10 @@ public class BPUtils {
     public static final String FLASH_STATE = "flash_state";
     public static final String IMAGE_URI = "image_uri";
 
+    // Pan Zoom Related
+
+    public static final String POST_IMAGE_URL = "post_image_url";
+
     // ----- Static Methods ----- //
 
     // Logging methods

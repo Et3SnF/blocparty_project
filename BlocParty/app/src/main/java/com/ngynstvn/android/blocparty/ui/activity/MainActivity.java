@@ -1,8 +1,10 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -12,10 +14,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.Explode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -143,6 +147,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(CLASS_TAG, "onCreate() called");
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        getWindow().setExitTransition(new Explode());
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
@@ -553,6 +560,15 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
      * PostItemAdapterDelegate Implemented Methods
      *
      */
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onPostItemImagePanZoomed(PostItemAdapter postItemAdapter, int adapterPosition) {
+        PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(adapterPosition);
+        Intent intent = new Intent(this, FullScreenImageActivity.class);
+        intent.putExtra(BPUtils.POST_IMAGE_URL, postItem.getPostImageUrl());
+        startActivity(intent);
+    }
 
     @Override
     public void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition) {

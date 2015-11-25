@@ -38,6 +38,9 @@
         <activity
             android:name=".ui.activity.ImageUploadActivity"/>
 
+        <activity
+            android:name=".ui.activity.FullScreenImageActivity"/>
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/fbai" />
