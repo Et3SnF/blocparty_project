@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import org.jinstagram.entity.users.feed.MediaFeedData;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -241,5 +243,18 @@ public class BPUtils {
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    // Logging out social network information
+
+    public static void logInstagramPostItemInfo(String classTag, MediaFeedData mediaFeedData) {
+        Log.v(classTag, "User: " + mediaFeedData.getUser().getFullName());
+        Log.v(classTag, "User ID: " + mediaFeedData.getUser().getId());
+        Log.v(classTag, "Created time: " + mediaFeedData.getCreatedTime());
+        Log.v(classTag, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
+        Log.v(classTag, "Raw ID: " + mediaFeedData.getId());
+        Log.v(classTag, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
+        Log.v(classTag, "Post Caption: " + mediaFeedData.getCaption().getText());
+        Log.v(classTag, "Post Created Time: " + mediaFeedData.getCaption().getCreatedTime());
     }
 }

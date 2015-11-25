@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.AccessToken;
@@ -370,6 +371,97 @@ public class DataSource {
         }
     }
 
+    private class FetchInstagramFeedTask extends Thread {
+
+        private Handler instagramHandler;
+        private Instagram instagram;
+
+        public FetchInstagramFeedTask(Instagram instagram) {
+            this.instagram = instagram;
+        }
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "FetchInstagramFeedTask");
+
+            Looper.prepare();
+
+            // Instantiate handler here
+            instagramHandler = new Handler();
+
+            String instagramAuthCode = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null);
+
+            if(instagramAuthCode != null) {
+                Log.v(CLASS_TAG, "Instagram is logged in. Getting profile info.");
+
+                // Clear the table whenever feed is being fetched. Don't want repeated entries.
+                clearTable(BPUtils.POST_ITEM_TABLE);
+
+                // Fetch Instagram user info
+
+                try {
+                    UserInfo userInfo = instagram.getCurrentUserInfo();
+
+                    // Simple user information log
+                    Log.v(CLASS_TAG, userInfo.getData().getUsername());
+                    Log.v(CLASS_TAG, userInfo.getData().getProfilePicture());
+                    Log.v(CLASS_TAG, userInfo.getData().getFullName());
+
+                    // Fetch any instagram information and store it as object
+                    List<MediaFeedData> mediaFeedDatas = instagram.getUserFeeds().getData();
+
+                    for (MediaFeedData mediaFeedData : mediaFeedDatas) {
+
+                        // Logging instagram information
+                        BPUtils.logInstagramPostItemInfo(CLASS_TAG, mediaFeedData);
+
+                        igOPName = mediaFeedData.getUser().getFullName();
+
+                        if(igOPName.length() == 0) {
+                            igOPName = mediaFeedData.getUser().getUserName();
+                        }
+
+                        igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
+                        igPostId = Long.parseLong(mediaFeedData.getId().split("_")[0]);
+                        igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
+                        igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
+
+                        try {
+                            igPostCaption = mediaFeedData.getCaption().getText();
+                        }
+                        catch (NullPointerException e) {
+                            igPostCaption = "";
+                        }
+
+                        igPostPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
+
+                        addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
+                                igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
+                    }
+
+                }
+                catch (InstagramException e) {
+                    Log.e(CLASS_TAG, "There was an issue getting Instagram information.");
+                    e.printStackTrace();
+                    BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                            BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
+                }
+                catch(NullPointerException e) {
+                    Log.e(CLASS_TAG, "Something instagram is null. Look at StackTrace.");
+                    e.printStackTrace();
+                    BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                            BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
+                }
+            }
+            else {
+                Log.v(CLASS_TAG, "Instagram is not logged in. Unable to fetch feed.");
+
+            }
+
+            Looper.loop();
+        }
+    }
+
     public void fetchInstagramInformation(final Instagram instagram) {
 
         if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
@@ -388,7 +480,6 @@ public class DataSource {
                         return instagram.getCurrentUserInfo();
                     }
                     catch (InstagramException e) {
-                        Log.e(CLASS_TAG, "There was an issue getting UserInfo object");
                         e.printStackTrace();
                         BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
                         return null;
