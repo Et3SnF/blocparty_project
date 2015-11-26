@@ -198,6 +198,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onFBLogin(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }
@@ -207,6 +208,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onFBLogout(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }
@@ -217,6 +219,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onTWLogin(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }
@@ -226,6 +229,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onTWLogout(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }
@@ -237,6 +241,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onIGLogin(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }
@@ -246,6 +251,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onIGLogout(this, adapterPosition);
+                        loginAdapter.notifyItemChanged(adapterPosition);
                     }
                     break;
                 }

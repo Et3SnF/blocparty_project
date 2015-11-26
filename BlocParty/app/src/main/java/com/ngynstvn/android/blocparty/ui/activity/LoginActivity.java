@@ -47,7 +47,7 @@ import twitter4j.conf.ConfigurationBuilder;
 public class LoginActivity extends AppCompatActivity implements TwitterAuthFragment.TwitterAuthFragDelegate,
         LoginFragment.LoginFragmentDelegate {
 
-    private static final String TAG = BPUtils.classTag(LoginActivity.class);
+    private static final String CLASS_TAG = BPUtils.classTag(LoginActivity.class);
     private static int instance_counter = 0;
 
     private Toolbar toolbar;
@@ -120,7 +120,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate() called");
+        Log.e(CLASS_TAG, "onCreate() called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -139,27 +139,23 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
         instance_counter++;
 
-        if(savedInstanceState != null) {
-            String token = sharedPreferences.getString(BPUtils.IG_TOKEN, "");
-            instagram = new Instagram(token);
-            Log.v(TAG, instagram.getClientId());
-        }
-
         isTWAcctRegistered = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IS_TW_ACCT_REG, false);
 
         configurationBuilder = new ConfigurationBuilder();
         instagramService = BlocpartyApplication.getSharedInstagramService();
+        String token = sharedPreferences.getString(BPUtils.IG_TOKEN, "");
+        instagram = new Instagram(token);
     }
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart() called");
+        Log.e(CLASS_TAG, "onStart() called");
         super.onStart();
     }
 
     @Override
     protected void onResume() {
-        Log.e(TAG, "onResume() called");
+        Log.e(CLASS_TAG, "onResume() called");
         super.onResume();
 
         displayLoginFragment();
@@ -222,7 +218,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e(TAG, "onActivityResult() called");
+        Log.e(CLASS_TAG, "onActivityResult() called");
         super.onActivityResult(requestCode, resultCode, data);
         simpleFacebook.onActivityResult(requestCode, resultCode, data);
     }
@@ -230,22 +226,11 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        if(twConsumerKey != null && twConsumerSecret != null && twToken != null && twTokenSecret != null) {
-            outState.putString("twConsumerKey", twConsumerKey);
-            outState.putString("twConsumerSecret", twConsumerSecret);
-            outState.putString("twToken", twToken);
-            outState.putString("twTokenSecret", twTokenSecret);
-        }
-
-        if(igAuthCode != null) {
-            outState.putString("igAuthCode", igAuthCode);
-        }
     }
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause() called");
+        Log.e(CLASS_TAG, "onPause() called");
         super.onPause();
 
         // Store anything in the event the user goes to home screen
@@ -265,7 +250,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         // Store anything related to instagram here.
 
         if(igAuthCode != null) {
-            Log.v(TAG, "igAuthCode stored: " + igAuthCode);
+            Log.v(CLASS_TAG, "igAuthCode stored: " + igAuthCode);
             BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                     BPUtils.IG_AUTH_CODE, igAuthCode);
         }
@@ -273,13 +258,13 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     protected void onStop() {
-        Log.e(TAG, "onStop() called");
+        Log.e(CLASS_TAG, "onStop() called");
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy() called");
+        Log.e(CLASS_TAG, "onDestroy() called");
         super.onDestroy();
 
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
@@ -290,14 +275,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.v(TAG, "onCreateOptionsMenu() called");
+        Log.v(CLASS_TAG, "onCreateOptionsMenu() called");
         getMenuInflater().inflate(R.menu.menu_login, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.v(TAG, "onOptionsItemSelected() called");
+        Log.v(CLASS_TAG, "onOptionsItemSelected() called");
 
         if(item.getTitle() == getString(R.string.log_in_text)) {
 
@@ -318,6 +303,20 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     /**
      *
+     * Authentication Thread
+     *
+     */
+
+    private class AuthenticationThread extends Thread {
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG);
+        }
+    }
+
+    /**
+     *
      * LoginFragment.LoginFragmentDelegate Methods
      *
      */
@@ -327,7 +326,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         fbLogin(simpleFacebook, adapterPosition, new OnLoginListener() {
             @Override
             public void onLogin(String s, List<Permission> list, List<Permission> list1) {
-                Log.i(TAG, "Logged into Facebook");
+                Log.i(CLASS_TAG, "Logged into Facebook");
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, true);
@@ -335,7 +334,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             @Override
             public void onCancel() {
-                Log.i(TAG, "Facebook login Cancelled");
+                Log.i(CLASS_TAG, "Facebook login Cancelled");
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
@@ -343,7 +342,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             @Override
             public void onException(Throwable throwable) {
-                Log.i(TAG, "Facebook Login Exception!");
+                Log.i(CLASS_TAG, "Facebook Login Exception!");
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
@@ -351,7 +350,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             @Override
             public void onFail(String s) {
-                Log.i(TAG, "Facebook Login Failed");
+                Log.i(CLASS_TAG, "Facebook Login Failed");
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
@@ -367,7 +366,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                 public void onLogout() {
                     BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                             BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
-                    Log.i(TAG, "Logged out of Facebook");
+                    Log.i(CLASS_TAG, "Logged out of Facebook");
 
                     Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged out of Facebook",
                             Toast.LENGTH_SHORT).show();
@@ -381,14 +380,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         twitterLogin(new Authoritative() {
             @Override
             public void onSuccess() {
-                Log.v(TAG, "Logged into Twitter");
+                Log.v(CLASS_TAG, "Logged into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, true);
             }
 
             @Override
             public void onFailure() {
-                Log.v(TAG, "Unable to log into Twitter");
+                Log.v(CLASS_TAG, "Unable to log into Twitter");
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
 
@@ -405,7 +404,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                     BPUtils.TW_POSITION, adapterPosition, BPUtils.TW_LOGIN, false);
 
-            Log.v(TAG, "Logged out of Twitter");
+            Log.v(CLASS_TAG, "Logged out of Twitter");
 
             Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged out of Twitter",
                     Toast.LENGTH_SHORT).show();
@@ -417,7 +416,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         igLogin(new Authoritative() {
             @Override
             public void onSuccess() {
-                Log.v(TAG, "Logged into Instagram");
+                Log.v(CLASS_TAG, "Logged into Instagram");
 
                 BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                         BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
@@ -425,7 +424,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             @Override
             public void onFailure() {
-                Log.v(TAG, "Unable to log into Instagram");
+                Log.v(CLASS_TAG, "Unable to log into Instagram");
                 BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
             }
         });
@@ -435,7 +434,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     public void onIGLogout(LoginFragment loginFragment, int adapterPosition) {
         if(isIGConnected()) {
             igLogout();
-            Log.v(TAG, "Logged out of Instagram");
+            Log.v(CLASS_TAG, "Logged out of Instagram");
             BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
                     BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
         }
@@ -464,7 +463,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
      */
 
     private void twitterLogin(final Authoritative authoritative) {
-        Log.v(TAG, "twitterLogin() called");
+        Log.v(CLASS_TAG, "twitterLogin() called");
 
         if(isTwitterConnected()) {
             authoritative.onSuccess();
@@ -475,7 +474,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     }
 
     private void getTWAccessToken() {
-        Log.v(TAG, "getTWAccessToken() called");
+        Log.v(CLASS_TAG, "getTWAccessToken() called");
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -509,7 +508,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                     e.printStackTrace();
                     return null;
                 } catch (NullPointerException e) {
-                    Log.v(TAG, "Unable to activate Twitter");
+                    Log.v(CLASS_TAG, "Unable to activate Twitter");
                     return null;
                 }
             }
@@ -529,7 +528,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     }
 
     private boolean isTwitterConnected() {
-        Log.v(TAG, "isTwitterConnected() called");
+        Log.v(CLASS_TAG, "isTwitterConnected() called");
         return sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
     }
 
@@ -540,14 +539,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
      */
 
     private void igLogin(final Authoritative authoritative) {
-        Log.v(TAG, "igLogin() called");
+        Log.v(CLASS_TAG, "igLogin() called");
 
         igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
 
-        Log.v(TAG, "Current code: " + igAuthCode);
+        Log.v(CLASS_TAG, "Current code: " + igAuthCode);
 
         if(igAuthCode == null) {
-            Log.v(TAG, "Current code is null. Getting another IG Access Token");
+            Log.v(CLASS_TAG, "Current code is null. Getting another IG Access Token");
             getIGAccessToken();
             return;
         }
@@ -560,7 +559,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                     return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
                 }
                 catch(OAuthException e) {
-                    Log.e(TAG, "There was an issue extracting the access token. Trying again...");
+                    Log.e(CLASS_TAG, "There was an issue extracting the access token. Trying again...");
                     authoritative.onFailure();
                     getIGAccessToken();
                     return null;
@@ -572,7 +571,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
                 if(accessToken != null) {
                     instagram = new Instagram(accessToken);
-                    Log.v(TAG, "Instagram authentication successful. Storing object.");
+                    Log.v(CLASS_TAG, "Instagram authentication successful. Storing object.");
                     BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
                     authoritative.onSuccess();
                 }
@@ -585,9 +584,9 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     }
 
     private void getIGAccessToken() {
-        Log.v(TAG, "getIGAccessToken() called");
+        Log.v(CLASS_TAG, "getIGAccessToken() called");
         final String authorizationURL = instagramService.getAuthorizationUrl(EMPTY_TOKEN);
-        Log.v(TAG, authorizationURL);
+        Log.v(CLASS_TAG, authorizationURL);
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -601,12 +600,12 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     }
 
     private void igLogout() {
-        Log.v(TAG, "igLogout() called");
+        Log.v(CLASS_TAG, "igLogout() called");
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
     }
 
     private boolean isIGConnected() {
-        Log.v(TAG, "isIGConnected() called");
+        Log.v(CLASS_TAG, "isIGConnected() called");
         return BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null;
     }
 
@@ -641,7 +640,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             }
         }
         catch (NullPointerException e) {
-            Log.v(TAG, "Some backpressed fragment was null...heading back to a fragment...");
+            Log.v(CLASS_TAG, "Some backpressed fragment was null...heading back to a fragment...");
             displayLoginFragment();
         }
     }
