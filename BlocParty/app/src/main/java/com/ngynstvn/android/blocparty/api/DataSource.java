@@ -29,7 +29,6 @@ import com.sromku.simple.fb.utils.PictureAttributes;
 
 import org.jinstagram.Instagram;
 import org.jinstagram.entity.users.basicinfo.UserInfo;
-import org.jinstagram.entity.users.feed.MediaFeed;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 import org.json.JSONArray;
@@ -371,6 +370,12 @@ public class DataSource {
         }
     }
 
+    /**
+     *
+     * Fetching Threads
+     *
+     */
+
     private class FetchInstagramFeedTask extends Thread {
 
         private Handler instagramHandler;
@@ -438,7 +443,6 @@ public class DataSource {
                         addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
                                 igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
                     }
-
                 }
                 catch (InstagramException e) {
                     Log.e(CLASS_TAG, "There was an issue getting Instagram information.");
@@ -462,144 +466,48 @@ public class DataSource {
         }
     }
 
-    public void fetchInstagramInformation(final Instagram instagram) {
 
-        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null) {
-            Log.e(CLASS_TAG, "Instagram is logged in. Getting profile info.");
 
-            new AsyncTask<Void, Void, UserInfo>() {
-                @Override
-                protected void onPreExecute() {
-                    clearTable(BPUtils.POST_ITEM_TABLE);
+    public void fetchInstagramInformation(Instagram instagram) {
+        FetchInstagramFeedTask fetchInstagramFeedTask = new FetchInstagramFeedTask(instagram);
+        fetchInstagramFeedTask.start();
+    }
+
+    private class FetchAllPostItemsTask extends Thread {
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "FetchInstagramFeedTask");
+
+            Looper.prepare();
+
+            postItemArrayList.clear();
+
+            SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+
+            final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
+                    + " order by " + BPUtils.PUBLISH_DATE + " desc "
+                    + " limit 20;";
+
+            Cursor cursor = database.rawQuery(statement, null);
+
+            if(cursor.moveToFirst()) {
+                do {
+                    postItemArrayList.add(itemFromCursor(cursor));
                 }
+                while (cursor.moveToNext());
+            }
 
-                @Override
-                protected UserInfo doInBackground(Void... params) {
+            cursor.close();
 
-                    try {
-                        return instagram.getCurrentUserInfo();
-                    }
-                    catch (InstagramException e) {
-                        e.printStackTrace();
-                        BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-                        return null;
-                    }
-                }
-
-                @Override
-                protected void onPostExecute(UserInfo userInfo) {
-
-                    if (userInfo != null) {
-                            Log.v(CLASS_TAG, userInfo.getData().getUsername());
-                            Log.v(CLASS_TAG, userInfo.getData().getProfilePicture());
-                            Log.v(CLASS_TAG, userInfo.getData().getFullName());
-
-                            new AsyncTask<Void, Void, List<MediaFeedData>>() {
-                                @Override
-                                protected List<MediaFeedData> doInBackground(Void... params) {
-
-                                    MediaFeed mediaFeed = null;
-
-                                    try {
-                                        mediaFeed = instagram.getUserFeeds();
-                                        return mediaFeed.getData();
-                                    }
-                                    catch (InstagramException e) {
-                                        e.printStackTrace();
-                                        Log.v(CLASS_TAG, "There was something wrong with the MediaFeed object");
-                                        BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
-                                                BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-                                        return null;
-                                    }
-                                }
-
-                                @Override
-                                protected void onPostExecute(List<MediaFeedData> mediaFeedDatas) {
-
-                                    int counter = 0;
-
-                                    if(mediaFeedDatas != null) {
-                                        for (MediaFeedData mediaFeedData : mediaFeedDatas) {
-//                                            Log.v(CLASS_TAG, "User: " + mediaFeedData.getUser().getFullName());
-//                                            Log.v(CLASS_TAG, "User ID: " + mediaFeedData.getUser().getId());
-//                                            Log.v(CLASS_TAG, "Created time: " + mediaFeedData.getCreatedTime());
-//                                            Log.v(CLASS_TAG, "Image Link: " + mediaFeedData.getImages().getStandardResolution().getImageUrl());
-
-                                            igOPName = mediaFeedData.getUser().getFullName();
-
-                                            if(igOPName.length() == 0) {
-                                                igOPName = mediaFeedData.getUser().getUserName();
-                                            }
-
-                                            igOPProfileId = Long.parseLong(mediaFeedData.getUser().getId());
-//                                            Log.v(CLASS_TAG, "Raw ID: " + mediaFeedData.getId());
-//                                            Log.v(CLASS_TAG, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
-                                            igPostId = Long.parseLong(mediaFeedData.getId().split("_")[0]);
-                                            igProfilePicUrl = mediaFeedData.getUser().getProfilePictureUrl();
-                                            igPostImageUrl = mediaFeedData.getImages().getStandardResolution().getImageUrl();
-
-                                            try {
-//                                                Log.v(CLASS_TAG, "Text: " + mediaFeedData.getCaption().getText());
-                                                igPostCaption = mediaFeedData.getCaption().getText();
-                                            } catch (NullPointerException e) {
-                                                igPostCaption = "";
-                                                Log.v(CLASS_TAG, "Unable to get text for " + mediaFeedData.getUser().getFullName());
-                                            }
-
-                                            try {
-//                                                Log.v(CLASS_TAG, "CT: " + mediaFeedData.getCaption().getCreatedTime());
-                                                igPostPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
-                                            }
-                                            catch (NullPointerException e) {
-                                                Log.v(CLASS_TAG, "Unable to get CT for " + mediaFeedData.getUser().getFullName());
-                                            }
-
-                                            counter++;
-
-//                                            Log.v(CLASS_TAG, "Instagram Items Inserted into DB: " + counter);
-
-                                            addPostItemToDB(igOPName, igOPProfileId, igProfilePicUrl,
-                                                    igPostId, igPostImageUrl, igPostCaption, igPostPublishDate, igPostLiked);
-                                        }
-                                    }
-                                }
-
-                            }.execute();
-                        }
-                    }
-            }.execute();
+            Looper.loop();
         }
-        else {
-            Log.v(CLASS_TAG, "Something went wrong in retrieving Instagram data");
-        }
-
     }
 
     public void fetchAllPostItems() {
         Log.v(CLASS_TAG, "fetchAllPostItems() called");
-
-        // Clear the current ArrayList and then insert new items into it.
-
-        postItemArrayList.clear();
-
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-
-        final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
-                + " order by " + BPUtils.PUBLISH_DATE + " desc "
-                + " limit 20;";
-
-        Cursor cursor = database.rawQuery(statement, null);
-
-        if(cursor.moveToFirst()) {
-            do {
-                postItemArrayList.add(itemFromCursor(cursor));
-//                Log.v(CLASS_TAG, "Current arrayList size: " + postItemArrayList.size());
-            }
-            while (cursor.moveToNext());
-        }
-
-        cursor.close();
-
+        FetchAllPostItemsTask fetchAllPostItemsTask = new FetchAllPostItemsTask();
+        fetchAllPostItemsTask.start();
     }
 
     public void fetchFilteredPostItems(String collectionName) {
