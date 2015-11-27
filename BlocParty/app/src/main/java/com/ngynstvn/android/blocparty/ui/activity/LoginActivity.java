@@ -69,13 +69,10 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     // Twitter Static Variables
 
     private static Twitter twitter;
-    private static TwitterFactory twitterFactory;
-    private static ConfigurationBuilder configurationBuilder;
     private static String twConsumerKey;
     private static String twConsumerSecret;
     private static String twToken;
     private static String twTokenSecret;
-    private boolean isTWAcctRegistered;
 
     // Instagram Static Variables
 
@@ -109,17 +106,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         return loginActivityDelegate.get();
     }
 
-    /**
-     *
-     * CALLBACK INTERFACE
-     *
-     */
-
-    private interface Authoritative {
-        void onSuccess();
-        void onFailure();
-    }
-
     // ----- Lifecycle Methods ----- //
 
     @Override
@@ -139,11 +125,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         }
 
         instance_counter++;
-
-        isTWAcctRegistered = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IS_TW_ACCT_REG, false);
-        configurationBuilder = new ConfigurationBuilder();
-
-        instagramService = BlocpartyApplication.getSharedInstagramService();
     }
 
     @Override
@@ -163,9 +144,8 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         authenticationThread.start();
 
         simpleFacebook = SimpleFacebook.getInstance(this);
-        BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT, simpleFacebook);
+        instagramService = BlocpartyApplication.getSharedInstagramService();
 
-        // Must place sharedPreference here for it to save states properly
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
     }
 
@@ -250,6 +230,10 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             Looper.prepare();
             authHandler = new Handler();
 
+            if(simpleFacebook.isLogin()) {
+                BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT, simpleFacebook);
+            }
+
             if(isTwitterConnected()) {
                 twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
             }
@@ -270,56 +254,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     public void onFBLogin(LoginFragment loginFragment, final int adapterPosition) {
-        fbLogin(simpleFacebook, adapterPosition, new OnLoginListener() {
-            @Override
-            public void onLogin(String s, List<Permission> list, List<Permission> list1) {
-                Log.i(CLASS_TAG, "Logged into Facebook");
-
-                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                        BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, true);
-            }
-
-            @Override
-            public void onCancel() {
-                Log.i(CLASS_TAG, "Facebook login Cancelled");
-
-                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                        BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
-            }
-
-            @Override
-            public void onException(Throwable throwable) {
-                Log.i(CLASS_TAG, "Facebook Login Exception!");
-
-                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                        BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
-            }
-
-            @Override
-            public void onFail(String s) {
-                Log.i(CLASS_TAG, "Facebook Login Failed");
-
-                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                        BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
-            }
-        });
+        BPUtils.logMethod(CLASS_TAG);
+        facebookLogin();
     }
 
     @Override
     public void onFBLogout(LoginFragment loginFragment, final int adapterPosition) {
-        if(simpleFacebook.isLogin()) {
-            fbLogout(simpleFacebook, adapterPosition, new OnLogoutListener() {
-                @Override
-                public void onLogout() {
-                    BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                            BPUtils.FB_POSITION, adapterPosition, BPUtils.FB_LOGIN, false);
-                    Log.i(CLASS_TAG, "Logged out of Facebook");
-
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Logged out of Facebook",
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+        BPUtils.logMethod(CLASS_TAG);
+        facebookLogout();
     }
 
     @Override
@@ -365,12 +307,57 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
      *
      */
 
-    private void fbLogin(SimpleFacebook simpleFacebook, int adapterPosition, OnLoginListener onLoginListener) {
-        simpleFacebook.login(onLoginListener);
+    private void facebookLogin() {
+        authHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "facebookLogin");
+
+                simpleFacebook.login(new OnLoginListener() {
+                    @Override
+                    public void onLogin(String s, List<Permission> list, List<Permission> list1) {
+                        Log.i(CLASS_TAG, "Logged into Facebook");
+                        BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT, simpleFacebook);
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_LOGIN, true);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Log.i(CLASS_TAG, "Facebook login Cancelled");
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_LOGIN, false);
+                    }
+
+                    @Override
+                    public void onException(Throwable throwable) {
+                        Log.i(CLASS_TAG, "Facebook Login Exception!");
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_LOGIN, false);
+                    }
+
+                    @Override
+                    public void onFail(String s) {
+                        Log.i(CLASS_TAG, "Facebook Login Failed");
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_LOGIN, false);
+                    }
+                });
+            }
+        });
     }
 
-    private void fbLogout(SimpleFacebook simpleFacebook, int adapterPosition, OnLogoutListener onLogoutListener) {
-        simpleFacebook.logout(onLogoutListener);
+    private void facebookLogout() {
+        authHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "facebookLogout");
+
+                simpleFacebook.logout(new OnLogoutListener() {
+                    @Override
+                    public void onLogout() {
+                        BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT);
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_LOGIN, false);
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -404,10 +391,10 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                         Log.v(CLASS_TAG, "Storing Twitter Object...");
                         BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
                         BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, true);
+                        return;
                     }
-                    else {
-                        getTwitterAccessToken();
-                    }
+
+                    BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, false);
                 }
             });
         }
