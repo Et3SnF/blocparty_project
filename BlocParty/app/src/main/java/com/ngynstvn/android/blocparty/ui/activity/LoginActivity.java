@@ -60,8 +60,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     // Auth Handler
     private Handler authHandler;
 
-    private TwitterAuthFragment twitterAuthFragment;
-
     private SharedPreferences sharedPreferences;
 
     // Facebook Static Variables
@@ -190,20 +188,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         super.onPause();
 
         // Store anything in the event the user goes to home screen
-
-        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                BPUtils.TW_CONSUMER_KEY, twConsumerKey);
-        BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                BPUtils.TW_CONSUMER_SECRET, twConsumerSecret);
-
-        if(twToken != null && twConsumerSecret!= null) {
-            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                    BPUtils.TW_ACCESS_TOKEN, twToken);
-            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                    BPUtils.TW_ACCESS_TOKEN_SECRET, twTokenSecret);
-        }
-
-        // Store anything related to instagram here.
+        preserveTwitterObject();
         preserveInstagramObject();
     }
 
@@ -513,6 +498,23 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         Log.v(CLASS_TAG, "Logged out of Twitter");
     }
 
+    private void preserveTwitterObject() {
+        authHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "preserveTwitterObject");
+
+                if(twitter != null) {
+                    BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.TW_OBJECT, twitter);
+                    return;
+                }
+
+                Log.v(CLASS_TAG, "There was nothing to preserve the state of the Twitter object");
+            }
+        });
+    }
+
     /**
      *
      * Instagram methods
@@ -599,15 +601,12 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     }
 
     private void preserveInstagramObject() {
-
         authHandler.post(new Runnable() {
             @Override
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "preserveInstagramObject");
 
                 if(instagram != null) {
-                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                            BPUtils.IG_AUTH_CODE, igAuthCode);
                     BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                             BPUtils.IG_OBJECT, instagram);
                     return;
@@ -616,7 +615,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                 Log.v(CLASS_TAG, "There was nothing to preserve the state of the Instagram object");
             }
         });
-
     }
 
     private void instagramLogout() {
