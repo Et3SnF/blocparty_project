@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -27,8 +29,9 @@ import com.sromku.simple.fb.listeners.OnLogoutListener;
 import org.jinstagram.Instagram;
 import org.jinstagram.auth.exceptions.OAuthException;
 import org.jinstagram.auth.model.Token;
-import org.jinstagram.auth.model.Verifier;
 import org.jinstagram.auth.oauth.InstagramService;
+import org.jinstagram.entity.users.basicinfo.UserInfo;
+import org.jinstagram.exceptions.InstagramException;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -53,6 +56,9 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     private Toolbar toolbar;
     private Menu menu;
     private MenuItem menuItem;
+
+    // Auth Handler
+    private Handler authHandler;
 
     private TwitterAuthFragment twitterAuthFragment;
 
@@ -120,7 +126,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(CLASS_TAG, "onCreate() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -140,25 +146,26 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         instance_counter++;
 
         isTWAcctRegistered = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IS_TW_ACCT_REG, false);
-
         configurationBuilder = new ConfigurationBuilder();
+
         instagramService = BlocpartyApplication.getSharedInstagramService();
-        String token = sharedPreferences.getString(BPUtils.IG_TOKEN, "");
-        instagram = new Instagram(token);
     }
 
     @Override
     protected void onStart() {
-        Log.e(CLASS_TAG, "onStart() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStart();
     }
 
     @Override
     protected void onResume() {
-        Log.e(CLASS_TAG, "onResume() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onResume();
 
         displayLoginFragment();
+
+        AuthenticationThread authenticationThread = new AuthenticationThread();
+        authenticationThread.start();
 
         simpleFacebook = SimpleFacebook.getInstance(this);
         BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.FB_OBJECT, simpleFacebook);
@@ -207,30 +214,24 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             twitter = twitterFactory.getInstance();
         }
-
-        // Resume any Instagram activity
-
-        if(isIGConnected()) {
-            instagram = new Instagram(getString(R.string.igc));
-            BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
-        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e(CLASS_TAG, "onActivityResult() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onActivityResult(requestCode, resultCode, data);
         simpleFacebook.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        BPUtils.logMethod(CLASS_TAG);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onPause() {
-        Log.e(CLASS_TAG, "onPause() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onPause();
 
         // Store anything in the event the user goes to home screen
@@ -248,23 +249,18 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         }
 
         // Store anything related to instagram here.
-
-        if(igAuthCode != null) {
-            Log.v(CLASS_TAG, "igAuthCode stored: " + igAuthCode);
-            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                    BPUtils.IG_AUTH_CODE, igAuthCode);
-        }
+        preserveInstagramObject();
     }
 
     @Override
     protected void onStop() {
-        Log.e(CLASS_TAG, "onStop() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(CLASS_TAG, "onDestroy() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDestroy();
 
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
@@ -275,14 +271,14 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.v(CLASS_TAG, "onCreateOptionsMenu() called");
+        BPUtils.logMethod(CLASS_TAG);
         getMenuInflater().inflate(R.menu.menu_login, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.v(CLASS_TAG, "onOptionsItemSelected() called");
+        BPUtils.logMethod(CLASS_TAG);
 
         if(item.getTitle() == getString(R.string.log_in_text)) {
 
@@ -308,10 +304,17 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
      */
 
     private class AuthenticationThread extends Thread {
-
         @Override
         public void run() {
-            BPUtils.logMethod(CLASS_TAG);
+            BPUtils.logMethod(CLASS_TAG, "AuthenticationThread");
+            Looper.prepare();
+            authHandler = new Handler();
+
+            if(isInstagramConnected()) {
+                instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
+            }
+
+            Looper.loop();
         }
     }
 
@@ -413,31 +416,19 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     @Override
     public void onIGLogin(LoginFragment loginFragment, final int adapterPosition) {
-        igLogin(new Authoritative() {
-            @Override
-            public void onSuccess() {
-                Log.v(CLASS_TAG, "Logged into Instagram");
-
-                BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                        BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, true);
-            }
-
-            @Override
-            public void onFailure() {
-                Log.v(CLASS_TAG, "Unable to log into Instagram");
-                BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-            }
-        });
+        BPUtils.logMethod(CLASS_TAG);
+        authenticateInstagram();
     }
 
     @Override
-    public void onIGLogout(LoginFragment loginFragment, int adapterPosition) {
-        if(isIGConnected()) {
-            igLogout();
-            Log.v(CLASS_TAG, "Logged out of Instagram");
-            BPUtils.putSPrefLoginValue(sharedPreferences, BPUtils.FILE_NAME,
-                    BPUtils.IG_POSITION, adapterPosition, BPUtils.IG_LOGIN, false);
-        }
+    public void onIGLogout(LoginFragment loginFragment, final int adapterPosition) {
+        BPUtils.logMethod(CLASS_TAG);
+        authHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                instagramLogout();
+            }
+        });
     }
 
     // ---- SOCIAL MEDIA METHODS ----- //
@@ -538,75 +529,115 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
      *
      */
 
-    private void igLogin(final Authoritative authoritative) {
-        Log.v(CLASS_TAG, "igLogin() called");
+    private void authenticateInstagram() {
+        if(authHandler != null) {
+            authHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    BPUtils.logMethod(CLASS_TAG, "authenticateInstagram");
+                    igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
 
-        igAuthCode = sharedPreferences.getString(BPUtils.IG_AUTH_CODE, null);
+                    if (igAuthCode == null) {
+                        getInstagramToken();
+                        return;
+                    }
 
-        Log.v(CLASS_TAG, "Current code: " + igAuthCode);
+                    try {
+                        // Authenticate Instagram
+                        instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
 
-        if(igAuthCode == null) {
-            Log.v(CLASS_TAG, "Current code is null. Getting another IG Access Token");
-            getIGAccessToken();
-            return;
+                        if(isInstagramObjValid(instagram)) {
+                            Log.v(CLASS_TAG, "Instagram authentication successful. Storing object.");
+                            BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
+                        }
+                        else {
+                            Log.e(CLASS_TAG, "There was an issue with validity of Instagram instance.");
+                            getInstagramToken();
+                        }
+                    }
+                    catch (OAuthException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
-
-        new AsyncTask<Void, Void, Token>() {
-            @Override
-            protected Token doInBackground(Void... params) {
-                try {
-                    Verifier verifier = new Verifier(igAuthCode);
-                    return instagramService.getAccessToken(EMPTY_TOKEN, verifier);
-                }
-                catch(OAuthException e) {
-                    Log.e(CLASS_TAG, "There was an issue extracting the access token. Trying again...");
-                    authoritative.onFailure();
-                    getIGAccessToken();
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Token accessToken) {
-
-                if(accessToken != null) {
-                    instagram = new Instagram(accessToken);
-                    Log.v(CLASS_TAG, "Instagram authentication successful. Storing object.");
-                    BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
-                    authoritative.onSuccess();
-                }
-                else {
-                    authoritative.onFailure();
-                }
-
-            }
-        }.execute();
     }
 
-    private void getIGAccessToken() {
-        Log.v(CLASS_TAG, "getIGAccessToken() called");
-        final String authorizationURL = instagramService.getAuthorizationUrl(EMPTY_TOKEN);
+    private void getInstagramToken() {
+        BPUtils.logMethod(CLASS_TAG);
+        Log.v(CLASS_TAG, "Current code is null. Getting an IG Access Token");
+        String authorizationURL = instagramService.getAuthorizationUrl(EMPTY_TOKEN);
         Log.v(CLASS_TAG, authorizationURL);
+        getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
+                IGAuthFragment.newInstance(authorizationURL), "ig_auth_fragment")
+                .addToBackStack("ig_auth_fragment").commit();
+    }
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                getFragmentManager().beginTransaction().addToBackStack("ig_auth_fragment")
-                        .replace(R.id.fl_activity_blocparty_login, IGAuthFragment.newInstance(authorizationURL),
-                                "ig_auth_fragment").commit();
-                return null;
+    private boolean isInstagramObjValid(Instagram instagram) {
+        BPUtils.logMethod(CLASS_TAG);
+
+        // Ensure this method is running anywhere but UI Thread!!
+
+        try {
+            UserInfo userInfo = instagram.getCurrentUserInfo();
+            String userName = userInfo.getData().getUsername();
+            String userFullName = userInfo.getData().getFullName();
+            String userId = userInfo.getData().getId();
+
+            if(userName == null || userId == null) {
+                Log.e(CLASS_TAG, "One entry of user information is null. Test failed.");
+                return false;
             }
-        }.execute();
+
+            Log.v(CLASS_TAG, "Can I print user information?:");
+            Log.v(CLASS_TAG, "Username: " + userName);
+            Log.v(CLASS_TAG, "Full Name: " + userFullName);
+            Log.v(CLASS_TAG, "User ID: " + userId);
+            Log.v(CLASS_TAG, "Information printed successfully. TEST PASSED");
+            return true;
+        }
+        catch (InstagramException e) {
+            Log.e(CLASS_TAG, "Returned InstagramException. Test Failed");
+            e.printStackTrace();
+            return false;
+        }
+        catch (NullPointerException e) {
+            Log.e(CLASS_TAG, "Returned Instagram NullPointerException. Test Failed");
+            return false;
+        }
     }
 
-    private void igLogout() {
-        Log.v(CLASS_TAG, "igLogout() called");
+    private void preserveInstagramObject() {
+
+        authHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "preserveInstagramObject");
+
+                if(instagram != null) {
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.IG_AUTH_CODE, igAuthCode);
+                    BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                            BPUtils.IG_OBJECT, instagram);
+                    return;
+                }
+
+                Log.v(CLASS_TAG, "There was nothing to preserve the state of the Instagram object");
+            }
+        });
+
+    }
+
+    private void instagramLogout() {
+        BPUtils.logMethod(CLASS_TAG);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
+        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_OBJECT);
     }
 
-    private boolean isIGConnected() {
-        Log.v(CLASS_TAG, "isIGConnected() called");
-        return BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null) != null;
+    private boolean isInstagramConnected() {
+        // Based connectivity on the validity of the instance of Instagram
+        BPUtils.logMethod(CLASS_TAG);
+        return isInstagramObjValid(BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT));
     }
 
     /**
