@@ -50,6 +50,7 @@ public class BPUtils {
 
     // Twitter Variables
 
+    public static final String TW_OBJECT = "tw_object";
     public static final String TW_LOGIN = "isTWLoggedIn";
     public static final String TW_POSITION = "twAdapterPosition";
     public static final String TW_ACCESS_TOKEN = "twAccessToken";

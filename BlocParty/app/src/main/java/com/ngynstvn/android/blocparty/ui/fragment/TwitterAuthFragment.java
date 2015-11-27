@@ -1,6 +1,7 @@
 package com.ngynstvn.android.blocparty.ui.fragment;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,7 +32,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterAuthFragment extends Fragment {
 
-    private static final String TAG = BPUtils.classTag(TwitterAuthFragment.class);
+    private static final String CLASS_TAG = BPUtils.classTag(TwitterAuthFragment.class);
 
     private static final String TOKEN_URL = "request_token_url";
     private static int counter = 0;
@@ -68,14 +69,23 @@ public class TwitterAuthFragment extends Fragment {
 
     // ----- Lifecycle Methods ----- //
 
+
+    @Override
+    public void onAttach(Activity activity) {
+        BPUtils.logMethod(CLASS_TAG, "API <= 23");
+        super.onAttach(activity);
+    }
+
     @Override
     public void onAttach(Context context) {
+        BPUtils.logMethod(CLASS_TAG, "API > 23");
         super.onAttach(context);
         twitterAuthFragDelegate = new WeakReference<TwitterAuthFragDelegate>((TwitterAuthFragDelegate) getActivity());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -83,6 +93,7 @@ public class TwitterAuthFragment extends Fragment {
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        BPUtils.logMethod(CLASS_TAG);
         View view = inflater.inflate(R.layout.auth_webview, container, false);
 
         webView = (WebView) view.findViewById(R.id.wv_twitter_auth);
@@ -97,6 +108,7 @@ public class TwitterAuthFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        BPUtils.logMethod(CLASS_TAG);
         if(menu != null) {
             menu.findItem(R.id.action_login_button).setVisible(false).setEnabled(false);
         }
@@ -108,8 +120,8 @@ public class TwitterAuthFragment extends Fragment {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            Log.v(TAG, "shouldOverrideUrlLoading() called");
-            Log.v(TAG, "Current URL in shouldOverrideUrlLoading(): " + url);
+            Log.v(CLASS_TAG, "shouldOverrideUrlLoading() called");
+            Log.v(CLASS_TAG, "Current URL in shouldOverrideUrlLoading(): " + url);
 
             String dummyURL = "https://mobile.twitter.com/?oauth_token=";
 
@@ -118,7 +130,7 @@ public class TwitterAuthFragment extends Fragment {
 
                     if(counter > 0) {
                         counter--;
-                        Log.v(TAG, "Current Counter: " + counter);
+                        Log.v(CLASS_TAG, "Current Counter: " + counter);
                     }
 
                     String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
@@ -162,7 +174,7 @@ public class TwitterAuthFragment extends Fragment {
                 }
             }
             catch(NullPointerException e) {
-                Log.v(TAG, "NullPointerException in shouldOverrideUrlLoading. There was an issue " +
+                Log.v(CLASS_TAG, "NullPointerException in shouldOverrideUrlLoading. There was an issue " +
                         "in line: " + Thread.currentThread().getStackTrace()[2].getLineNumber());
 
                 e.printStackTrace();
@@ -182,10 +194,10 @@ public class TwitterAuthFragment extends Fragment {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            Log.v(TAG, "Current URL in onPageFinished(): " + url);
+            Log.v(CLASS_TAG, "Current URL in onPageFinished(): " + url);
 
             counter++;
-            Log.v(TAG, "Current counter: " + counter);
+            Log.v(CLASS_TAG, "Current counter: " + counter);
 
             if(url.equals("https://api.twitter.com/oauth/authorize") && counter > 1) {
                 getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,

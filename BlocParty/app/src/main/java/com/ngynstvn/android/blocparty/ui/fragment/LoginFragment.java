@@ -88,8 +88,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     @Override
     public void onAttach(Activity activity) {
-        Log.v(CLASS_TAG, "API <= 23");
-        BPUtils.logMethod(CLASS_TAG);
+        BPUtils.logMethod(CLASS_TAG, "API <= 23");
         super.onAttach(activity);
         loginFragmentDelegate = new WeakReference<LoginFragmentDelegate>((LoginFragmentDelegate) activity);
     }
