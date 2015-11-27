@@ -418,6 +418,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                     if(isTwitterObjValid(twitter)) {
                         Log.v(CLASS_TAG, "Storing Twitter Object...");
                         BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_OBJECT, twitter);
+                        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, true);
                     }
                     else {
                         getTwitterAccessToken();
