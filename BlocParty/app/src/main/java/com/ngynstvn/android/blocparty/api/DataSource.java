@@ -50,6 +50,11 @@ public class DataSource {
 
     private static final String CLASS_TAG = BPUtils.classTag(DataSource.class);
 
+    // Handler Variables
+    private Handler databaseHandler;
+    private Handler pullHandler;
+    private Handler pushHandler;
+
     private static String fbOPName = "";
     private static long fbOPProfileId = 0L;
     private static long fbPostId = 0L;
@@ -91,21 +96,14 @@ public class DataSource {
     public DataSource(Context context) {
         Log.v(CLASS_TAG, "DataSource instantiated");
 
-        PostItemTable postItemTable = new PostItemTable();
-        CollectionTable collectionTable = new CollectionTable();
-        UserTable userTable = new UserTable();
-
         postItemArrayList = new ArrayList<PostItem>();
         collectionArrayList = new ArrayList<Collection>();
         fbUserArrayList = new ArrayList<User>();
         twUserArrayList = new ArrayList<User>();
         igUserArrayList = new ArrayList<User>();
 
-        // This will be network dependent so the application starts out at a clean slate every time.
-        databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
-                postItemTable, collectionTable, userTable);
-
-        database = databaseOpenHelper.getWritableDatabase();
+        DatabaseThread databaseThread = new DatabaseThread();
+        databaseThread.start();
     }
 
     public DatabaseOpenHelper getDatabaseOpenHelper() {
@@ -368,6 +366,61 @@ public class DataSource {
                     }
                 }
             }.execute();
+        }
+    }
+
+    /**
+     *
+     * Thread Classes
+     *
+     */
+
+    private class DatabaseThread extends Thread {
+
+        // Put any database tables here
+
+        private PostItemTable postItemTable;
+        private CollectionTable collectionTable;
+        private UserTable userTable;
+
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "DatabaseThread");
+
+            Looper.prepare();
+
+            databaseHandler = new Handler();
+            
+            postItemTable = new PostItemTable();
+            collectionTable = new CollectionTable();
+            userTable = new UserTable();
+
+            databaseOpenHelper = new DatabaseOpenHelper(BlocpartyApplication.getSharedInstance(),
+                    postItemTable, collectionTable, userTable);
+
+            database = databaseOpenHelper.getWritableDatabase();
+
+            Looper.loop();
+        }
+    }
+
+    private class PullThread extends Thread {
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "PullThread");
+            Looper.prepare();
+            pullHandler = new Handler();
+            Looper.loop();
+        }
+    }
+
+    private class PushThread extends Thread {
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "PushThread");
+            Looper.prepare();
+            pushHandler = new Handler();
+            Looper.loop();
         }
     }
 
