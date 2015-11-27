@@ -459,7 +459,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
             getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                     TwitterAuthFragment.newInstance(requestToken.getAuthorizationURL()),
-                    "tw_auth_fragment").commit();
+                    "tw_auth_fragment").addToBackStack("tw_auth_fragment").commit();
         }
         catch (TwitterException e) {
             e.printStackTrace();

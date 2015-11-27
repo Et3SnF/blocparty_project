@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +25,10 @@ import com.ngynstvn.android.blocparty.R;
 import java.lang.ref.WeakReference;
 
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.User;
+import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 /**
@@ -38,6 +43,8 @@ public class TwitterAuthFragment extends Fragment {
     private static int counter = 0;
 
     private WebView webView;
+
+    private Handler twitterAuthHandler;
 
     public static TwitterAuthFragment newInstance(String value) {
         TwitterAuthFragment twitterAuthFragment = new TwitterAuthFragment();
@@ -88,6 +95,8 @@ public class TwitterAuthFragment extends Fragment {
         BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        TwitterAuthTestTask twitterAuthTestTask = new TwitterAuthTestTask();
+        twitterAuthTestTask.start();
     }
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
@@ -125,66 +134,61 @@ public class TwitterAuthFragment extends Fragment {
 
             String dummyURL = "https://mobile.twitter.com/?oauth_token=";
 
-            try {
-                if(url.contains(dummyURL)) {
+            if(url.contains(dummyURL)) {
+                twitterAuthHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.logMethod(CLASS_TAG, "shouldOverrideUrlLoading (oauth_token)");
 
-                    if(counter > 0) {
-                        counter--;
-                        Log.v(CLASS_TAG, "Current Counter: " + counter);
+                        if(counter > 0) {
+                            counter--;
+                            Log.v(CLASS_TAG, "Current Counter: " + counter);
+                        }
+
+                        String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                                .getString(BPUtils.TW_CONSUMER_KEY, null);
+                        String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                                .getString(BPUtils.TW_CONSUMER_SECRET, null);
+                        String token = getString(R.string.tat);
+                        String tokenSecret = getString(R.string.tats);
+
+                        TwitterFactory twitterFactory = new TwitterFactory(getTwitterConfigBuilder(consumerKey,
+                                consumerKeySecret, token, tokenSecret));
+                        Twitter twitter = twitterFactory.getInstance();
+
+                        if(isTwitterObjValid(twitter)) {
+                            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                    BPUtils.TW_ACCESS_TOKEN, token);
+
+                            BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                    BPUtils.TW_ACCESS_TOKEN_SECRET, tokenSecret);
+
+                            BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                    BPUtils.TW_OBJECT, twitter);
+
+                            BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                    BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, true);
+
+                            returnToLoginFragment();
+                        }
+                        else {
+                            BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                    BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
+
+                            Toast.makeText(BlocpartyApplication.getSharedInstance(), "There was an issue " +
+                                    "with the Twitter service. Try again later.", Toast.LENGTH_LONG).show();
+
+                            returnToLoginFragment();
+                        }
                     }
+                });
 
-                    String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
-                            .getString(BPUtils.TW_CONSUMER_KEY, null);
-                    String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
-                            .getString(BPUtils.TW_CONSUMER_SECRET, null);
-                    String token = getString(R.string.tat);
-                    String tokenSecret = getString(R.string.tats);
-
-                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN, token);
-
-                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                            BPUtils.TW_ACCESS_TOKEN_SECRET, tokenSecret);
-
-                    ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-
-                    configurationBuilder
-                            .setOAuthConsumerKey(consumerKey)
-                            .setOAuthConsumerSecret(consumerKeySecret)
-                            .setOAuthAccessToken(token)
-                            .setOAuthAccessTokenSecret(tokenSecret);
-
-                    TwitterFactory twitterFactory = new TwitterFactory(configurationBuilder.build());
-                    Twitter twitter = twitterFactory.getInstance();
-
-                    if(twitter != null) {
-                        getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
-                                LoginFragment.newInstance()).commit();
-                        BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                                BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, true);
-                    }
-
-                    return true;
-                }
-                else if(url.contains("https://api.twitter.com/login/error?")) {
-                    view.loadUrl("https://en.wikipedia.org/wiki/Uh_oh");
-                    Toast.makeText(BlocpartyApplication.getSharedInstance(), "Wrong Twitter username/password " +
-                            "combination", Toast.LENGTH_LONG).show();
-                    return true;
-                }
+                return true;
             }
-            catch(NullPointerException e) {
-                Log.v(CLASS_TAG, "NullPointerException in shouldOverrideUrlLoading. There was an issue " +
-                        "in line: " + Thread.currentThread().getStackTrace()[2].getLineNumber());
-
-                e.printStackTrace();
-
-                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
-
-                Toast.makeText(BlocpartyApplication.getSharedInstance(), "There was an issue during " +
-                        "the Twitter authentication process", Toast.LENGTH_LONG).show();
-
+            else if(url.contains("https://api.twitter.com/login/error?")) {
+                view.loadUrl("https://en.wikipedia.org/wiki/Uh_oh");
+                Toast.makeText(BlocpartyApplication.getSharedInstance(), "Wrong Twitter username/password " +
+                        "combination", Toast.LENGTH_LONG).show();
                 return true;
             }
 
@@ -200,39 +204,117 @@ public class TwitterAuthFragment extends Fragment {
             Log.v(CLASS_TAG, "Current counter: " + counter);
 
             if(url.equals("https://api.twitter.com/oauth/authorize") && counter > 1) {
-                getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
-                        LoginFragment.newInstance()).commit();
 
-                SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+                twitterAuthHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.logMethod(CLASS_TAG, "onPageFinished");
 
-                if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_KEY);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_SECRET);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
-                }
+                        removeTwitterValues();
 
-                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
+                        BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
+
+                        returnToLoginFragment();
+                    }
+                });
             }
 
             if(url.equals("https://en.m.wikipedia.org/wiki/Uh_oh")) {
                 counter = 0;
+
+                twitterAuthHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.logMethod(CLASS_TAG, "onPageFinished");
+
+                        removeTwitterValues();
+
+                        BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
+                                BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
+
+                        returnToLoginFragment();
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     *
+     * Thread class
+     *
+     */
+
+    private class TwitterAuthTestTask extends Thread {
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "InstagramAuthTestTask");
+            Looper.prepare();
+            twitterAuthHandler = new Handler();
+            Looper.loop();
+        }
+    }
+
+    private boolean isTwitterObjValid(Twitter twitter) {
+        BPUtils.logMethod(CLASS_TAG);
+
+        try {
+            User user = twitter.verifyCredentials();
+
+            Log.v(CLASS_TAG, "Printing out user information...");
+            Log.v(CLASS_TAG, "User Screen Name: " + user.getScreenName());
+            Log.v(CLASS_TAG, "User Full Name: " + user.getName());
+            Log.v(CLASS_TAG, "User ID: " + user.getId());
+            Log.v(CLASS_TAG, "Logging out information successful. TEST PASSED.");
+
+            return true;
+        }
+        catch (TwitterException e) {
+            Log.e(CLASS_TAG, "Returned TwitterException. TEST FAILED");
+            e.printStackTrace();
+            return false;
+        }
+        catch (NullPointerException e) {
+            Log.e(CLASS_TAG, "Returned NullPointerException. TEST FAILED");
+            return false;
+        }
+    }
+
+    private Configuration getTwitterConfigBuilder(String consumerKey, String consumerSecret, String token, String tokenSecret) {
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+
+        configurationBuilder
+                .setOAuthConsumerKey(consumerKey)
+                .setOAuthConsumerSecret(consumerSecret)
+                .setOAuthAccessToken(token)
+                .setOAuthAccessTokenSecret(tokenSecret);
+
+        return configurationBuilder.build();
+    }
+
+    private void returnToLoginFragment() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "returnToLoginFragment");
+
                 getFragmentManager().beginTransaction().replace(R.id.fl_activity_blocparty_login,
                         LoginFragment.newInstance()).commit();
-
-                SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
-
-                if(sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_KEY);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_SECRET);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
-                    BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
-                }
-
-                BPUtils.putSPrefLoginValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                        BPUtils.TW_POSITION, 1, BPUtils.TW_LOGIN, false);
             }
+        });
+    }
+
+    private void removeTwitterValues() {
+        BPUtils.logMethod(CLASS_TAG);
+
+        SharedPreferences sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
+        if (sharedPreferences.getString(BPUtils.TW_ACCESS_TOKEN, null) != null) {
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_KEY);
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_SECRET);
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
+            BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
         }
     }
 }
