@@ -508,7 +508,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_OBJECT);
-        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
+        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, false);
         Log.v(CLASS_TAG, "Logged out of Twitter");
     }
 
@@ -538,6 +538,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                         if(isInstagramObjValid(instagram)) {
                             Log.v(CLASS_TAG, "Instagram authentication successful. Storing object.");
                             BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
+                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, true);
                         }
                         else {
                             Log.e(CLASS_TAG, "There was an issue with validity of Instagram instance.");
@@ -621,6 +622,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
         BPUtils.logMethod(CLASS_TAG);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_AUTH_CODE);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.IG_OBJECT);
+        BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
     }
 
     private boolean isInstagramConnected() {
