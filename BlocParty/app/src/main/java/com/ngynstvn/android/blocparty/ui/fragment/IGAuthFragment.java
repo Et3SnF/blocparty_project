@@ -35,7 +35,7 @@ public class IGAuthFragment extends Fragment {
     private static final String AUTH_URL = "ig_auth_url";
 
     // Authentication Handler;
-    private Handler authenticationHandler;
+    private Handler instagramAuthHandler;
 
     // Instagram Static Variables
 
@@ -98,7 +98,7 @@ public class IGAuthFragment extends Fragment {
                 Log.v(CLASS_TAG, "Current Code: " + authCode);
                 Log.v(CLASS_TAG, "Current URL: " + url);
 
-                authenticationHandler.post(new Runnable() {
+                instagramAuthHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -139,8 +139,7 @@ public class IGAuthFragment extends Fragment {
                                     }
                                 });
                             }
-                        }
-                        catch (IllegalStateException e) {
+                        } catch (IllegalStateException e) {
                             Log.v(CLASS_TAG, "IGAuthFragment is not attached to LoginActivity. Exception suppressed.");
                             e.printStackTrace();
                         }
@@ -165,7 +164,7 @@ public class IGAuthFragment extends Fragment {
         public void run() {
             BPUtils.logMethod(CLASS_TAG, "InstagramAuthTestTask");
             Looper.prepare();
-            authenticationHandler = new Handler();
+            instagramAuthHandler = new Handler();
             Looper.loop();
         }
     }
