@@ -97,21 +97,19 @@ public class BPUtils {
     // Logging methods
 
     public static String classTag(Class className) {
-        return "(" + className.getSimpleName() + "): ";
+        return "(" + className.getSimpleName() + ") ";
     }
 
     public static void logMethod(String className) {
         final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        String classTag = "(" + className + ")";
         String message = stackTraceElements[3].getMethodName() + "() called | Thread: " + Thread.currentThread().getName();
-        Log.e(classTag, message);
+        Log.e(className, message);
     }
 
     public static void logMethod(String className, String additional) {
         final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        String classTag = "(" + className + ")";
         String message = additional + "'s " + stackTraceElements[3].getMethodName() + "() called | Thread: " + Thread.currentThread().getName();
-        Log.e(classTag, message);
+        Log.e(className, message);
     }
 
     // SharedPreferences

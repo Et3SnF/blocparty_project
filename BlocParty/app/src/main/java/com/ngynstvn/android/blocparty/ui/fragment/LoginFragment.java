@@ -28,7 +28,7 @@ import java.lang.ref.WeakReference;
 
 public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapterDelegate {
 
-    private static final String TAG = "(" + LoginFragment.class.getSimpleName() + "): ";
+    private static final String CLASS_TAG = "(" + LoginFragment.class.getSimpleName() + ") ";
 
     private static SharedPreferences sharedPreferences;
     private static int instance_counter = 0;
@@ -88,21 +88,22 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     @Override
     public void onAttach(Activity activity) {
-        Log.v(TAG, "onAttach() API <= 22 called");
+        Log.v(CLASS_TAG, "API <= 23");
+        BPUtils.logMethod(CLASS_TAG);
         super.onAttach(activity);
         loginFragmentDelegate = new WeakReference<LoginFragmentDelegate>((LoginFragmentDelegate) activity);
     }
 
     @Override
     public void onAttach(Context context) {
-        Log.v(TAG, "onAttach() API > 23 called");
+        Log.v(CLASS_TAG, "API > 23");
         super.onAttach(context);
         loginFragmentDelegate = new WeakReference<LoginFragmentDelegate>((LoginFragmentDelegate) getActivity());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
 
         loginAdapter = new LoginAdapter();
@@ -118,7 +119,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.e(TAG, "onCreateView() called");
+        BPUtils.logMethod(CLASS_TAG);
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         welcomeMessage = (TextView) view.findViewById(R.id.tv_login_message);
         recyclerView = (RecyclerView) view.findViewById(R.id.rv_login_items);
@@ -132,13 +133,13 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.e(TAG, "onActivityCreated() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onResume() {
-        Log.e(TAG, "onResume() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onResume();
 
         // Place the recyclerview stuff here in order for LoginAdapterViewHolder to instantiate
@@ -150,32 +151,32 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.e(TAG, "onSaveInstanceState() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onSaveInstanceState(outState);
         outState.putInt("counter", instance_counter);
     }
 
     @Override
     public void onPause() {
-        Log.e(TAG, "onPause() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onPause();
     }
 
     @Override
     public void onDestroyView() {
-        Log.e(TAG, "onDestroyView() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        Log.e(TAG, "onDestroy() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDestroy();
     }
 
     @Override
     public void onDetach() {
-        Log.e(TAG, "onDetach() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDetach();
     }
 
@@ -194,7 +195,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             case 0:
                 if(isChecked) {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onFBLogin(this, adapterPosition);
@@ -203,7 +204,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 }
                 else {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : !isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : !isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onFBLogout(this, adapterPosition);
@@ -213,7 +214,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             case 1:
                 if(isChecked) {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onTWLogin(this, adapterPosition);
@@ -222,7 +223,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 }
                 else {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : !isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : !isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onTWLogout(this, adapterPosition);
@@ -233,7 +234,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
             case 2:
                 if(isChecked) {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onIGLogin(this, adapterPosition);
@@ -242,7 +243,7 @@ public class LoginFragment extends Fragment implements LoginAdapter.LoginAdapter
                 }
                 else {
 
-                    Log.v(TAG, "Position " + adapterPosition + " : !isChecked activated");
+                    Log.v(CLASS_TAG, "Position " + adapterPosition + " : !isChecked activated");
 
                     if(getLoginFragmentDelegate() != null) {
                         getLoginFragmentDelegate().onIGLogout(this, adapterPosition);
