@@ -135,9 +135,10 @@ public class DataSource {
 
     // ----- Fetch Methods ----- //
 
-        public void fetchFacebookInformation(final SimpleFacebook simpleFacebook) {
+    public void fetchFacebookInformation(final SimpleFacebook simpleFacebook) {
 
-        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
+        if(BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), SimpleFacebook.class,
+                BPUtils.FB_OBJECT) != null) {
             Log.v(CLASS_TAG, "Facebook is logged in. Getting photos.");
 
             // Get Profile Information
@@ -505,7 +506,7 @@ public class DataSource {
     }
 
     public void fetchAllPostItems() {
-        Log.v(CLASS_TAG, "fetchAllPostItems() called");
+        BPUtils.logMethod(CLASS_TAG);
         FetchAllPostItemsTask fetchAllPostItemsTask = new FetchAllPostItemsTask();
         fetchAllPostItemsTask.start();
     }
@@ -669,15 +670,11 @@ public class DataSource {
     }
 
     public void updatePostItemLike(long postId, boolean isLiked) {
+        BPUtils.logMethod(CLASS_TAG);
 
-        int isLikedValue = 0;
+        // watch out if this is going to not work
 
-        if(isLiked) {
-            isLikedValue = 1;
-        }
-        else {
-            isLikedValue = 0;
-        }
+        int isLikedValue = isLiked ? 1 : 0;
 
         String statement = "Update " + BPUtils.POST_ITEM_TABLE + " set " + BPUtils.IS_POST_LIKED
                 + " = " + isLikedValue + " where " + BPUtils.POST_ID + " = " + String.valueOf(postId);
@@ -687,46 +684,33 @@ public class DataSource {
     }
 
     public void addCollectionToDB(final String name, final String userProfileId) {
-        Handler handler = new Handler();
+        BPUtils.logMethod(CLASS_TAG);
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                new CollectionTable.Builder()
-                        .setCollectionName(name)
-                        .setUserId(Long.parseLong(userProfileId))
-                        .insert(databaseOpenHelper.getWritableDatabase());
-            }
-        });
+        new CollectionTable.Builder()
+                .setCollectionName(name)
+                .setUserId(Long.parseLong(userProfileId))
+                .insert(databaseOpenHelper.getWritableDatabase());
     }
 
     public void addUserToDB(final User user) {
+        BPUtils.logMethod(CLASS_TAG);
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
-                        !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
-                    new UserTable.Builder()
-                            .setColumnUserFullName(user.getUserFullName())
-                            .setColumnUserSocialNetwork(user.getUserSocNetwork())
-                            .setColumnUserProfileId(user.getUserProfileId())
-                            .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
-                            .insert(databaseOpenHelper.getWritableDatabase());
-                }
-                else {
-                    return null;
-                }
-
-                return null;
-            }
-        }.execute();
+        if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
+                !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
+            new UserTable.Builder()
+                    .setColumnUserFullName(user.getUserFullName())
+                    .setColumnUserSocialNetwork(user.getUserSocNetwork())
+                    .setColumnUserProfileId(user.getUserProfileId())
+                    .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
+                    .insert(databaseOpenHelper.getWritableDatabase());
+        }
     }
 
     // DB Methods
 
     public boolean isDBEmpty(String tableName) {
+        BPUtils.logMethod(CLASS_TAG);
+
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
                 .getReadableDatabase().query(true, tableName, null, null, null, null, null, null, null);
 
@@ -734,6 +718,8 @@ public class DataSource {
     }
 
     public boolean isValueInDB(String tableName, String field, String fieldValue) {
+        BPUtils.logMethod(CLASS_TAG);
+
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
                 .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field
                         + " like '" + fieldValue + "'", null);
@@ -748,6 +734,7 @@ public class DataSource {
     }
 
     public int getDBItemCount(String tableName, String field, String fieldValue) {
+        BPUtils.logMethod(CLASS_TAG);
 
         final String statement = "Select * from " + tableName
                 + " where " + field + " like '" + fieldValue + "';";
@@ -763,6 +750,7 @@ public class DataSource {
     }
 
     public void clearTable(String tableName) {
+        BPUtils.logMethod(CLASS_TAG);
 
         final String statement = "Delete from " + tableName + ";";
 
