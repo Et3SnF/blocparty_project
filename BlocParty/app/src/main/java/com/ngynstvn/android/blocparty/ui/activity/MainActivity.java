@@ -57,7 +57,8 @@ import twitter4j.conf.ConfigurationBuilder;
  * Created by Ngynstvn on 10/14/15.
  */
 
-public class MainActivity extends AppCompatActivity implements PostItemAdapter.PostItemAdapterDelegate {
+public class MainActivity extends AppCompatActivity implements PostItemAdapter.PostItemAdapterDelegate,
+        PostItemAdapter.DataSource {
 
     private static final String CLASS_TAG = BPUtils.classTag(MainActivity.class);
 
@@ -153,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
         postItemAdapter = new PostItemAdapter();
         postItemAdapter.setPostItemAdapterDelegate(this);
+        postItemAdapter.setDataSource(this);
 
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
         isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
@@ -550,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     /**
      *
-     * PostItemAdapterDelegate Implemented Methods
+     * PostItemAdapter.PostItemAdapterDelegate Implemented Methods
      *
      */
 
@@ -573,6 +575,22 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     public void onPostItemLiked(PostItemAdapter postItemAdapter, int adapterPosition, boolean isLiked) {
         LikePostItem likePostItem = new LikePostItem(adapterPosition, isLiked);
         likePostItem.start();
+    }
+
+    /**
+     *
+     * PostItemAdapter.Delegate Implemented Methods
+     *
+     */
+
+    @Override
+    public PostItem getPostItem(PostItemAdapter postItemAdapter, int position) {
+        return null;
+    }
+
+    @Override
+    public int getItemCount(PostItemAdapter postItemAdapter) {
+        return 0;
     }
 
     /**

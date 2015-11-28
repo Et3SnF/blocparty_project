@@ -34,6 +34,36 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
      * Interface Material
      */
 
+    /* This is for decoupling the DataSource from the adapter. */
+
+    public interface DataSource {
+        PostItem getPostItem(PostItemAdapter postItemAdapter, int position);
+        int getItemCount(PostItemAdapter postItemAdapter);
+    }
+
+    private WeakReference<DataSource> dataSource;
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = new WeakReference<DataSource>(dataSource);
+    }
+
+    public DataSource getDataSource() {
+
+        /**
+         *
+         * Delegated to MainActivity.java
+         * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#getPostItem(PostItemAdapter, int)
+         * @see com.ngynstvn.android.blocparty.ui.activity.MainActivity#getItemCount(PostItemAdapter)
+         *
+         */
+
+        if(dataSource == null) {
+            return null;
+        }
+
+        return dataSource.get();
+    }
+
     public interface PostItemAdapterDelegate {
         void onPostItemImagePanZoomed(PostItemAdapter postItemAdapter, int adapterPosition);
         void onPostItemImageDownloaded(PostItemAdapter postItemAdapter, int adapterPosition);
@@ -74,17 +104,21 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
     @Override
     public void onBindViewHolder(PostItemAdapterViewHolder postItemAdapterViewHolder, int i) {
-//        Log.v(TAG, "onBindViewHolder() called");
-        PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(i);
+        if(getDataSource() == null) {
+            return;
+        }
+
+        PostItem postItem = getDataSource().getPostItem(this, i);
         postItemAdapterViewHolder.updateViewHolder(postItem);
     }
 
     @Override
     public int getItemCount() {
-//        Log.v(TAG, "getDBItemCount() called");
-//        Log.v(TAG, "Array Size in PostItemAdapter: " + BlocpartyApplication.getSharedDataSource()
-//                .getPostItemArrayList().size());
-        return BlocpartyApplication.getSharedDataSource().getPostItemArrayList().size();
+        if(getDataSource() == null) {
+            return 0;
+        }
+
+        return getDataSource().getItemCount(this);
     }
 
     // ----- Inner Class ----- //
