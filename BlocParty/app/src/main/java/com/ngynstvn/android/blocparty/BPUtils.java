@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import twitter4j.Status;
+import twitter4j.conf.Configuration;
+import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Created by Ngynstvn on 9/23/15.
@@ -181,11 +183,6 @@ public class BPUtils {
     public static <T> T getSPrefObject(SharedPreferences sharedPreferences, Class<T> tClass, String key) {
         Gson gson = new Gson();
         String json = sharedPreferences.getString(key, null);
-
-        if(json == null) {
-            return null;
-        }
-
         return gson.fromJson(json, tClass);
     }
 
@@ -275,5 +272,18 @@ public class BPUtils {
             Log.v(classTag, "Status: " + status.getText());
             Log.v(classTag, "Post ID: " + status.getId());
             Log.e(classTag, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
+    }
+
+    public static Configuration getTwitterConfigBuilder(String consumerKey, String consumerSecret,
+                                                        String token, String tokenSecret) {
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+
+        configurationBuilder
+                .setOAuthConsumerKey(consumerKey)
+                .setOAuthConsumerSecret(consumerSecret)
+                .setOAuthAccessToken(token)
+                .setOAuthAccessTokenSecret(tokenSecret);
+
+        return configurationBuilder.build();
     }
 }
