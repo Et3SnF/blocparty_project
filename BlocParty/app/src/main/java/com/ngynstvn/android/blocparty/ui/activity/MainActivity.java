@@ -114,8 +114,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     private static PostItem postItem;
     private static ArrayList<PostItem> currentPostItems = new ArrayList<PostItem>();
-    private boolean isLoadingMore = false;
     private static int itemPosition;
+
+    private static int pageNumber = 1;
 
     private boolean isColDialogActive = false;
     private static String currentCollectionName = null;
@@ -232,6 +233,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             lastItemPosition = sharedPreferences.getInt(BPUtils.LAST_POST_ITEM_POSITION, 0);
             linearLayoutManager.scrollToPositionWithOffset(lastItemPosition, 0);
 
+            itemPosition = (10 * (pageNumber-1)) + 15;
+
             recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -263,6 +266,20 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     }
 
                     BlocpartyApplication.getSharedDataSource().addUserToDB(user);
+
+                    if(firstVisibleItem == itemPosition) {
+                        Log.v(CLASS_TAG, "Current itemPosition: " + itemPosition);
+                        pageNumber++;
+                        Log.v(CLASS_TAG, "New itemPosition offset: " + itemPosition);
+                        BlocpartyApplication.getSharedDataSource().fetchMorePostItems(new DataSource.Callback<ArrayList<PostItem>>() {
+                            @Override
+                            public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                                Log.v(CLASS_TAG, "Loading more...");
+                                currentPostItems.addAll(postItems);
+                                postItemAdapter.notifyItemRangeInserted((10 * pageNumber), currentPostItems.size());
+                            }
+                        }, pageNumber);
+                    }
                 }
             });
 
