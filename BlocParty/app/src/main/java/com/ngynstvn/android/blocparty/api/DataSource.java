@@ -324,63 +324,65 @@ public class DataSource {
                     return;
                 }
 
-                String opName = "";
-                long opProfileId = 0L;
-                String profilePicUrl = "";
-                long postId = 0L;
-                String postImageUrl = "";
-                String postCaption = "";
-                long postPublishDate = 0L;
-                int isTwPostLiked = 0;
+                if(token != null && tokenSecret != null) {
+                    String opName = "";
+                    long opProfileId = 0L;
+                    String profilePicUrl = "";
+                    long postId = 0L;
+                    String postImageUrl = "";
+                    String postCaption = "";
+                    long postPublishDate = 0L;
+                    int isTwPostLiked = 0;
 
-                try {
-                    // Timeline information
+                    try {
+                        // Timeline information
 
-                    List<twitter4j.Status> statuses = twitter.getHomeTimeline();
+                        List<twitter4j.Status> statuses = twitter.getHomeTimeline();
 
-                    if (statuses == null) {
-                        Log.e(CLASS_TAG, "Fetching timeline cancelled");
-                        return;
-                    }
-
-                    Log.e(CLASS_TAG, "Getting timeline...information");
-
-                    for (twitter4j.Status status : statuses) {
-                        opName = status.getUser().getName();
-                        opProfileId = status.getUser().getId();
-                        profilePicUrl = status.getUser().getBiggerProfileImageURL();
-                        postPublishDate = status.getCreatedAt().getTime();
-
-                        if (status.getMediaEntities().length != 0) {
-                            postImageUrl = status.getMediaEntities()[0].getMediaURL();
-                            postId = status.getMediaEntities()[0].getId();
-                            postCaption = status.getText();
+                        if (statuses == null) {
+                            Log.e(CLASS_TAG, "Fetching timeline cancelled");
+                            return;
                         }
 
-                        if (status.getFavoriteCount() > 0 && status.isFavorited()) {
-                            isTwPostLiked = 1;
-                        } else {
-                            isTwPostLiked = 0;
-                        }
+                        Log.e(CLASS_TAG, "Getting timeline...information");
+
+                        for (twitter4j.Status status : statuses) {
+                            opName = status.getUser().getName();
+                            opProfileId = status.getUser().getId();
+                            profilePicUrl = status.getUser().getBiggerProfileImageURL();
+                            postPublishDate = status.getCreatedAt().getTime();
+
+                            if (status.getMediaEntities().length != 0) {
+                                postImageUrl = status.getMediaEntities()[0].getMediaURL();
+                                postId = status.getMediaEntities()[0].getId();
+                                postCaption = status.getText();
+                            }
+
+                            if (status.getFavoriteCount() > 0 && status.isFavorited()) {
+                                isTwPostLiked = 1;
+                            } else {
+                                isTwPostLiked = 0;
+                            }
 
 //                        BPUtils.logTwitterPostItemInfo(CLASS_TAG, status);
 
-                        if (!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL,
-                                postImageUrl) && postId != 0) {
-                            addPostItemToDB(opName, opProfileId, profilePicUrl, postId,
-                                    postImageUrl, postCaption, postPublishDate, isTwPostLiked);
+                            if (!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL,
+                                    postImageUrl) && postId != 0) {
+                                addPostItemToDB(opName, opProfileId, profilePicUrl, postId,
+                                        postImageUrl, postCaption, postPublishDate, isTwPostLiked);
+                            }
                         }
-                    }
 
-                } catch (TwitterException e) {
-                    Log.v(CLASS_TAG, "There was an issue getting the timeline");
-                    e.printStackTrace();
-                } catch (IllegalStateException e) {
-                    Log.v(CLASS_TAG, "Twitter is not properly authenticated");
-                    e.printStackTrace();
-                } catch (NullPointerException e) {
-                    Log.v(CLASS_TAG, "There was an issue getting Twitter information");
-                    e.printStackTrace();
+                    } catch (TwitterException e) {
+                        Log.v(CLASS_TAG, "There was an issue getting the timeline");
+                        e.printStackTrace();
+                    } catch (IllegalStateException e) {
+                        Log.v(CLASS_TAG, "Twitter is not properly authenticated");
+                        e.printStackTrace();
+                    } catch (NullPointerException e) {
+                        Log.v(CLASS_TAG, "There was an issue getting Twitter information");
+                        e.printStackTrace();
+                    }
                 }
             }
         });
