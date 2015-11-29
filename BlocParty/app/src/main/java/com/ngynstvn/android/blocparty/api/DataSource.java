@@ -409,9 +409,6 @@ public class DataSource {
                 long postPublishDate = 0L;
                 int isIGPostLiked = 0;
 
-                // Clear the table whenever feed is being fetched. Don't want repeated entries.
-                clearTable(BPUtils.POST_ITEM_TABLE);
-
                 // Fetch Instagram user info
 
                 try {
