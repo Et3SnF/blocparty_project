@@ -733,7 +733,7 @@ public class DataSource {
         pushHandler.post(new Runnable() {
             @Override
             public void run() {
-                BPUtils.logMethod(CLASS_TAG, "addUserToDB");
+//                BPUtils.logMethod(CLASS_TAG, "addUserToDB");
 
                 if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
                         !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
@@ -760,7 +760,7 @@ public class DataSource {
     }
 
     public boolean isValueInDB(String tableName, String field, String fieldValue) {
-        BPUtils.logMethod(CLASS_TAG);
+//        BPUtils.logMethod(CLASS_TAG);
 
         Cursor cursor = BlocpartyApplication.getSharedDataSource().getDatabaseOpenHelper()
                 .getReadableDatabase().rawQuery("Select * from " + tableName + " where " + field

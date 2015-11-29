@@ -182,9 +182,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     protected void onDestroy() {
         BPUtils.logMethod(CLASS_TAG);
         super.onDestroy();
-
-        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
-                BPUtils.IG_AUTH_CODE);
     }
 
     // -----   -----  -----  -----  ----- //
@@ -210,6 +207,10 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                 Toast.makeText(BlocpartyApplication.getSharedInstance(), "You must be logged into at " +
                         "least one account in order to proceed", Toast.LENGTH_SHORT).show();
                 return false;
+            }
+
+            if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
+                BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
             }
 
             startActivity(new Intent(this, MainActivity.class));
@@ -495,7 +496,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "preserveTwitterObject");
 
-                if(twitter != null) {
+                if(isTwitterConnected()) {
                     BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                             BPUtils.TW_OBJECT, twitter);
                     return;
@@ -597,7 +598,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "preserveInstagramObject");
 
-                if(instagram != null) {
+                if(isInstagramConnected()) {
                     BPUtils.putSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME,
                             BPUtils.IG_OBJECT, instagram);
                     return;
@@ -618,7 +619,13 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
     private boolean isInstagramConnected() {
         // Based connectivity on the validity of the instance of Instagram
         BPUtils.logMethod(CLASS_TAG);
-        return isInstagramObjValid(BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT));
+        Instagram instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
+
+        if(instagram == null) {
+            return false;
+        }
+
+        return isInstagramObjValid(instagram);
     }
 
     /**

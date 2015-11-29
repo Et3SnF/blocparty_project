@@ -183,6 +183,11 @@ public class BPUtils {
     public static <T> T getSPrefObject(SharedPreferences sharedPreferences, Class<T> tClass, String key) {
         Gson gson = new Gson();
         String json = sharedPreferences.getString(key, null);
+
+        if(json == null) {
+            return null;
+        }
+
         return gson.fromJson(json, tClass);
     }
 
