@@ -532,7 +532,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
                         if(isInstagramObjValid(instagram)) {
                             Log.v(CLASS_TAG, "Instagram authentication successful. Storing object.");
                             BPUtils.putSPrefObject(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_OBJECT, instagram);
-                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.TW_LOGIN, true);
+                            BPUtils.putSPrefBooleanValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.IG_LOGIN, true);
                         }
                         else {
                             Log.e(CLASS_TAG, "There was an issue with validity of Instagram instance.");

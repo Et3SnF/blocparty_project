@@ -34,6 +34,7 @@ import java.util.List;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 
 /**
  * Created by Ngynstvn on 10/7/15.
@@ -306,8 +307,18 @@ public class DataSource {
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "fetchTwitterInformation");
 
-                Twitter twitter = BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
-                        Twitter.class, BPUtils.TW_OBJECT);
+                String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_CONSUMER_KEY, null);
+                String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_CONSUMER_SECRET, null);
+                String token = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_ACCESS_TOKEN, null);
+                String tokenSecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
+                        .getString(BPUtils.TW_ACCESS_TOKEN_SECRET, null);
+
+                TwitterFactory twitterFactory = new TwitterFactory(BPUtils.getTwitterConfigBuilder(
+                        consumerKey, consumerKeySecret, token, tokenSecret));
+                Twitter twitter = twitterFactory.getInstance();
 
                 if (twitter == null) {
                     return;
