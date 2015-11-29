@@ -443,12 +443,13 @@ public class DataSource {
                             postPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
                         }
                         catch (NullPointerException e) {
-                            postPublishDate = System.currentTimeMillis();
-                            e.printStackTrace();
+                            postPublishDate = -1;
                         }
 
-                        addPostItemToDB(opName, opProfileId, profilePicUrl,
-                                postId, postImageUrl, postCaption, postPublishDate, isIGPostLiked);
+                        if(postPublishDate != -1) {
+                            addPostItemToDB(opName, opProfileId, profilePicUrl,
+                                    postId, postImageUrl, postCaption, postPublishDate, isIGPostLiked);
+                        }
                     }
                 } catch (InstagramException e) {
                     Log.e(CLASS_TAG, "There was an issue getting Instagram information.");
@@ -485,8 +486,10 @@ public class DataSource {
 
                 final ArrayList<PostItem> fetchedItems = new ArrayList<PostItem>();
 
-                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE + " order by "
-                        + BPUtils.PUBLISH_DATE + " desc " + " limit 20;";
+                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
+                        + " group by " + BPUtils.POST_ID
+                        + " order by " + BPUtils.PUBLISH_DATE + " desc "
+                        + " limit 20 ";
 
                 SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
                 Cursor cursor = database.rawQuery(statement, null);
@@ -525,8 +528,10 @@ public class DataSource {
 
                 String offSet = String.valueOf(pageNumber * 10);
 
-                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE + " order by "
-                        + BPUtils.PUBLISH_DATE + " desc " + " limit 20 " + " offset " + offSet;
+                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
+                        + " group by " + BPUtils.POST_ID
+                        + " order by " + BPUtils.PUBLISH_DATE + " desc "
+                        + " limit 20 " + " offset " + offSet;
 
                 SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
                 Cursor cursor = database.rawQuery(statement, null);
