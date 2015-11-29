@@ -244,7 +244,8 @@ public class DataSource {
 
                                         // Get the album id for the blocparty_project photos
 
-                                        if (postPublishDate != 0) {
+                                        if (postPublishDate != 0 && !isValueInDB(BPUtils.POST_ITEM_TABLE,
+                                                BPUtils.POST_ID, String.valueOf(postId))) {
                                             addPostItemToDB(opName, profileId, profilePicUrl,
                                                     postId, postImageUrl, postCaption,
                                                     postPublishDate, isFBPostLiked);
