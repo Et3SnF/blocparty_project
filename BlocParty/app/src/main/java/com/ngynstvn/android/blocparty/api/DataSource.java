@@ -3,7 +3,6 @@ package com.ngynstvn.android.blocparty.api;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,13 +21,8 @@ import com.ngynstvn.android.blocparty.api.model.database.table.CollectionTable;
 import com.ngynstvn.android.blocparty.api.model.database.table.PostItemTable;
 import com.ngynstvn.android.blocparty.api.model.database.table.UserTable;
 import com.sromku.simple.fb.SimpleFacebook;
-import com.sromku.simple.fb.entities.Profile;
-import com.sromku.simple.fb.listeners.OnProfileListener;
-import com.sromku.simple.fb.utils.Attributes;
-import com.sromku.simple.fb.utils.PictureAttributes;
 
 import org.jinstagram.Instagram;
-import org.jinstagram.entity.users.basicinfo.UserInfo;
 import org.jinstagram.entity.users.feed.MediaFeedData;
 import org.jinstagram.exceptions.InstagramException;
 import org.json.JSONArray;
@@ -38,7 +32,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import twitter4j.ResponseList;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
@@ -51,6 +44,7 @@ public class DataSource {
     private static final String CLASS_TAG = BPUtils.classTag(DataSource.class);
 
     // Handler Variables
+    private Handler uiThreadHandler;
     private Handler databaseHandler;
     private Handler pullHandler;
     private Handler pushHandler;
@@ -63,12 +57,27 @@ public class DataSource {
     private static ArrayList<User> twUserArrayList;
     private static ArrayList<User> igUserArrayList;
 
+    // Callback interface
+
+    public interface Callback<Result> {
+        void onFetchingComplete(Result result);
+    }
+
     // Instantiate the database
 
     public DataSource(Context context) {
         Log.v(CLASS_TAG, "DataSource instantiated");
+
+        uiThreadHandler = new Handler();
+
         DatabaseThread databaseThread = new DatabaseThread();
         databaseThread.start();
+
+        PullThread pullThread = new PullThread();
+        pullThread.start();
+
+        PushThread pushThread = new PushThread();
+        pushThread.start();
     }
 
     public DatabaseOpenHelper getDatabaseOpenHelper() {
@@ -96,263 +105,6 @@ public class DataSource {
         return igUserArrayList;
     }
 
-    // ----- Fetch Methods ----- //
-
-    public void fetchFacebookInformation(final SimpleFacebook simpleFacebook) {
-
-        if(BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), SimpleFacebook.class,
-                BPUtils.FB_OBJECT) != null) {
-            Log.v(CLASS_TAG, "Facebook is logged in. Getting photos.");
-
-            // Get Profile Information
-
-            new AsyncTask<Void, Void, Void>() {
-
-                @Override
-                protected Void doInBackground(final Void... params) {
-
-                    PictureAttributes pictureAttributes = Attributes.createPictureAttributes();
-                    pictureAttributes.setHeight(300);
-                    pictureAttributes.setWidth(300);
-                    pictureAttributes.setType(PictureAttributes.PictureType.SQUARE);
-
-                    Profile.Properties properties = new Profile.Properties.Builder()
-                            .add(Profile.Properties.ID)
-                            .add(Profile.Properties.FIRST_NAME)
-                            .add(Profile.Properties.LAST_NAME)
-                            .add(Profile.Properties.PICTURE, pictureAttributes)
-                            .build();
-
-                    simpleFacebook.getProfile(properties, new OnProfileListener() {
-                        @Override
-                        public void onComplete(Profile response) {
-
-                            Log.v(CLASS_TAG, "Profile information: "
-                                    + "ID: " + response.getId() + " | "
-                                    + "First Name : " + response.getFirstName() + " | "
-                                    + "Last Name: " + response.getLastName() + " | "
-                                    + "Picture: " + response.getPicture());
-                        }
-                    });
-
-                    AccessToken accessToken = AccessToken.getCurrentAccessToken();
-
-                    // Get photos
-
-                    // Get access to Graph API and get the GraphRequest
-                    // Decided to just get photo information from this JSON
-
-                    GraphRequest request = GraphRequest.newMeRequest(
-                            accessToken,
-                            new GraphRequest.GraphJSONObjectCallback() {
-                                @Override
-                                public void onCompleted(JSONObject object, GraphResponse response) {
-                                    BPUtils.logMethod(CLASS_TAG);
-                                    Log.v(CLASS_TAG, "Raw response: " + response.getRawResponse());
-
-//                                    BPUtils.saveRawJSONResponse("facebook_response.txt", response.getRawResponse());
-
-                                    String opName = "";
-                                    long profileId = 0L;
-                                    long postId = 0L;
-                                    String profilePicUrl = "";
-                                    String postImageUrl = "";
-                                    String postCaption = "";
-                                    long postPublishDate = 0L;
-                                    int isFBPostLiked = 0;
-
-                                    try {
-
-                                        JSONArray jsonArray = object.optJSONObject("photos").getJSONArray("data");
-
-                                        for (int i = 0; i < jsonArray.length(); i++) {
-
-                                            opName = object.optString("name");
-
-                                            profileId = object.optLong("id");
-
-                                            if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Profile Pictures")) {
-                                                profilePicUrl = jsonArray.getJSONObject(0).getJSONArray("images").getJSONObject(0).getString("source");
-                                            }
-
-                                            if(jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")){
-                                                    postId = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
-                                                    postImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
-                                                            .getJSONObject(0).getString("source");
-
-                                                try{
-                                                    postCaption = jsonArray.getJSONObject(i).getString("name");
-                                                }
-                                                catch (JSONException e) {
-                                                    postCaption = "";
-                                                }
-
-                                                postPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
-
-                                                try {
-                                                    JSONArray likesArray = jsonArray.getJSONObject(i).getJSONObject("likes").getJSONArray("data");
-                                                    Log.v(CLASS_TAG, "Likes Array: " + likesArray.toString());
-
-                                                    if(likesArray.toString().contains(String.valueOf(profileId))) {
-                                                        isFBPostLiked = 1;
-                                                    }
-                                                }
-                                                catch (JSONException e) {
-                                                    isFBPostLiked = 0;
-                                                }
-                                            }
-
-                                            // Get the album id for the blocparty_project photos
-
-                                            if(postPublishDate != 0) {
-                                                addPostItemToDB(opName, profileId, profilePicUrl,
-                                                        postId, postImageUrl, postCaption,
-                                                        postPublishDate, isFBPostLiked);
-                                            }
-                                        }
-
-                                        // Find the photo id belonging to the Timeline Photos album
-
-                                        JSONArray idArray = object.optJSONObject("albums").getJSONArray("data");
-
-                                        for(int i = 0; i < idArray.length(); i++) {
-                                            if(idArray.getJSONObject(i).getString("name").equalsIgnoreCase("Timeline Photos")) {
-
-                                                BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils
-                                                                .FB_TP_ID), BPUtils.FB_TP_ID,
-                                                        BPUtils.FB_TP_ALB_ID, idArray.getJSONObject(i)
-                                                                .getString("id"));
-
-                                                Log.v(CLASS_TAG, "Album: " + idArray.getJSONObject(i).getString("name"));
-                                                Log.v(CLASS_TAG, "Album ID: " + idArray.getJSONObject(i).getString("id"));
-                                                break;
-                                            }
-                                        }
-
-                                    }
-                                    catch (JSONException e) {
-                                        Log.e(CLASS_TAG, "Unable to parse JSON info");
-                                        e.printStackTrace();
-                                    }
-                                    catch (NullPointerException e) {
-                                        Log.e(CLASS_TAG, "JSON Object null. Hiccup...");
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-
-                    Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,albums{id,name},photos{album,images,id,name,link,created_time, likes}");
-                    request.setParameters(parameters);
-                    request.executeAsync();
-
-                    return null;
-
-                }
-            }.execute();
-
-        }
-        else {
-            Log.v(CLASS_TAG, "Facebook is not logged in. Unable to get information.");
-        }
-    }
-
-    public void fetchTwitterInformation(final Twitter twitter) {
-
-        Log.v(CLASS_TAG, "fetchTwitterInformation() called");
-
-        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
-
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-
-                    String opName = "";
-                    long opProfileId = 0L;
-                    String profilePicUrl = "";
-                    long postId = 0L;
-                    String postImageUrl = "";
-                    String postCaption = "";
-                    long postPublishDate = 0L;
-                    int isTwPostLiked = 0;
-
-                    try {
-
-                        // Timeline information
-
-                        List<twitter4j.Status> statuses = twitter.getHomeTimeline();
-                        ResponseList<twitter4j.Status> favoritesList = null;
-
-                        if(statuses == null) {
-                            cancel(true);
-                            Log.e(CLASS_TAG, "Fetching timeline cancelled");
-                            return null;
-                        }
-
-                        Log.e(CLASS_TAG, "Getting timeline...information");
-
-                        for(twitter4j.Status status : statuses) {
-//                            Log.v(CLASS_TAG, "User: " + status.getUser().getName());
-//                            Log.v(CLASS_TAG, "User ID: " + status.getUser().getId());
-//                            Log.v(CLASS_TAG, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
-//                            Log.v(CLASS_TAG, "Status: " + status.getText());
-//                            Log.v(CLASS_TAG, "Post ID: " + status.getId());
-
-                            opName = status.getUser().getName();
-                            opProfileId = status.getUser().getId();
-                            profilePicUrl = status.getUser().getBiggerProfileImageURL();
-                            postPublishDate = status.getCreatedAt().getTime();
-
-                            if(status.getMediaEntities().length != 0) {
-//                                Log.e(CLASS_TAG, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
-                                postImageUrl = status.getMediaEntities()[0].getMediaURL();
-                                postId = status.getMediaEntities()[0].getId();
-                                postCaption = status.getText();
-                            }
-
-                            if(status.getFavoriteCount() > 0) {
-                                // Get favorites list of posts from logged in user to determine
-                                // if db needs to be updated
-                                favoritesList = twitter.getFavorites(twitter.getId());
-                                for(int i = 0; i < favoritesList.size(); i++) {
-                                    if(favoritesList.get(i).getMediaEntities()[0].getId() == postId) {
-                                        isTwPostLiked = 1;
-                                    }
-                                }
-                            }
-                            else {
-                                isTwPostLiked = 0;
-                            }
-
-                            if(!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL, postImageUrl) && postId != 0) {
-
-                                addPostItemToDB(opName, opProfileId, profilePicUrl, postId,
-                                        postImageUrl, postCaption, postPublishDate, isTwPostLiked);
-                            }
-                        }
-
-                        return null;
-                    }
-                    catch (TwitterException e) {
-                        Log.v(CLASS_TAG, "There was an issue getting the timeline");
-                        e.printStackTrace();
-                        return null;
-                    }
-                    catch(IllegalStateException e) {
-                        Log.v(CLASS_TAG, "Twitter is not properly authenticated");
-                        e.printStackTrace();
-                        return null;
-                    }
-                    catch(NullPointerException e) {
-                        Log.v(CLASS_TAG, "There was an issue getting Twitter information");
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-            }.execute();
-        }
-    }
-
     /**
      *
      * Thread Classes
@@ -374,7 +126,7 @@ public class DataSource {
             Looper.prepare();
 
             databaseHandler = new Handler();
-            
+
             postItemTable = new PostItemTable();
             collectionTable = new CollectionTable();
             userTable = new UserTable();
@@ -412,43 +164,239 @@ public class DataSource {
         }
     }
 
-    /**
-     *
-     * Fetching Threads
-     *
-     */
+    // ----- Fetch Methods ----- //
 
-    private class FetchInstagramFeedTask extends Thread {
+    private void fetchFacebookInformation() {
 
-        private Handler instagramHandler;
-        private Instagram instagram;
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchFacebookInformation");
 
-        public FetchInstagramFeedTask(Instagram instagram) {
-            this.instagram = instagram;
+                SimpleFacebook simpleFacebook = BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                        SimpleFacebook.class, BPUtils.FB_OBJECT);
+
+                if (simpleFacebook == null) {
+                    return;
+                }
+
+                // Get Profile Information
+                // Get access to Graph API and get the GraphRequest
+
+                AccessToken accessToken = AccessToken.getCurrentAccessToken();
+
+                GraphRequest request = GraphRequest.newMeRequest(
+                        accessToken, new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response) {
+                                BPUtils.logMethod(CLASS_TAG);
+                                Log.v(CLASS_TAG, "Raw response: " + response.getRawResponse());
+
+//                                    BPUtils.saveRawJSONResponse("facebook_response.txt", response.getRawResponse());
+
+                                String opName = "";
+                                long profileId = 0L;
+                                long postId = 0L;
+                                String profilePicUrl = "";
+                                String postImageUrl = "";
+                                String postCaption = "";
+                                long postPublishDate = 0L;
+                                int isFBPostLiked = 0;
+
+                                try {
+
+                                    JSONArray jsonArray = object.optJSONObject("photos").getJSONArray("data");
+
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+
+                                        opName = object.optString("name");
+                                        profileId = object.optLong("id");
+
+                                        if (jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Profile Pictures")) {
+                                            profilePicUrl = jsonArray.getJSONObject(0).getJSONArray("images").getJSONObject(0).getString("source");
+                                        }
+
+                                        if (jsonArray.getJSONObject(i).getJSONObject("album").getString("name").equalsIgnoreCase("Timeline Photos")) {
+                                            postId = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
+                                            postImageUrl = jsonArray.getJSONObject(i).getJSONArray("images")
+                                                    .getJSONObject(0).getString("source");
+
+                                            try {
+                                                postCaption = jsonArray.getJSONObject(i).getString("name");
+                                            } catch (JSONException e) {
+                                                postCaption = "";
+                                            }
+
+                                            postPublishDate = BPUtils.dateConverter(jsonArray.getJSONObject(i).getString("created_time"));
+
+                                            try {
+                                                JSONArray likesArray = jsonArray.getJSONObject(i).getJSONObject("likes").getJSONArray("data");
+                                                Log.v(CLASS_TAG, "Likes Array: " + likesArray.toString());
+
+                                                if (likesArray.toString().contains(String.valueOf(profileId))) {
+                                                    isFBPostLiked = 1;
+                                                }
+                                            } catch (JSONException e) {
+                                                isFBPostLiked = 0;
+                                            }
+                                        }
+
+                                        // Get the album id for the blocparty_project photos
+
+                                        if (postPublishDate != 0) {
+                                            addPostItemToDB(opName, profileId, profilePicUrl,
+                                                    postId, postImageUrl, postCaption,
+                                                    postPublishDate, isFBPostLiked);
+                                        }
+                                    }
+                                } catch (JSONException e) {
+                                    Log.e(CLASS_TAG, "Unable to parse JSON info");
+                                    e.printStackTrace();
+                                } catch (NullPointerException e) {
+                                    Log.e(CLASS_TAG, "JSON Object null. Hiccup...");
+                                    e.printStackTrace();
+                                }
+
+                                // Find the photo id belonging to the Timeline Photos album
+
+                                if (BPUtils.newSPrefInstance(BPUtils.FB_TP_ID)
+                                        .getString(BPUtils.FB_TP_ALB_ID, null) == null) {
+                                    findFBTimelinePhotosId(object);
+                                }
+                            }
+                        });
+
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,albums{id,name},photos{album,images,id," +
+                        "name,link,created_time, likes}");
+                request.setParameters(parameters);
+                request.executeAsync();
+            }
+        });
+    }
+
+    private void findFBTimelinePhotosId(JSONObject object) {
+
+        BPUtils.logMethod(CLASS_TAG);
+
+        try {
+            JSONArray idArray = object.optJSONObject("albums").getJSONArray("data");
+
+            for (int i = 0; i < idArray.length(); i++) {
+                if (idArray.getJSONObject(i).getString("name").equalsIgnoreCase("Timeline Photos")) {
+
+                    BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FB_TP_ID), BPUtils.FB_TP_ID,
+                            BPUtils.FB_TP_ALB_ID, idArray.getJSONObject(i).getString("id"));
+
+                    Log.v(CLASS_TAG, "Album: " + idArray.getJSONObject(i).getString("name"));
+                    Log.v(CLASS_TAG, "Album ID: " + idArray.getJSONObject(i).getString("id"));
+                    break;
+                }
+            }
         }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
-        @Override
-        public void run() {
-            BPUtils.logMethod(CLASS_TAG, "FetchInstagramFeedTask");
+    private void fetchTwitterInformation() {
 
-            Looper.prepare();
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchTwitterInformation");
 
-            // Instantiate handler here
-            instagramHandler = new Handler();
+                Twitter twitter = BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                        Twitter.class, BPUtils.TW_OBJECT);
 
-            String opName = "";
-            long opProfileId = 0L;
-            String profilePicUrl = "";
-            long postId = 0L;
-            String postImageUrl = "";
-            String postCaption = "";
-            long postPublishDate = 0L;
-            int isIGPostLiked = 0;
+                if (twitter == null) {
+                    return;
+                }
 
-            String instagramAuthCode = BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getString(BPUtils.IG_AUTH_CODE, null);
+                String opName = "";
+                long opProfileId = 0L;
+                String profilePicUrl = "";
+                long postId = 0L;
+                String postImageUrl = "";
+                String postCaption = "";
+                long postPublishDate = 0L;
+                int isTwPostLiked = 0;
 
-            if(instagramAuthCode != null) {
-                Log.v(CLASS_TAG, "Instagram is logged in. Getting profile info.");
+                try {
+                    // Timeline information
+
+                    List<twitter4j.Status> statuses = twitter.getHomeTimeline();
+
+                    if (statuses == null) {
+                        Log.e(CLASS_TAG, "Fetching timeline cancelled");
+                        return;
+                    }
+
+                    Log.e(CLASS_TAG, "Getting timeline...information");
+
+                    for (twitter4j.Status status : statuses) {
+                        opName = status.getUser().getName();
+                        opProfileId = status.getUser().getId();
+                        profilePicUrl = status.getUser().getBiggerProfileImageURL();
+                        postPublishDate = status.getCreatedAt().getTime();
+
+                        if (status.getMediaEntities().length != 0) {
+                            postImageUrl = status.getMediaEntities()[0].getMediaURL();
+                            postId = status.getMediaEntities()[0].getId();
+                            postCaption = status.getText();
+                        }
+
+                        if (status.getFavoriteCount() > 0 && status.isFavorited()) {
+                            isTwPostLiked = 1;
+                        } else {
+                            isTwPostLiked = 0;
+                        }
+
+//                        BPUtils.logTwitterPostItemInfo(CLASS_TAG, status);
+
+                        if (!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL,
+                                postImageUrl) && postId != 0) {
+                            addPostItemToDB(opName, opProfileId, profilePicUrl, postId,
+                                    postImageUrl, postCaption, postPublishDate, isTwPostLiked);
+                        }
+                    }
+
+                } catch (TwitterException e) {
+                    Log.v(CLASS_TAG, "There was an issue getting the timeline");
+                    e.printStackTrace();
+                } catch (IllegalStateException e) {
+                    Log.v(CLASS_TAG, "Twitter is not properly authenticated");
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    Log.v(CLASS_TAG, "There was an issue getting Twitter information");
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void fetchInstagramInformation() {
+
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchInstagramInformation");
+
+                Instagram instagram = BPUtils.getSPrefObject(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
+                        Instagram.class, BPUtils.IG_OBJECT);
+
+                if(instagram == null) {
+                    return;
+                }
+
+                String opName = "";
+                long opProfileId = 0L;
+                String profilePicUrl = "";
+                long postId = 0L;
+                String postImageUrl = "";
+                String postCaption = "";
+                long postPublishDate = 0L;
+                int isIGPostLiked = 0;
 
                 // Clear the table whenever feed is being fetched. Don't want repeated entries.
                 clearTable(BPUtils.POST_ITEM_TABLE);
@@ -456,24 +404,16 @@ public class DataSource {
                 // Fetch Instagram user info
 
                 try {
-                    UserInfo userInfo = instagram.getCurrentUserInfo();
-
-                    // Simple user information log
-                    Log.v(CLASS_TAG, userInfo.getData().getUsername());
-                    Log.v(CLASS_TAG, userInfo.getData().getProfilePicture());
-                    Log.v(CLASS_TAG, userInfo.getData().getFullName());
-
                     // Fetch any instagram information and store it as object
                     List<MediaFeedData> mediaFeedDatas = instagram.getUserFeeds().getData();
 
                     for (MediaFeedData mediaFeedData : mediaFeedDatas) {
 
-                        // Logging instagram information
-                        BPUtils.logInstagramPostItemInfo(CLASS_TAG, mediaFeedData);
+//                        BPUtils.logInstagramPostItemInfo(CLASS_TAG, mediaFeedData);
 
                         opName = mediaFeedData.getUser().getFullName();
 
-                        if(opName.length() == 0) {
+                        if (opName.length() == 0) {
                             opName = mediaFeedData.getUser().getUserName();
                         }
 
@@ -484,86 +424,122 @@ public class DataSource {
 
                         try {
                             postCaption = mediaFeedData.getCaption().getText();
-                        }
-                        catch (NullPointerException e) {
+                        } catch (NullPointerException e) {
                             postCaption = "";
                         }
 
-                        postPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
+                        try {
+                            postPublishDate = (1000L * Long.parseLong(mediaFeedData.getCaption().getCreatedTime()));
+                        }
+                        catch (NullPointerException e) {
+                            postPublishDate = System.currentTimeMillis();
+                            e.printStackTrace();
+                        }
 
                         addPostItemToDB(opName, opProfileId, profilePicUrl,
                                 postId, postImageUrl, postCaption, postPublishDate, isIGPostLiked);
                     }
-                }
-                catch (InstagramException e) {
+                } catch (InstagramException e) {
                     Log.e(CLASS_TAG, "There was an issue getting Instagram information.");
                     e.printStackTrace();
                     BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                             BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
-                }
-                catch(NullPointerException e) {
+                } catch (NullPointerException e) {
                     Log.e(CLASS_TAG, "Something instagram is null. Look at StackTrace.");
                     e.printStackTrace();
                     BPUtils.putSPrefBooleanValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                             BPUtils.FILE_NAME, BPUtils.IG_LOGIN, false);
                 }
-            }
-            else {
-                Log.v(CLASS_TAG, "Instagram is not logged in. Unable to fetch feed.");
 
             }
-
-            Looper.loop();
-        }
+        });
     }
 
+    /**
+     *
+     * Fetching Threads
+     *
+     */
 
+    public synchronized void fetchPostItems(final Callback<ArrayList<PostItem>> fetchCallback) {
 
-    public void fetchInstagramInformation(Instagram instagram) {
-        FetchInstagramFeedTask fetchInstagramFeedTask = new FetchInstagramFeedTask(instagram);
-        fetchInstagramFeedTask.start();
-    }
+        fetchFacebookInformation();
+        fetchTwitterInformation();
+        fetchInstagramInformation();
 
-    private class FetchAllPostItemsTask extends Thread {
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchPostItems");
 
-        @Override
-        public void run() {
-            BPUtils.logMethod(CLASS_TAG, "FetchInstagramFeedTask");
+                final ArrayList<PostItem> fetchedItems = new ArrayList<PostItem>();
 
-            Looper.prepare();
+                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE + " order by "
+                        + BPUtils.PUBLISH_DATE + " desc " + " limit 20;";
 
-            postItemArrayList.clear();
+                SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
+                Cursor cursor = database.rawQuery(statement, null);
 
-            SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-
-            final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
-                    + " order by " + BPUtils.PUBLISH_DATE + " desc "
-                    + " limit 20;";
-
-            Cursor cursor = database.rawQuery(statement, null);
-
-            if(cursor.moveToFirst()) {
-                do {
-                    postItemArrayList.add(itemFromCursor(cursor));
+                if(cursor.moveToFirst() && fetchedItems.size() <= 20) {
+                    do {
+                        fetchedItems.add(itemFromCursor(cursor));
+                    }
+                    while(cursor.moveToNext());
                 }
-                while (cursor.moveToNext());
+
+                uiThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.logMethod(CLASS_TAG, "uiThreadHandler");
+                        Log.v(CLASS_TAG, "Items Fetched: " + fetchedItems.size());
+                        fetchCallback.onFetchingComplete(fetchedItems);
+                    }
+                });
             }
-
-            cursor.close();
-
-            Looper.loop();
-        }
+        });
     }
 
-    public void fetchAllPostItems() {
-        BPUtils.logMethod(CLASS_TAG);
-        FetchAllPostItemsTask fetchAllPostItemsTask = new FetchAllPostItemsTask();
-        fetchAllPostItemsTask.start();
+    public synchronized void fetchMorePostItems(final Callback<ArrayList<PostItem>> fetchCallback, final int pageNumber) {
+
+        fetchFacebookInformation();
+        fetchTwitterInformation();
+        fetchInstagramInformation();
+
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchMorePostItems");
+
+                final ArrayList<PostItem> moreFetchedItems = new ArrayList<PostItem>();
+
+                String offSet = String.valueOf(pageNumber * 10);
+
+                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE + " order by "
+                        + BPUtils.PUBLISH_DATE + " desc " + " limit 20 " + " offset " + offSet;
+
+                SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
+                Cursor cursor = database.rawQuery(statement, null);
+
+                if(cursor.moveToFirst() && moreFetchedItems.size() <= 20) {
+                    do {
+                        moreFetchedItems.add(itemFromCursor(cursor));
+                    }
+                    while(cursor.moveToNext());
+                }
+
+                uiThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        BPUtils.logMethod(CLASS_TAG, "uiThreadHandler");
+                        Log.v(CLASS_TAG, "More Items Fetched: " + moreFetchedItems.size());
+                        fetchCallback.onFetchingComplete(moreFetchedItems);
+                    }
+                });
+            }
+        });
     }
 
     public void fetchFilteredPostItems(String collectionName) {
-
-        postItemArrayList.clear();
 
         final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
                 + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "." + BPUtils.USER_PROFILE_ID
@@ -743,17 +719,22 @@ public class DataSource {
     }
 
     public void addUserToDB(final User user) {
-        BPUtils.logMethod(CLASS_TAG);
+        pushHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "addUserToDB");
 
-        if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
-                !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
-            new UserTable.Builder()
-                    .setColumnUserFullName(user.getUserFullName())
-                    .setColumnUserSocialNetwork(user.getUserSocNetwork())
-                    .setColumnUserProfileId(user.getUserProfileId())
-                    .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
-                    .insert(databaseOpenHelper.getWritableDatabase());
-        }
+                if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
+                        !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
+                    new UserTable.Builder()
+                            .setColumnUserFullName(user.getUserFullName())
+                            .setColumnUserSocialNetwork(user.getUserSocNetwork())
+                            .setColumnUserProfileId(user.getUserProfileId())
+                            .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
+                            .insert(databaseOpenHelper.getWritableDatabase());
+                }
+            }
+        });
     }
 
     // DB Methods

@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.api.DataSource;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
 import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
@@ -40,10 +41,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -51,7 +52,6 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
-import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Created by Ngynstvn on 10/14/15.
@@ -93,15 +93,15 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     // Social Media Instances for this Activity
 
-    private static SimpleFacebook simpleFacebook;
-    private static Twitter twitter;
-    private static Instagram instagram;
+    private static SimpleFacebook simpleFacebook = null;
+    private static Twitter twitter = null;
+    private static Instagram instagram = null;
+
+    private static boolean isFBLoggedIn = false;
+    private static boolean isTwLoggedIn = false;
+    private static boolean isIGLoggedIn = false;
 
     private PostItemAdapter postItemAdapter;
-
-    private boolean isFBLoggedIn;
-    private boolean isTwLoggedIn;
-    private boolean isIGLoggedIn;
 
     private boolean loading = true;
     private int previousTotal = 0;
@@ -110,34 +110,15 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     private int visibleItemCount;
     private int totalItemCount;
     private LinearLayoutManager linearLayoutManager;
+    private static int lastItemPosition = 0;
 
     private static PostItem postItem;
+    private static ArrayList<PostItem> currentPostItems = new ArrayList<PostItem>();
+    private boolean isLoadingMore = false;
+    private static int itemPosition;
 
     private boolean isColDialogActive = false;
-
     private static String currentCollectionName = null;
-
-    /*
-     * Interface Material
-     */
-
-    public interface MainActivityDelegate {
-        void onPostItemsRefreshed(MainActivity mainActivity);
-    }
-
-    private WeakReference<MainActivityDelegate> mainActivityDelegate;
-
-    public void setMainActivityDelegate(MainActivityDelegate mainActivityDelegate) {
-        this.mainActivityDelegate = new WeakReference<MainActivityDelegate>(mainActivityDelegate);
-    }
-
-    public MainActivityDelegate getMainActivityDelegate() {
-        if(mainActivityDelegate == null) {
-            return null;
-        }
-
-        return mainActivityDelegate.get();
-    }
 
     // ----- Lifecycle Methods ----- //
 
@@ -157,41 +138,16 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
         postItemAdapter.setDataSource(this);
 
         sharedPreferences = BPUtils.newSPrefInstance(BPUtils.FILE_NAME);
+
         isFBLoggedIn = sharedPreferences.getBoolean(BPUtils.FB_LOGIN, false);
         isTwLoggedIn = sharedPreferences.getBoolean(BPUtils.TW_LOGIN, false);
         isIGLoggedIn = sharedPreferences.getBoolean(BPUtils.IG_LOGIN, false);
 
         // Get any instances!
 
-        if(isFBLoggedIn) {
-            simpleFacebook = BPUtils.getSPrefObject(sharedPreferences, SimpleFacebook.class, BPUtils.FB_OBJECT);
-        }
-
-        if(isTwLoggedIn) {
-//            twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
-
-            String consumerKey = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
-                    .getString(BPUtils.TW_CONSUMER_KEY, null);
-            String consumerKeySecret = BPUtils.newSPrefInstance(BPUtils.FILE_NAME)
-                    .getString(BPUtils.TW_CONSUMER_SECRET, null);
-            String token = getString(R.string.tat);
-            String tokenSecret = getString(R.string.tats);
-
-            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-
-            configurationBuilder
-                    .setOAuthConsumerKey(consumerKey)
-                    .setOAuthConsumerSecret(consumerKeySecret)
-                    .setOAuthAccessToken(token)
-                    .setOAuthAccessTokenSecret(tokenSecret);
-
-            TwitterFactory twitterFactory = new TwitterFactory(configurationBuilder.build());
-            twitter = twitterFactory.getInstance();
-        }
-
-        if(isIGLoggedIn) {
-            instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
-        }
+        simpleFacebook = BPUtils.getSPrefObject(sharedPreferences, SimpleFacebook.class, BPUtils.FB_OBJECT);
+        twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
+        instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
 
         // Inflate initial views
 
@@ -221,20 +177,15 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
         }
 
         if(isFBLoggedIn && simpleFacebook != null) {
-            BlocpartyApplication.getSharedDataSource().fetchFacebookInformation(simpleFacebook);
+            simpleFacebook = BPUtils.getSPrefObject(sharedPreferences, SimpleFacebook.class, BPUtils.FB_OBJECT);
         }
 
         if(isTwLoggedIn && twitter != null) {
-            BlocpartyApplication.getSharedDataSource().fetchTwitterInformation(twitter);
+            twitter = BPUtils.getSPrefObject(sharedPreferences, Twitter.class, BPUtils.TW_OBJECT);
         }
 
         if(isIGLoggedIn && instagram != null) {
-            if(instagram != null) {
-                BlocpartyApplication.getSharedDataSource().fetchInstagramInformation(instagram);
-            }
-            else {
-                Log.e(CLASS_TAG, "Instagram variable is null. Unable to fetch feed");
-            }
+            instagram = BPUtils.getSPrefObject(sharedPreferences, Instagram.class, BPUtils.IG_OBJECT);
         }
 
         if(isColDialogActive) {
@@ -267,6 +218,20 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             recyclerView.setLayoutManager(linearLayoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setAdapter(postItemAdapter);
+
+            BlocpartyApplication.getSharedDataSource().fetchPostItems(new DataSource.Callback<ArrayList<PostItem>>() {
+                @Override
+                public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                    if (currentPostItems.size() == 0) {
+                        currentPostItems.addAll(postItems);
+                        postItemAdapter.notifyItemRangeInserted(0, currentPostItems.size());
+                    }
+                }
+            });
+
+            lastItemPosition = sharedPreferences.getInt(BPUtils.LAST_POST_ITEM_POSITION, 0);
+            linearLayoutManager.scrollToPositionWithOffset(lastItemPosition, 0);
+
             recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -275,12 +240,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
-//                Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+//                    Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
+//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
                     Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
-                        postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                        postItem = currentPostItems.get(firstVisibleItem);
                     }
 
                     User user = new User(0); // dummy argument. it doesn't matter for DB insertion
@@ -298,48 +263,23 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     }
 
                     BlocpartyApplication.getSharedDataSource().addUserToDB(user);
-
-//                if (loading) {
-//
-//                    // If list is loading, stop it and set the previousTotal to the current list's total
-//
-//                    if (totalItemCount > previousTotal) {
-//                        loading = false;
-//                        previousTotal = totalItemCount;
-//                        Log.v(CLASS_TAG, "Previous Total: " + previousTotal);
-//                    }
-//                }
-//
-//                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-//                    Log.v(CLASS_TAG, "End has been reached...loading more...");
-//                    postItemAdapter.notifyDataSetChanged();
-//                    loading = true;
-//                }
-//
-//                Log.v(CLASS_TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-//                Log.v(CLASS_TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
-//                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
-//                        + (firstVisibleItem + visibleThreshold));
-//                Log.v(CLASS_TAG, "Current loading state: " + loading);
                 }
             });
-
-            BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
-            postItemAdapter.notifyDataSetChanged();
 
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    BlocpartyApplication.getSharedDataSource().fetchAllPostItems();
-                    postItemAdapter.notifyDataSetChanged();
+                    BlocpartyApplication.getSharedDataSource().fetchPostItems(new DataSource.Callback<ArrayList<PostItem>>() {
+                        @Override
+                        public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                            currentPostItems.clear();
+                            currentPostItems.addAll(postItems);
+                            postItemAdapter.notifyItemRangeChanged(0, currentPostItems.size());
+                        }
+                    });
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
-
-
-            if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-                BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-            }
         }
         else {
             // Disable this layout until it is needed
@@ -379,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
-                        postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(firstVisibleItem);
+                        postItem = currentPostItems.get(firstVisibleItem);
                     }
 
                     User user = new User(0); // dummy argument. it doesn't matter for DB insertion
@@ -397,29 +337,6 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     }
 
                     BlocpartyApplication.getSharedDataSource().addUserToDB(user);
-
-//                if (loading) {
-//
-//                    // If list is loading, stop it and set the previousTotal to the current list's total
-//
-//                    if (totalItemCount > previousTotal) {
-//                        loading = false;
-//                        previousTotal = totalItemCount;
-//                        Log.v(CLASS_TAG, "Previous Total: " + previousTotal);
-//                    }
-//                }
-//
-//                if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-//                    Log.v(CLASS_TAG, "End has been reached...loading more...");
-//                    postItemAdapter.notifyDataSetChanged();
-//                    loading = true;
-//                }
-//
-//                Log.v(CLASS_TAG, "totalItemCount > previousTotal: " + totalItemCount + " > " + previousTotal);
-//                Log.v(CLASS_TAG, "(totalItemCount - visibleItemCount) <= (firstVisibleItem + " +
-//                        "visibleThreshold): " + (totalItemCount - visibleItemCount) + " <= "
-//                        + (firstVisibleItem + visibleThreshold));
-//                Log.v(CLASS_TAG, "Current loading state: " + loading);
                 }
             });
 
@@ -448,14 +365,10 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     filteredPostsLayout.setVisibility(View.GONE);
 
                     BPUtils.delSPrefValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION);
-                    BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
+                    currentPostItems.clear();
                     restartActivity();
                 }
             });
-
-            if(!BlocpartyApplication.getSharedDataSource().isDBEmpty(BPUtils.POST_ITEM_TABLE)) {
-                BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-            }
         }
     }
 
@@ -516,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             // Clear the DB, ArrayList, and ViewHolder once you're here so everything has a fresh start
 
             BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
-            BlocpartyApplication.getSharedDataSource().getPostItemArrayList().clear();
+            currentPostItems.clear();
             postItemAdapter.notifyDataSetChanged();
 
             if(sharedPreferences != null) {
@@ -559,7 +472,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onPostItemImagePanZoomed(PostItemAdapter postItemAdapter, int adapterPosition) {
-        PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(adapterPosition);
+        BPUtils.putSPrefIntValue(sharedPreferences, BPUtils.FILE_NAME, BPUtils.LAST_POST_ITEM_POSITION,
+                adapterPosition);
+        PostItem postItem = currentPostItems.get(adapterPosition);
         Intent intent = new Intent(this, FullScreenImageActivity.class);
         intent.putExtra(BPUtils.POST_IMAGE_URL, postItem.getPostImageUrl());
         startActivity(intent);
@@ -585,12 +500,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     @Override
     public PostItem getPostItem(PostItemAdapter postItemAdapter, int position) {
-        return null;
+        return currentPostItems.get(position);
     }
 
     @Override
     public int getItemCount(PostItemAdapter postItemAdapter) {
-        return 0;
+        return currentPostItems.size();
     }
 
     /**
@@ -616,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             // Set up the MessageQueue in case something requires it
             Looper.prepare();
 
-            PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList().get(adapterPosition);
+            PostItem postItem = currentPostItems.get(adapterPosition);
 
             if(postItem.getPostImageUrl().contains("fbcdn.net")) {
                 Log.v(CLASS_TAG, "Detected Facebook Like");
@@ -749,8 +664,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 storageDirectory.mkdir();
             }
 
-            PostItem postItem = BlocpartyApplication.getSharedDataSource().getPostItemArrayList()
-                    .get(adapterPosition);
+            PostItem postItem = currentPostItems.get(adapterPosition);
 
             URL imageURL = null;
             HttpURLConnection httpURLConnection = null;

@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import twitter4j.Status;
+
 /**
  * Created by Ngynstvn on 9/23/15.
  */
@@ -92,6 +94,10 @@ public class BPUtils {
     // Pan Zoom Related
 
     public static final String POST_IMAGE_URL = "post_image_url";
+
+    // View Related
+
+    public static final String LAST_POST_ITEM_POSITION = "last_post_item_position";
 
     // ----- Static Methods ----- //
 
@@ -174,7 +180,12 @@ public class BPUtils {
 
     public static <T> T getSPrefObject(SharedPreferences sharedPreferences, Class<T> tClass, String key) {
         Gson gson = new Gson();
-        String json = sharedPreferences.getString(key, "");
+        String json = sharedPreferences.getString(key, null);
+
+        if(json == null) {
+            return null;
+        }
+
         return gson.fromJson(json, tClass);
     }
 
@@ -255,5 +266,14 @@ public class BPUtils {
         Log.v(classTag, "Inserted Post ID: " + Long.parseLong(mediaFeedData.getId().split("_")[0]));
         Log.v(classTag, "Post Caption: " + mediaFeedData.getCaption().getText());
         Log.v(classTag, "Post Created Time: " + mediaFeedData.getCaption().getCreatedTime());
+    }
+
+    public static void logTwitterPostItemInfo(String classTag, Status status) {
+            Log.v(classTag, "User: " + status.getUser().getName());
+            Log.v(classTag, "User ID: " + status.getUser().getId());
+            Log.v(classTag, "Profile Pic: " + status.getUser().getBiggerProfileImageURL());
+            Log.v(classTag, "Status: " + status.getText());
+            Log.v(classTag, "Post ID: " + status.getId());
+            Log.e(classTag, "Image URL: " + status.getMediaEntities()[0].getMediaURL());
     }
 }
