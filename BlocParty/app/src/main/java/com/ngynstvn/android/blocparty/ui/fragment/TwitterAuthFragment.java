@@ -279,6 +279,10 @@ public class TwitterAuthFragment extends Fragment {
             Log.e(CLASS_TAG, "Returned NullPointerException. TEST FAILED");
             return false;
         }
+        catch (IllegalStateException e) {
+            Log.e(CLASS_TAG, "Returned IllegalStateException. TEST FAILED");
+            return false;
+        }
     }
 
     private Configuration getTwitterConfigBuilder(String consumerKey, String consumerSecret, String token, String tokenSecret) {

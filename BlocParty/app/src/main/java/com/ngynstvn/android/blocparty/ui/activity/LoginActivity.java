@@ -423,6 +423,10 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             Log.e(CLASS_TAG, "Returned NullPointerException. TEST FAILED");
             return false;
         }
+        catch (IllegalStateException e) {
+            Log.e(CLASS_TAG, "Returned IllegalStateException. TEST FAILED");
+            return false;
+        }
     }
 
     private void getTwitterAccessToken() {
