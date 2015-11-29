@@ -114,9 +114,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     private static PostItem postItem;
     private static ArrayList<PostItem> currentPostItems = new ArrayList<PostItem>();
-    private static int itemPosition = 15;
-
-    private static int pageNumber = 1;
+    private static int fetchingPosition = 0;
+    private static int latestListSize = 0;
 
     private boolean isColDialogActive = false;
     private static String currentCollectionName = null;
@@ -225,7 +224,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 public void onFetchingComplete(ArrayList<PostItem> postItems) {
                     if (currentPostItems.size() == 0) {
                         currentPostItems.addAll(postItems);
-                        postItemAdapter.notifyItemRangeInserted(0, currentPostItems.size());
+                        latestListSize = currentPostItems.size();
+                        fetchingPosition = latestListSize - 3; // Start
+                        postItemAdapter.notifyItemRangeInserted(0, latestListSize);
                     }
                 }
             });
@@ -265,16 +266,19 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
                     BlocpartyApplication.getSharedDataSource().addUserToDB(user);
 
-                    if(firstVisibleItem == itemPosition) {
-                        itemPosition += 20;
-                        BlocpartyApplication.getSharedDataSource().fetchMorePostItems(new DataSource.Callback<ArrayList<PostItem>>() {
+                    if(firstVisibleItem == fetchingPosition) {
+                        BlocpartyApplication.getSharedDataSource().fetchMorePostItems(new DataSource
+                                .Callback<ArrayList<PostItem>>() {
                             @Override
                             public void onFetchingComplete(ArrayList<PostItem> postItems) {
                                 Log.v(CLASS_TAG, "Loading more...");
                                 currentPostItems.addAll(postItems);
-                                postItemAdapter.notifyDataSetChanged();
+                                fetchingPosition += postItems.size();
+                                postItemAdapter.notifyItemRangeInserted(latestListSize, currentPostItems.size());
                             }
-                        }, pageNumber++);
+                        }, latestListSize);
+
+                        latestListSize = currentPostItems.size();
                     }
                 }
             });
@@ -412,6 +416,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     protected void onDestroy() {
         Log.e(CLASS_TAG, "onDestroy() called");
         super.onDestroy();
+        BlocpartyApplication.getSharedDataSource().clearTable(BPUtils.POST_ITEM_TABLE);
     }
 
     // -----   -----  -----  -----  ----- //

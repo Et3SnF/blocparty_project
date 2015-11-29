@@ -480,9 +480,6 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
 
     private void twitterLogout() {
         BPUtils.logMethod(CLASS_TAG);
-
-        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_KEY);
-        BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_CONSUMER_SECRET);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_ACCESS_TOKEN_SECRET);
         BPUtils.delSPrefValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME), BPUtils.FILE_NAME, BPUtils.TW_OBJECT);
