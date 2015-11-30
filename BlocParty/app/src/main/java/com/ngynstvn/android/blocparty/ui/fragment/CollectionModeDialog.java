@@ -170,7 +170,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                                     @Override
                                     public void onFetchingComplete(List<User> users) {
                                         collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
-                                        collectionAdapter.notifyItemRangeChanged(0, users.size());
+                                        collectionAdapter.notifyDataSetChanged();
                                     }
                                 });
                     }
