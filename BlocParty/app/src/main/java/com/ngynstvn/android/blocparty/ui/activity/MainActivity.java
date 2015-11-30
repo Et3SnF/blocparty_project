@@ -1,12 +1,15 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -130,6 +133,14 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
         toolbar = (Toolbar) findViewById(R.id.tb_activity_main);
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.ic_insert_photo_white_24dp);
+
+        // For Android 6.0 or greater, read/write permissions still needs to be requested
+        // here even if it is already declared in AndroidManifest
+
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            BPUtils.requestPermission(MainActivity.this, Manifest.permission.CAMERA);
+            BPUtils.requestPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
 
         isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
@@ -475,9 +486,26 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
         if(item.getItemId() == R.id.action_camera_mode) {
             Log.v(CLASS_TAG, "Camera button clicked");
-            Intent intent = new Intent(this, CameraActivity.class);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
+
+            if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                Intent intent = new Intent(this, CameraActivity.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
+            }
+            else {
+                // If permission is granted for Marshmallow, open camera.
+                if(ActivityCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(this, CameraActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
+                }
+                else {
+                    BPUtils.displayDialog(MainActivity.this, "Unable to open camera. Permission denied.");
+                    BPUtils.requestPermission(MainActivity.this, Manifest.permission.CAMERA);
+                }
+            }
+
             return true;
         }
 

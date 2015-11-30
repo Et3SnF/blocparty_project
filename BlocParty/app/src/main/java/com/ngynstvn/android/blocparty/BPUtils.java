@@ -1,10 +1,14 @@
 package com.ngynstvn.android.blocparty;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -232,10 +236,20 @@ public class BPUtils {
         return new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
     }
 
-    public static void displayDialog(Context context, String message) {
-        new AlertDialog.Builder(context)
-                .setMessage(message)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+    public static void displayDialog(Context context, String errorMessage) {
+
+        AlertDialog.Builder alertDialog;
+
+        if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+            alertDialog = new AlertDialog.Builder(context);
+        }
+        else {
+            alertDialog = new AlertDialog.Builder(context, android.R.style.Theme_Material_Light_Dialog_Alert);
+        }
+
+        alertDialog
+                .setMessage(errorMessage)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -293,5 +307,25 @@ public class BPUtils {
                 .setOAuthAccessTokenSecret(tokenSecret);
 
         return configurationBuilder.build();
+    }
+
+    /**
+     *
+     * For Android 6.0 or higher only.
+     *
+     * As of Marshmallow, an additional permission request is required even if the permission
+     * is already declared in AndroidManifest. A dialog will pop up to request access to a permission.
+     *
+     */
+
+    public static void requestPermission(Activity activity, String permissionType) {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            int permission = ActivityCompat.checkSelfPermission(activity,
+                    permissionType);
+
+            if(permission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{permissionType}, 1);
+            }
+        }
     }
 }

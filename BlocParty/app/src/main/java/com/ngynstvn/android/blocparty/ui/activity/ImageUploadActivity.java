@@ -331,8 +331,6 @@ public class ImageUploadActivity extends AppCompatActivity {
                     }
                 })
                 .show();
-
-
     }
 
     /**
