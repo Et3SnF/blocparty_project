@@ -78,6 +78,7 @@ public class BPUtils {
     public static final String POST_ITEM_TABLE = "post_item_table";
     public static final String COLLECTION_TABLE = "collection_table";
     public static final String USER_TABLE = "user_table";
+    public static final String ROW_ID = "_id";
     public static final String USER_PROFILE_ID = "user_profile_id";
     public static final String COLLECTION_NAME = "collection_name";
     public static final String OP_PROFILE_ID = "op_profile_id";

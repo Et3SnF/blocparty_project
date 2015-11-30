@@ -368,7 +368,8 @@ public class DataSource {
 //                        BPUtils.logTwitterPostItemInfo(CLASS_TAG, status);
 
                             if (!isValueInDB(BPUtils.POST_ITEM_TABLE, BPUtils.TW_POST_IMG_URL,
-                                    postImageUrl) && postId != 0) {
+                                    postImageUrl) && postId != 0 && !isValueInDB(BPUtils.POST_ITEM_TABLE,
+                                    BPUtils.POST_ID, String.valueOf(postId))) {
                                 addPostItemToDB(opName, opProfileId, profilePicUrl, postId,
                                         postImageUrl, postCaption, postPublishDate, isTwPostLiked);
                             }
@@ -446,7 +447,8 @@ public class DataSource {
                             postPublishDate = -1;
                         }
 
-                        if(postPublishDate != -1) {
+                        if(postPublishDate != -1 && !isValueInDB(BPUtils.POST_ITEM_TABLE,
+                                BPUtils.POST_ID, String.valueOf(postId))) {
                             addPostItemToDB(opName, opProfileId, profilePicUrl,
                                     postId, postImageUrl, postCaption, postPublishDate, isIGPostLiked);
                         }
@@ -475,9 +477,24 @@ public class DataSource {
 
     public synchronized void fetchPostItems(final Callback<ArrayList<PostItem>> fetchCallback) {
 
-        fetchFacebookInformation();
-        fetchTwitterInformation();
-        fetchInstagramInformation();
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                clearTable(BPUtils.POST_ITEM_TABLE);
+            }
+        });
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.FB_LOGIN, false)) {
+            fetchFacebookInformation();
+        }
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.TW_LOGIN, false)) {
+            fetchTwitterInformation();
+        }
+
+        if(BPUtils.newSPrefInstance(BPUtils.FILE_NAME).getBoolean(BPUtils.IG_LOGIN, false)) {
+            fetchInstagramInformation();
+        }
 
         pullHandler.post(new Runnable() {
             @Override
@@ -486,13 +503,9 @@ public class DataSource {
 
                 final ArrayList<PostItem> fetchedItems = new ArrayList<PostItem>();
 
-                final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
-                        + " group by " + BPUtils.POST_ID
-                        + " order by " + BPUtils.PUBLISH_DATE + " desc "
-                        + " limit 20 ";
-
                 SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
-                Cursor cursor = database.rawQuery(statement, null);
+                Cursor cursor = database.query(BPUtils.POST_ITEM_TABLE, null, null, null,
+                        BPUtils.POST_ID, null, BPUtils.PUBLISH_DATE + " DESC ", String.valueOf(20));
 
                 if(cursor.moveToFirst() && fetchedItems.size() <= 20) {
                     do {
@@ -513,7 +526,8 @@ public class DataSource {
         });
     }
 
-    public synchronized void fetchMorePostItems(final Callback<ArrayList<PostItem>> fetchCallback, final int pageNumber) {
+    public synchronized void fetchMorePostItems(final Callback<ArrayList<PostItem>> fetchCallback,
+                                                final long lastRowId) {
 
         fetchFacebookInformation();
         fetchTwitterInformation();
@@ -526,12 +540,11 @@ public class DataSource {
 
                 final ArrayList<PostItem> moreFetchedItems = new ArrayList<PostItem>();
 
-                String offSet = String.valueOf(pageNumber * 10);
-
                 final String statement = "Select * from " + BPUtils.POST_ITEM_TABLE
+                        + " where " + BPUtils.ROW_ID + " > " + String.valueOf(lastRowId)
                         + " group by " + BPUtils.POST_ID
                         + " order by " + BPUtils.PUBLISH_DATE + " desc "
-                        + " limit 20 " + " offset " + offSet;
+                        + " limit 20 ";
 
                 SQLiteDatabase database = databaseOpenHelper.getReadableDatabase();
                 Cursor cursor = database.rawQuery(statement, null);

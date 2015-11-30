@@ -274,11 +274,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                                 Log.v(CLASS_TAG, "Loading more...");
                                 currentPostItems.addAll(postItems);
                                 fetchingPosition += postItems.size();
+                                Log.v(CLASS_TAG, "New fetching position: " + fetchingPosition);
                                 postItemAdapter.notifyItemRangeInserted(latestListSize, currentPostItems.size());
                             }
-                        }, latestListSize);
+                        }, firstVisibleItem);
 
-                        latestListSize = currentPostItems.size();
+                        fetchingPosition += currentPostItems.size();
                     }
                 }
             });
