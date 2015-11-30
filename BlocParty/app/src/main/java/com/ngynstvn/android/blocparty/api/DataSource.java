@@ -919,7 +919,6 @@ public class DataSource {
     }
 
     public int getDBItemCount(String tableName, String field, String fieldValue) {
-        BPUtils.logMethod(CLASS_TAG);
 
         final String statement = "Select * from " + tableName
                 + " where " + field + " like '" + fieldValue + "';";

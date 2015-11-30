@@ -152,7 +152,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
 
         BlocpartyApplication.getSharedDataSource().fetchCollections(new DataSource.Callback<List<Collection>>() {
             @Override
-            public void onFetchingComplete(List<Collection> collections) {
+            public void onFetchingComplete(final List<Collection> collections) {
                 collectionArrayList.addAll(collections);
 
                 if (collections.size() == 0) {
@@ -166,13 +166,13 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                 if (collectionArrayList != null && collectionArrayList.size() != 0) {
                     for (final Collection collection : collectionArrayList) {
                         BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(collection.getCollectionName(),
-                                new DataSource.Callback<List<User>>() {
-                                    @Override
-                                    public void onFetchingComplete(List<User> users) {
-                                        collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
-                                        collectionAdapter.notifyDataSetChanged();
-                                    }
-                                });
+                            new DataSource.Callback<List<User>>() {
+                                @Override
+                                public void onFetchingComplete(List<User> users) {
+                                    collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
+                                    collectionAdapter.notifyItemRangeRemoved(0, users.size());
+                                }
+                            });
                     }
                 }
 

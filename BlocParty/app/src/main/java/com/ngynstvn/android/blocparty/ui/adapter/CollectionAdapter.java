@@ -147,7 +147,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 public void onClick(View v) {
                     Log.v(TAG, "Collection Filter Activated");
 
-                    if(collectionAdapteraDelegate != null) {
+                    if (collectionAdapteraDelegate != null) {
                         getCollectionAdapterDelegate().onItemClicked(CollectionAdapter.this, getAdapterPosition());
                     }
                 }
@@ -182,79 +182,61 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                         .getString(R.string.users));
             }
 
-            updateCollectionUserImages(getCollectionAdapterDataSource()
-                    .getCollectionUsersList(CollectionAdapter.this, getAdapterPosition()));
-        }
-
-        private void updateCollectionUserImages(ArrayList<User> userArrayList) {
-
-            // Safety measure
-
-            if(userArrayList != null) {
-                if(userArrayList.size() == 0) {
-                    return;
-                }
-
-                User user1 = null;
-                User user2 = null;
-                User user3 = null;
-                User user4 = null;
+            try {
+                ArrayList<User> userArrayList = getCollectionAdapterDataSource()
+                        .getCollectionUsersList(CollectionAdapter.this, getAdapterPosition());
 
                 if(userArrayList.size() == 1) {
-                    user1 = userArrayList.get(0);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(0)
+                            .getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(topUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(botUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(botUserRightPic);
                 }
                 else if(userArrayList.size() == 2) {
-                    user1 = userArrayList.get(0);
-                    user2 = userArrayList.get(1);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(0)
+                            .getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(1)
+                            .getUserProfilePicUrl()).into(topUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(botUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(botUserRightPic);
                 }
                 else if(userArrayList.size() == 3) {
-                    user1 = userArrayList.get(0);
-                    user2 = userArrayList.get(1);
-                    user3 = userArrayList.get(2);
-                }
-                else if(userArrayList.size() == 4) {
-                    user1 = userArrayList.get(0);
-                    user2 = userArrayList.get(1);
-                    user3 = userArrayList.get(2);
-                    user4 = userArrayList.get(3);
-                }
-                else {
-                    user1 = userArrayList.get(0);
-                    user2 = userArrayList.get(1);
-                    user3 = userArrayList.get(2);
-                    user4 = userArrayList.get(3);
-                }
-
-                if(user1 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(0)
+                            .getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(1)
+                            .getUserProfilePicUrl()).into(topUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(2)
+                            .getUserProfilePicUrl()).into(botUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                            .into(botUserRightPic);
                 }
                 else {
-                    topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                            .getResources().getColor(android.R.color.transparent));
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(0)
+                            .getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(1)
+                            .getUserProfilePicUrl()).into(topUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(2)
+                            .getUserProfilePicUrl()).into(botUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(userArrayList.get(3)
+                            .getUserProfilePicUrl()).into(botUserRightPic);
                 }
-
-                if(user2 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(topUserRightPic);
-                }
-                else {
-                    topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                            .getResources().getColor(android.R.color.transparent));
-                }
-
-                if(user3 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(botUserLeftPic);
-                }
-                else {
-                    botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                            .getResources().getColor(android.R.color.transparent));
-                }
-
-                if(user4 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(botUserRightPic);
-                } else {
-                    botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                            .getResources().getColor(android.R.color.transparent));
-                }
+            }
+            catch (NullPointerException e) {
+                Log.v(TAG, "UserArrayList is null");
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                        .into(topUserLeftPic);
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                        .into(topUserRightPic);
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                        .into(botUserLeftPic);
+                Picasso.with(BlocpartyApplication.getSharedInstance()).load(R.drawable.default_photo)
+                        .into(botUserRightPic);
             }
         }
     }
