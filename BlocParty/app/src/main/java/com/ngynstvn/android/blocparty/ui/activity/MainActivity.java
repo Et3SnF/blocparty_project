@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Looper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -720,7 +719,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
             String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             String imageFileName = "IMAGE_BP_" + timeStamp + ".jpg";
-            File storageDirectory = new File(Environment.getExternalStorageDirectory() + "/Blocparty/");
+            File storageDirectory = new File(BPUtils.IMG_FOLDER_PATH);
 
             if(!storageDirectory.exists()) {
                 storageDirectory.mkdir();

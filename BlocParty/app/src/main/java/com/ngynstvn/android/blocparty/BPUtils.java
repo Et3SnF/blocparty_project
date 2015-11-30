@@ -93,6 +93,8 @@ public class BPUtils {
     public static final String CAM_STATE = "cam_state";
     public static final String FLASH_STATE = "flash_state";
     public static final String IMAGE_URI = "image_uri";
+    public static final String TEMP_PATH = Environment.getExternalStorageDirectory() + "/Pictures/bp_tmp/";
+    public static final String IMG_FOLDER_PATH = Environment.getExternalStorageDirectory() + "/Blocparty/";
 
     // Pan Zoom Related
 

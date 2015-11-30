@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
@@ -230,6 +229,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     protected void onDestroy() {
         Log.e(TAG, "onDestroy() called");
         super.onDestroy();
+        deleteTempFolder();
     }
 
     // -----   -----  -----  -----  ----- //
@@ -388,7 +388,7 @@ public class ImageUploadActivity extends AppCompatActivity {
             String imageFileName = "IMAGE_BP_" + timeStamp + ".jpg";
 
             Log.v(TAG, "Current Temp Image URI: " + imageFileURI.getPath());
-            String destinationDirectory = Environment.getExternalStorageDirectory() + "/Blocparty/";
+            String destinationDirectory = BPUtils.IMG_FOLDER_PATH;
             Log.v(TAG, "Destination Directory: " + destinationDirectory);
 
             File storageDirectory = new File(destinationDirectory);
@@ -434,6 +434,11 @@ public class ImageUploadActivity extends AppCompatActivity {
                     byteArrayOutputStream.close();
                     fileOutputStream.flush();
                     fileOutputStream.close();
+
+                    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                    Uri savedImageUri = Uri.fromFile(savedImage);
+                    mediaScanIntent.setData(savedImageUri);
+                    ImageUploadActivity.this.sendBroadcast(mediaScanIntent);
                 }
             }
             catch (IOException e) {
@@ -565,6 +570,22 @@ public class ImageUploadActivity extends AppCompatActivity {
             startActivity(Intent.createChooser(instagramShare, "Share to:"));
         }
 
+    }
+
+    /**
+     *
+     * Delete temp folder method
+     *
+     */
+
+    private void deleteTempFolder() {
+        File tempFolder = new File(BPUtils.TEMP_PATH);
+
+        if(tempFolder.exists() && tempFolder.isDirectory()) {
+            for(File tempImgFile : tempFolder.listFiles()) {
+                tempImgFile.delete();
+            }
+        }
     }
 }
 

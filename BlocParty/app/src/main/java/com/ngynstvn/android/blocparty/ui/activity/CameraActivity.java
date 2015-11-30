@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
@@ -675,7 +674,7 @@ public class CameraActivity extends AppCompatActivity {
     private void createTempImgFile(byte[] bytes) {
         BPUtils.logMethod(CLASS_TAG);
 
-        String tempDirPath = Environment.getExternalStorageDirectory() + "/Pictures/bp_tmp/";
+        String tempDirPath = BPUtils.TEMP_PATH;
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String fileName = "IMG_" + timeStamp;
 
