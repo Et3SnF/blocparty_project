@@ -801,6 +801,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     @Override
                     public void run() {
                         BPUtils.displayDialog(MainActivity.this, "There was an issue downloading the image. Try again.");
+                        BPUtils.requestPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
                     }
                 });
             }

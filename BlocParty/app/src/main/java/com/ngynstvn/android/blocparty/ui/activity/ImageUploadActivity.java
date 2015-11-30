@@ -1,12 +1,15 @@
 package com.ngynstvn.android.blocparty.ui.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
@@ -440,7 +443,12 @@ public class ImageUploadActivity extends AppCompatActivity {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                BPUtils.displayDialog(ImageUploadActivity.this, "There was an issue downloading the image. Try again.");
+
+                if(ActivityCompat.checkSelfPermission(ImageUploadActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    BPUtils.requestPermission(ImageUploadActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
             }
 
             return null;
