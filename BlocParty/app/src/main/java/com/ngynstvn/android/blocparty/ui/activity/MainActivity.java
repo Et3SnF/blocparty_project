@@ -478,12 +478,14 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             Log.v(CLASS_TAG, "Camera button clicked");
             Intent intent = new Intent(this, CameraActivity.class);
             startActivity(intent);
+            overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
             return true;
         }
 
         if(item.getItemId() == R.id.action_login_mode) {
             Log.v(CLASS_TAG, "Login button clicked");
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
             // Clear the DB, ArrayList, and ViewHolder once you're here so everything has a fresh start
 

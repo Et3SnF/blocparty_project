@@ -214,6 +214,7 @@ public class LoginActivity extends AppCompatActivity implements TwitterAuthFragm
             }
 
             startActivity(new Intent(this, MainActivity.class));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
         return super.onOptionsItemSelected(item);
     }
