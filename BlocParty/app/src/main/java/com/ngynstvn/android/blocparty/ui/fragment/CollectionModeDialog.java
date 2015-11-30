@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,11 +19,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
-import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.api.model.Collection;
+import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.activity.AddCollectionActivity;
 import com.ngynstvn.android.blocparty.ui.activity.MainActivity;
 import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
+
+import java.util.ArrayList;
 
 /**
  * Created by Ngynstvn on 10/27/15.
@@ -30,7 +34,7 @@ import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
 public class CollectionModeDialog extends DialogFragment implements CollectionAdapter.CollectionAdapteraDelegate {
 
-    private static String TAG = BPUtils.classTag(CollectionModeDialog.class);
+    private static String CLASS_TAG = BPUtils.classTag(CollectionModeDialog.class);
 
     private Toolbar toolbar;
     private RecyclerView recyclerView;
@@ -39,38 +43,42 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
 
     private CollectionAdapter collectionAdapter;
 
+    private ArrayList<Collection> collectionArrayList = new ArrayList<Collection>();
+    private ArrayList<User> usersArrayList = new ArrayList<User>();
+
     // ---- Instantiation Method with Bundle ----- //
 
     public static CollectionModeDialog newInstance() {
         CollectionModeDialog collectionModeDialog = new CollectionModeDialog();
-
         Bundle bundle = new Bundle();
-
         collectionModeDialog.setArguments(bundle);
-
         return collectionModeDialog;
     }
 
     // ----- Lifecycle Methods ------ //
 
+
+    @Override
+    public void onAttach(Context context) {
+        BPUtils.logMethod(CLASS_TAG, "API > 23");
+        super.onAttach(context);
+    }
+
     @Override
     public void onAttach(Activity activity) {
-        Log.v(TAG, "onAttach() called");
+        BPUtils.logMethod(CLASS_TAG, "API <= 23");
         super.onAttach(activity);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.v(TAG, "onCreate() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
-
-        BlocpartyApplication.getSharedDataSource().getCollectionArrayList().clear();
-        BlocpartyApplication.getSharedDataSource().fetchCollections();
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Log.v(TAG, "onCreateDialog() called");
+        BPUtils.logMethod(CLASS_TAG);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MaterialAlertDialogStyle);
         View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_collection_dialog, null);
@@ -93,7 +101,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.v(TAG, "Collection Close Button Clicked");
+                        Log.v(CLASS_TAG, "Collection Close Button Clicked");
                     }
                 });
 
@@ -104,7 +112,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if(item.getItemId() == R.id.action_add_collection) {
-                    Log.v(TAG, "Add Collection Button Clicked");
+                    Log.v(CLASS_TAG, "Add Collection Button Clicked");
                     dismiss();
                     getActivity().startActivity(new Intent(getActivity(), AddCollectionActivity.class));
                     return true;
@@ -114,7 +122,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
             }
         });
 
-        if(BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size() == 0) {
+        if(collectionArrayList.size() == 0) {
             recyclerView.setVisibility(View.GONE);
             emptyCollectionText.setVisibility(View.VISIBLE);
         }
@@ -128,59 +136,57 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.v(TAG, "onActivityCreated() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onStart() {
-        Log.v(TAG, "onStart() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStart();
         getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        // Override any positive and negative buttons here
     }
 
     @Override
     public void onResume() {
-        Log.v(TAG, "onResume() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onResume();
     }
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        Log.v(TAG, "onCancel() called");
-        // This is called only if I touched outside of the dialog to dismiss
+        BPUtils.logMethod(CLASS_TAG);
         super.onCancel(dialog);
+        // This is called only if I touched outside of the dialog to dismiss
     }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        Log.v(TAG, "onDismiss() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDismiss(dialog);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Log.v(TAG, "onSaveInstanceState() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onStop() {
-        Log.v(TAG, "onStop() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        Log.v(TAG, "onDestroyView() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDestroyView();
     }
 
     @Override
     public void onDetach() {
-        Log.v(TAG, "onDetach() called");
+        BPUtils.logMethod(CLASS_TAG);
         super.onDetach();
     }
 
@@ -192,12 +198,11 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
 
     @Override
     public void onItemClicked(CollectionAdapter collectionAdapter, int position) {
-        Log.v(TAG, "onItemClicked() called");
+        Log.v(CLASS_TAG, "onItemClicked() called");
 
         BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                 BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION,
-                BlocpartyApplication.getSharedDataSource().getCollectionArrayList()
-                        .get(position).getCollectionName());
+                collectionArrayList.get(position).getCollectionName());
         restartActivity();
         dismiss();
     }
