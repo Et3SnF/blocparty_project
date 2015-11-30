@@ -46,6 +46,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import twitter4j.Twitter;
@@ -318,6 +319,23 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
             linearLayoutManager = new LinearLayoutManager(this);
 
+            latestListSize = 0;
+
+            BlocpartyApplication.getSharedDataSource().fetchPostItems(new DataSource.Callback<ArrayList<PostItem>>() {
+                @Override
+                public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                    if (currentPostItems.size() == 0) {
+                        currentPostItems.addAll(postItems);
+                        latestListSize = currentPostItems.size();
+                        fetchingPosition = latestListSize - 1; // Start
+                        postItemAdapter.notifyItemRangeInserted(0, latestListSize);
+                    }
+                }
+            });
+
+            lastItemPosition = sharedPreferences.getInt(BPUtils.LAST_POST_ITEM_POSITION, 0);
+            linearLayoutManager.scrollToPositionWithOffset(lastItemPosition, 0);
+
             recyclerView.setLayoutManager(linearLayoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setAdapter(postItemAdapter);
@@ -354,19 +372,45 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 }
             });
 
-            BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
-            postItemAdapter.notifyDataSetChanged();
+            BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(new DataSource.Callback<List<PostItem>>() {
+                @Override
+                public void onFetchingComplete(List<PostItem> postItems) {
+                    currentPostItems.clear();
+                    currentPostItems.addAll(postItems);
+                    postItemAdapter.notifyDataSetChanged();
+                }
+            }, currentCollectionName);
 
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
-                    BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(currentCollectionName);
+                    BlocpartyApplication.getSharedDataSource().fetchFilteredPostItems(new DataSource.Callback<List<PostItem>>() {
+                        @Override
+                        public void onFetchingComplete(List<PostItem> postItems) {
+                            currentPostItems.clear();
+                            currentPostItems.addAll(postItems);
+                            postItemAdapter.notifyDataSetChanged();
+                        }
+                    }, currentCollectionName);
                     postItemAdapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
 
             collectionName.setText(currentCollectionName);
+
+            if(firstVisibleItem == fetchingPosition) {
+                BlocpartyApplication.getSharedDataSource().fetchMoreFilteredPostItems(new DataSource.Callback<List<PostItem>>() {
+                    @Override
+                    public void onFetchingComplete(List<PostItem> postItems) {
+                        Log.v(CLASS_TAG, "Loading more...");
+                        currentPostItems.addAll(postItems);
+                        fetchingPosition += postItems.size();
+                        Log.v(CLASS_TAG, "New fetching position: " + fetchingPosition);
+                        postItemAdapter.notifyItemRangeInserted(latestListSize, currentPostItems.size());
+                    }
+                }, currentCollectionName, fetchingPosition);
+            }
 
             closeFilteredButton.setOnClickListener(new View.OnClickListener() {
                 @Override
