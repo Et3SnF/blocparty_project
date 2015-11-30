@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     if (currentPostItems.size() == 0) {
                         currentPostItems.addAll(postItems);
                         latestListSize = currentPostItems.size();
-                        fetchingPosition = latestListSize - 3; // Start
+                        fetchingPosition = latestListSize - 1; // Start
                         postItemAdapter.notifyItemRangeInserted(0, latestListSize);
                     }
                 }
@@ -242,8 +242,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                    Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
-//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
                     Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
@@ -277,9 +276,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                                 Log.v(CLASS_TAG, "New fetching position: " + fetchingPosition);
                                 postItemAdapter.notifyItemRangeInserted(latestListSize, currentPostItems.size());
                             }
-                        }, firstVisibleItem);
-
-                        fetchingPosition += currentPostItems.size();
+                        }, fetchingPosition);
                     }
                 }
             });
@@ -332,8 +329,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                Log.v(CLASS_TAG, "VisibleItemCount: " + visibleItemCount);
-//                Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
                     Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
