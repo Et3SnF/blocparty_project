@@ -490,18 +490,20 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                 Intent intent = new Intent(this, CameraActivity.class);
                 startActivity(intent);
-                overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
             else {
                 // If permission is granted for Marshmallow, open camera.
                 if(ActivityCompat.checkSelfPermission(MainActivity.this,
-                        Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission
+                                .WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     Intent intent = new Intent(this, CameraActivity.class);
                     startActivity(intent);
-                    overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 }
                 else {
-                    BPUtils.displayDialog(MainActivity.this, "Unable to open camera. Permission denied.");
+                    BPUtils.displayDialog(MainActivity.this, "Unable to open camera. Accept permissions and try again.");
                     BPUtils.requestPermission(MainActivity.this, Manifest.permission.CAMERA);
                 }
             }

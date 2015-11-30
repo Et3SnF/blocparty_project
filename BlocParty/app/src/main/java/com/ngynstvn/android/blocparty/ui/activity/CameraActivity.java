@@ -996,15 +996,25 @@ public class CameraActivity extends AppCompatActivity {
                     break;
             }
 
-            return new AlertDialog.Builder(getActivity())
+            AlertDialog.Builder alertDialog;
+
+            if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                alertDialog = new AlertDialog.Builder(getActivity());
+            }
+            else {
+                alertDialog = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Light_Dialog_Alert);
+            }
+
+            alertDialog
                     .setMessage(errorMessage)
                     .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            dismiss();
+                            dialog.dismiss();
                         }
-                    })
-                    .create();
+                    });
+
+            return alertDialog.show();
         }
     }
 }
