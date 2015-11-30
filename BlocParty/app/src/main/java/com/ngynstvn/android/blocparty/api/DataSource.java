@@ -722,7 +722,7 @@ public class DataSource {
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "fetchCollections");
 
-                ArrayList<Collection> collectionArrayList = new ArrayList<Collection>();
+                final ArrayList<Collection> collectionArrayList = new ArrayList<Collection>();
 
                 SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
 
@@ -741,7 +741,12 @@ public class DataSource {
 
                 cursor.close();
 
-                collectionsList.onFetchingComplete(collectionArrayList);
+                uiThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        collectionsList.onFetchingComplete(collectionArrayList);
+                    }
+                });
             }
         });
     }
@@ -752,7 +757,7 @@ public class DataSource {
             public void run() {
                 BPUtils.logMethod(CLASS_TAG, "fetchCollectionUsers");
 
-                ArrayList<User> userArrayList = new ArrayList<>();
+                final ArrayList<User> userArrayList = new ArrayList<>();
 
                 final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
                         + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "."
@@ -772,7 +777,12 @@ public class DataSource {
 
                 cursor.close();
 
-                usersList.onFetchingComplete(userArrayList);
+                uiThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        usersList.onFetchingComplete(userArrayList);
+                    }
+                });
             }
         });
     }

@@ -19,7 +19,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ngynstvn.android.blocparty.BPUtils;
+import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
+import com.ngynstvn.android.blocparty.api.DataSource;
 import com.ngynstvn.android.blocparty.api.model.Collection;
 import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.activity.AddCollectionActivity;
@@ -27,12 +29,15 @@ import com.ngynstvn.android.blocparty.ui.activity.MainActivity;
 import com.ngynstvn.android.blocparty.ui.adapter.CollectionAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Ngynstvn on 10/27/15.
  */
 
-public class CollectionModeDialog extends DialogFragment implements CollectionAdapter.CollectionAdapteraDelegate {
+public class CollectionModeDialog extends DialogFragment implements CollectionAdapter.CollectionAdapterDelegate,
+        CollectionAdapter.CollectionAdapterDataSource {
 
     private static String CLASS_TAG = BPUtils.classTag(CollectionModeDialog.class);
 
@@ -43,8 +48,8 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
 
     private CollectionAdapter collectionAdapter;
 
-    private ArrayList<Collection> collectionArrayList = new ArrayList<Collection>();
-    private ArrayList<User> usersArrayList = new ArrayList<User>();
+    private ArrayList<Collection> collectionArrayList;
+    private HashMap<String, ArrayList<User>> collectionUsersMap;
 
     // ---- Instantiation Method with Bundle ----- //
 
@@ -56,7 +61,6 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
     }
 
     // ----- Lifecycle Methods ------ //
-
 
     @Override
     public void onAttach(Context context) {
@@ -74,6 +78,8 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
     public void onCreate(Bundle savedInstanceState) {
         BPUtils.logMethod(CLASS_TAG);
         super.onCreate(savedInstanceState);
+        collectionArrayList = new ArrayList<>();
+        collectionUsersMap = new HashMap<>();
     }
 
     @Override
@@ -86,7 +92,8 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
         toolbar = (Toolbar) view.findViewById(R.id.tb_collection_dialog);
 
         collectionAdapter = new CollectionAdapter();
-        collectionAdapter.setCollectionAdapteraDelegate(this);
+        collectionAdapter.setCollectionAdapterDelegate(this);
+        collectionAdapter.setCollectionAdapterDataSource(this);
 
         emptyCollectionText = (TextView) view.findViewById(R.id.tv_empty_collection);
 
@@ -111,7 +118,7 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if(item.getItemId() == R.id.action_add_collection) {
+                if (item.getItemId() == R.id.action_add_collection) {
                     Log.v(CLASS_TAG, "Add Collection Button Clicked");
                     dismiss();
                     getActivity().startActivity(new Intent(getActivity(), AddCollectionActivity.class));
@@ -121,15 +128,6 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                 return false;
             }
         });
-
-        if(collectionArrayList.size() == 0) {
-            recyclerView.setVisibility(View.GONE);
-            emptyCollectionText.setVisibility(View.VISIBLE);
-        }
-        else {
-            recyclerView.setVisibility(View.VISIBLE);
-            emptyCollectionText.setVisibility(View.GONE);
-        }
 
         return builder.create();
     }
@@ -151,6 +149,35 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
     public void onResume() {
         BPUtils.logMethod(CLASS_TAG);
         super.onResume();
+
+        BlocpartyApplication.getSharedDataSource().fetchCollections(new DataSource.Callback<List<Collection>>() {
+            @Override
+            public void onFetchingComplete(List<Collection> collections) {
+                collectionArrayList.addAll(collections);
+                collectionAdapter.notifyDataSetChanged();
+
+                if (collections.size() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyCollectionText.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyCollectionText.setVisibility(View.GONE);
+                }
+
+                if (collectionArrayList != null && collectionArrayList.size() != 0) {
+                    for (final Collection collection : collectionArrayList) {
+                        BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(collection.getCollectionName(),
+                            new DataSource.Callback<List<User>>() {
+                                @Override
+                                public void onFetchingComplete(List<User> users) {
+                                    collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
+                                    collectionAdapter.notifyDataSetChanged();
+                                }
+                            });
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -199,7 +226,6 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
     @Override
     public void onItemClicked(CollectionAdapter collectionAdapter, int position) {
         Log.v(CLASS_TAG, "onItemClicked() called");
-
         BPUtils.putSPrefStrValue(BPUtils.newSPrefInstance(BPUtils.FILE_NAME),
                 BPUtils.FILE_NAME, BPUtils.CURRENT_COLLECTION,
                 collectionArrayList.get(position).getCollectionName());
@@ -207,7 +233,28 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
         dismiss();
     }
 
-    // ---- Other Methods ---- //
+    /**
+     *
+     * CollectionAdapter.CollectionAdapterDataSource Methods
+     *
+     */
+
+    @Override
+    public int getCollectionItemCount(CollectionAdapter collectionAdapter) {
+        return collectionArrayList.size();
+    }
+
+    @Override
+    public Collection getCollection(CollectionAdapter collectionAdapter, int position) {
+        return collectionArrayList.get(position);
+    }
+
+    @Override
+    public ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, Collection collection) {
+        return collectionUsersMap.get(collection.getCollectionName());
+    }
+
+// ---- Other Methods ---- //
 
     private void restartActivity() {
         // only use this if you're not in MainActivity itself!

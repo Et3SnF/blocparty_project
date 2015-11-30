@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,49 +28,23 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
     private static final String TAG = "(" + PostItemAdapter.class.getSimpleName() + "): ";
 
-    public CollectionAdapter() {
-        Log.v(TAG, "CollectionAdapter() called");
-    }
-
-    @Override
-    public CollectionAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-//        Log.v(TAG, "CollectionAdapterViewHolder() called");
-        View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.collection_item,
-                viewGroup, false);
-        return new CollectionAdapterViewHolder(inflate);
-    }
-
-    @Override
-    public void onBindViewHolder(CollectionAdapterViewHolder collectionAdapterViewHolder, int i) {
-//        Log.v(TAG, "onBindViewHolder() called");
-        Collection collection = BlocpartyApplication.getSharedDataSource().getCollectionArrayList().get(i);
-        collectionAdapterViewHolder.updateViewHolder(collection);
-    }
-
-    @Override
-    public int getItemCount() {
-//        Log.v(TAG, "getDBItemCount() called");
-        return BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size();
-    }
-
-    /*
-     * Interface Material
+    /**
      *
-     * Delegated to CollectionModeDialog.java
+     * CollectionAdapter's Delegation
+     *
      */
 
-    public interface CollectionAdapteraDelegate {
+    public interface CollectionAdapterDelegate {
         void onItemClicked(CollectionAdapter collectionAdapter, int position);
     }
 
-    private WeakReference<CollectionAdapteraDelegate> collectionAdapteraDelegate;
+    private WeakReference<CollectionAdapterDelegate> collectionAdapteraDelegate;
 
-    public void setCollectionAdapteraDelegate(CollectionAdapteraDelegate collectionAdapteraDelegate) {
-        this.collectionAdapteraDelegate = new WeakReference<CollectionAdapteraDelegate>(collectionAdapteraDelegate);
+    public void setCollectionAdapterDelegate(CollectionAdapterDelegate collectionAdapteraDelegate) {
+        this.collectionAdapteraDelegate = new WeakReference<CollectionAdapterDelegate>(collectionAdapteraDelegate);
     }
 
-    public CollectionAdapteraDelegate getCollectionAdapterDelegate() {
-
+    public CollectionAdapterDelegate getCollectionAdapterDelegate() {
         if(collectionAdapteraDelegate == null) {
             return null;
         }
@@ -79,7 +52,66 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         return collectionAdapteraDelegate.get();
     }
 
-    // --------------------- //
+    /**
+     *
+     * CollectionAdapter's DataSource
+     *
+     */
+
+    public interface CollectionAdapterDataSource {
+        int getCollectionItemCount(CollectionAdapter collectionAdapter);
+        Collection getCollection(CollectionAdapter collectionAdapter, int position);
+        ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, Collection collection);
+    }
+
+    private WeakReference<CollectionAdapterDataSource> collectionAdapterDataSource;
+
+    public void setCollectionAdapterDataSource(CollectionAdapterDataSource collectionAdapterDataSource) {
+        this.collectionAdapterDataSource = new WeakReference<CollectionAdapterDataSource>(collectionAdapterDataSource);
+    }
+
+    public CollectionAdapterDataSource getCollectionAdapterDataSource() {
+
+        /**
+         * @see com.ngynstvn.android.blocparty.ui.fragment#getCollectionItemSoun
+         */
+
+        if(collectionAdapterDataSource == null) {
+            return null;
+        }
+
+        return collectionAdapterDataSource.get();
+    }
+
+    public CollectionAdapter() {
+        Log.v(TAG, "CollectionAdapter() called");
+    }
+
+    @Override
+    public CollectionAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.collection_item,
+                viewGroup, false);
+        return new CollectionAdapterViewHolder(inflate);
+    }
+
+    @Override
+    public void onBindViewHolder(CollectionAdapterViewHolder collectionAdapterViewHolder, int position) {
+        if(getCollectionAdapterDataSource() == null) {
+            return;
+        }
+
+        Collection collection = getCollectionAdapterDataSource().getCollection(this, position);
+        collectionAdapterViewHolder.updateViewHolder(collection);
+    }
+
+    @Override
+    public int getItemCount() {
+        if(getCollectionAdapterDataSource() == null) {
+            return 0;
+        }
+
+        return getCollectionAdapterDataSource().getCollectionItemCount(this);
+    }
 
     // ----- Inner Class ----- //
 
@@ -150,86 +182,84 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                         .getString(R.string.users));
             }
 
-            updateCollectionUserImages(topUserLeftPic, topUserRightPic, botUserLeftPic, botUserRightPic);
+            updateCollectionUserImages(collection);
         }
 
-        private void updateCollectionUserImages(ImageView image1, ImageView image2, ImageView image3, ImageView image4) {
+        private void updateCollectionUserImages(Collection collection) {
 
-            ArrayList<User> userArrayList = new ArrayList<>();
-
-            for(int i = 0; i < BlocpartyApplication.getSharedDataSource().getCollectionArrayList().size(); i++) {
-                userArrayList = BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(
-                        BlocpartyApplication.getSharedDataSource().getCollectionArrayList().get(i).getCollectionName());
-            }
+            ArrayList<User> userArrayList = getCollectionAdapterDataSource()
+                    .getCollectionUsersList(CollectionAdapter.this, collection);
 
             // Safety measure
 
-            if(userArrayList.size() == 0) {
-                return;
-            }
+            if(userArrayList != null) {
+                if(userArrayList.size() == 0) {
+                    return;
+                }
 
-            User user1 = null;
-            User user2 = null;
-            User user3 = null;
-            User user4 = null;
+                User user1 = null;
+                User user2 = null;
+                User user3 = null;
+                User user4 = null;
 
-            if(userArrayList.size() == 1) {
-                user1 = userArrayList.get(0);
-            }
-            else if(userArrayList.size() == 2) {
-                user1 = userArrayList.get(0);
-                user2 = userArrayList.get(1);
-            }
-            else if(userArrayList.size() == 3) {
-                user1 = userArrayList.get(0);
-                user2 = userArrayList.get(1);
-                user3 = userArrayList.get(2);
-            }
-            else if(userArrayList.size() == 4) {
-                user1 = userArrayList.get(0);
-                user2 = userArrayList.get(1);
-                user3 = userArrayList.get(2);
-                user4 = userArrayList.get(3);
-            }
-            else {
-                user1 = userArrayList.get(0);
-                user2 = userArrayList.get(1);
-                user3 = userArrayList.get(2);
-                user4 = userArrayList.get(3);
-            }
+                if(userArrayList.size() == 1) {
+                    user1 = userArrayList.get(0);
+                }
+                else if(userArrayList.size() == 2) {
+                    user1 = userArrayList.get(0);
+                    user2 = userArrayList.get(1);
+                }
+                else if(userArrayList.size() == 3) {
+                    user1 = userArrayList.get(0);
+                    user2 = userArrayList.get(1);
+                    user3 = userArrayList.get(2);
+                }
+                else if(userArrayList.size() == 4) {
+                    user1 = userArrayList.get(0);
+                    user2 = userArrayList.get(1);
+                    user3 = userArrayList.get(2);
+                    user4 = userArrayList.get(3);
+                }
+                else {
+                    user1 = userArrayList.get(0);
+                    user2 = userArrayList.get(1);
+                    user3 = userArrayList.get(2);
+                    user4 = userArrayList.get(3);
+                }
 
-            if(user1 != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(image1);
-            }
-            else {
-                topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.transparent));
-            }
+                if(user1 != null) {
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(topUserLeftPic);
+                }
+                else {
+                    topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                            .getResources().getColor(android.R.color.transparent));
+                }
 
-            if(user2 != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(image2);
-            }
-            else {
-                topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.transparent));
-            }
+                if(user2 != null) {
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(topUserRightPic);
+                }
+                else {
+                    topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                            .getResources().getColor(android.R.color.transparent));
+                }
 
-            if(user3 != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(image3);
-            }
-            else {
-                botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.transparent));
-            }
+                if(user3 != null) {
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(botUserLeftPic);
+                }
+                else {
+                    botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                            .getResources().getColor(android.R.color.transparent));
+                }
 
-            if(user4 != null) {
-                Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(image4);
-            } else {
-                botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
-                        .getResources().getColor(android.R.color.transparent));
-            }
+                if(user4 != null) {
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(botUserRightPic);
+                } else {
+                    botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
+                            .getResources().getColor(android.R.color.transparent));
+                }
 
-            userArrayList.clear();
+                userArrayList.clear();
+            }
         }
     }
 }
