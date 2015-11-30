@@ -52,7 +52,6 @@ public class DataSource {
 
     private DatabaseOpenHelper databaseOpenHelper;
 
-    private static ArrayList<PostItem> postItemArrayList;
     private static ArrayList<Collection> collectionArrayList;
     private static ArrayList<User> fbUserArrayList;
     private static ArrayList<User> twUserArrayList;
@@ -83,11 +82,6 @@ public class DataSource {
 
     public DatabaseOpenHelper getDatabaseOpenHelper() {
         return databaseOpenHelper;
-    }
-
-    public ArrayList<PostItem> getPostItemArrayList() {
-        BPUtils.logMethod(CLASS_TAG);
-        return postItemArrayList;
     }
 
     public ArrayList<Collection> getCollectionArrayList() {
@@ -132,7 +126,6 @@ public class DataSource {
             collectionTable = new CollectionTable();
             userTable = new UserTable();
 
-            postItemArrayList = new ArrayList<PostItem>();
             collectionArrayList = new ArrayList<Collection>();
             fbUserArrayList = new ArrayList<User>();
             twUserArrayList = new ArrayList<User>();
