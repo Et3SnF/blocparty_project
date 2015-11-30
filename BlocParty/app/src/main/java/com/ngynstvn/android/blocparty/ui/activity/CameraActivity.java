@@ -176,6 +176,7 @@ public class CameraActivity extends AppCompatActivity {
                 Intent intent = new Intent(CameraActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
             }
         });
 
