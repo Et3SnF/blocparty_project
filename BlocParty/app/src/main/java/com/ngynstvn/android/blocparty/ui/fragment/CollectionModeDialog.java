@@ -154,7 +154,6 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
             @Override
             public void onFetchingComplete(List<Collection> collections) {
                 collectionArrayList.addAll(collections);
-                collectionAdapter.notifyDataSetChanged();
 
                 if (collections.size() == 0) {
                     recyclerView.setVisibility(View.GONE);
@@ -167,15 +166,17 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
                 if (collectionArrayList != null && collectionArrayList.size() != 0) {
                     for (final Collection collection : collectionArrayList) {
                         BlocpartyApplication.getSharedDataSource().fetchCollectionUsers(collection.getCollectionName(),
-                            new DataSource.Callback<List<User>>() {
-                                @Override
-                                public void onFetchingComplete(List<User> users) {
-                                    collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
-                                    collectionAdapter.notifyDataSetChanged();
-                                }
-                            });
+                                new DataSource.Callback<List<User>>() {
+                                    @Override
+                                    public void onFetchingComplete(List<User> users) {
+                                        collectionUsersMap.put(collection.getCollectionName(), (ArrayList<User>) users);
+                                        collectionAdapter.notifyItemRangeChanged(0, users.size());
+                                    }
+                                });
                     }
                 }
+
+                collectionAdapter.notifyItemRangeInserted(0, collections.size());
             }
         });
     }
@@ -250,8 +251,8 @@ public class CollectionModeDialog extends DialogFragment implements CollectionAd
     }
 
     @Override
-    public ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, Collection collection) {
-        return collectionUsersMap.get(collection.getCollectionName());
+    public ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, int position) {
+        return collectionUsersMap.get(collectionArrayList.get(position).getCollectionName());
     }
 
 // ---- Other Methods ---- //

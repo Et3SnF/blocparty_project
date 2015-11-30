@@ -645,7 +645,7 @@ public class DataSource {
                         + " join " + BPUtils.POST_ITEM_TABLE + " on " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
                         + " = " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.OP_PROFILE_ID
                         + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "'"
-                        + " and " + BPUtils.COLLECTION_TABLE + "." + BPUtils.ROW_ID + " > " + String.valueOf(lastRowId) + "'"
+                        + " and " + BPUtils.COLLECTION_TABLE + "." + BPUtils.ROW_ID + " > " + String.valueOf(lastRowId)
                         + " group by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.POST_ID
                         + " order by " + BPUtils.POST_ITEM_TABLE + "." + BPUtils.PUBLISH_DATE + " desc;";
 

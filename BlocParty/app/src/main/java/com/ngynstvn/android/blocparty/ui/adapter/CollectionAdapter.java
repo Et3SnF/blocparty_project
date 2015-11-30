@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,7 +62,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     public interface CollectionAdapterDataSource {
         int getCollectionItemCount(CollectionAdapter collectionAdapter);
         Collection getCollection(CollectionAdapter collectionAdapter, int position);
-        ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, Collection collection);
+        ArrayList<User> getCollectionUsersList(CollectionAdapter collectionAdapter, int position);
     }
 
     private WeakReference<CollectionAdapterDataSource> collectionAdapterDataSource;
@@ -182,13 +183,14 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                         .getString(R.string.users));
             }
 
-            updateCollectionUserImages(collection);
+            updateCollectionUserImages(getAdapterPosition(), topUserLeftPic, topUserRightPic,
+                    botUserLeftPic, botUserRightPic);
         }
 
-        private void updateCollectionUserImages(Collection collection) {
+        private void updateCollectionUserImages(int position, ImageView iv1, ImageView iv2, ImageView iv3, ImageView iv4) {
 
             ArrayList<User> userArrayList = getCollectionAdapterDataSource()
-                    .getCollectionUsersList(CollectionAdapter.this, collection);
+                    .getCollectionUsersList(CollectionAdapter.this, position);
 
             // Safety measure
 
@@ -228,7 +230,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 }
 
                 if(user1 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(topUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user1.getUserProfilePicUrl()).into(iv1);
                 }
                 else {
                     topUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
@@ -236,7 +238,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 }
 
                 if(user2 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(topUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user2.getUserProfilePicUrl()).into(iv2);
                 }
                 else {
                     topUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
@@ -244,7 +246,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 }
 
                 if(user3 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(botUserLeftPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user3.getUserProfilePicUrl()).into(iv3);
                 }
                 else {
                     botUserLeftPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
@@ -252,7 +254,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
                 }
 
                 if(user4 != null) {
-                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(botUserRightPic);
+                    Picasso.with(BlocpartyApplication.getSharedInstance()).load(user4.getUserProfilePicUrl()).into(iv4);
                 } else {
                     botUserRightPic.setBackgroundColor(BlocpartyApplication.getSharedInstance()
                             .getResources().getColor(android.R.color.transparent));

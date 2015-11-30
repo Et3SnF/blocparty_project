@@ -243,8 +243,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
-                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
+//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+//                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
                         postItem = currentPostItems.get(firstVisibleItem);
@@ -347,8 +347,8 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
-                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
+//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
+//                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
 
                     if (firstVisibleItem != -1) {
                         postItem = currentPostItems.get(firstVisibleItem);
