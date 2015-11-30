@@ -137,6 +137,7 @@ public class AddCollectionActivity extends AppCompatActivity {
                         }
 
                         showMainActivity();
+                        // Clear table of checked states when selecting users for collection
                         BPUtils.clearSPrefTable(BPUtils.newSPrefInstance(BPUtils.CHECKED_STATE), BPUtils.CHECKED_STATE);
                     }
 

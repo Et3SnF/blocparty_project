@@ -52,7 +52,6 @@ public class DataSource {
 
     private DatabaseOpenHelper databaseOpenHelper;
 
-    private static ArrayList<Collection> collectionArrayList;
     private static ArrayList<User> fbUserArrayList;
     private static ArrayList<User> twUserArrayList;
     private static ArrayList<User> igUserArrayList;
@@ -82,10 +81,6 @@ public class DataSource {
 
     public DatabaseOpenHelper getDatabaseOpenHelper() {
         return databaseOpenHelper;
-    }
-
-    public ArrayList<Collection> getCollectionArrayList() {
-        return collectionArrayList;
     }
 
     public ArrayList<User> getFbUserArrayList() {
@@ -126,7 +121,6 @@ public class DataSource {
             collectionTable = new CollectionTable();
             userTable = new UserTable();
 
-            collectionArrayList = new ArrayList<Collection>();
             fbUserArrayList = new ArrayList<User>();
             twUserArrayList = new ArrayList<User>();
             igUserArrayList = new ArrayList<User>();
@@ -679,84 +673,108 @@ public class DataSource {
         });
     }
 
-    public void fetchUsers(String socialNetwork) {
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+    public void fetchUsers(final String socialNetwork) {
 
-        final String statement = "Select * from " + BPUtils.USER_TABLE
-                + " where " + BPUtils.USER_SOCIAL_NETWORK + " like '" + socialNetwork + "'"
-                + " order by " + BPUtils.USER_FULL_NAME + ";";
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchUsers");
 
-        Cursor cursor = database.rawQuery(statement, null);
+                SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
 
-        if(socialNetwork.equalsIgnoreCase("Facebook")) {
-            if(cursor.moveToFirst()) {
-                do {
-                    fbUserArrayList.add(userFromCursor(cursor));
+                final String statement = "Select * from " + BPUtils.USER_TABLE
+                        + " where " + BPUtils.USER_SOCIAL_NETWORK + " like '" + socialNetwork + "'"
+                        + " order by " + BPUtils.USER_FULL_NAME + ";";
+
+                Cursor cursor = database.rawQuery(statement, null);
+
+                if (socialNetwork.equalsIgnoreCase("Facebook")) {
+                    if (cursor.moveToFirst()) {
+                        do {
+                            fbUserArrayList.add(userFromCursor(cursor));
+                        }
+                        while (cursor.moveToNext());
+                    }
+                } else if (socialNetwork.equalsIgnoreCase("Twitter")) {
+                    if (cursor.moveToFirst()) {
+                        do {
+                            twUserArrayList.add(userFromCursor(cursor));
+                        }
+                        while (cursor.moveToNext());
+                    }
+                } else if (socialNetwork.equalsIgnoreCase("Instagram")) {
+                    if (cursor.moveToFirst()) {
+                        do {
+                            igUserArrayList.add(userFromCursor(cursor));
+                        }
+                        while (cursor.moveToNext());
+                    }
                 }
-                while (cursor.moveToNext());
-            }
-        }
-        else if(socialNetwork.equalsIgnoreCase("Twitter")) {
-            if(cursor.moveToFirst()) {
-                do {
-                    twUserArrayList.add(userFromCursor(cursor));
-                }
-                while (cursor.moveToNext());
-            }
-        }
-        else if(socialNetwork.equalsIgnoreCase("Instagram")) {
-            if(cursor.moveToFirst()) {
-                do {
-                    igUserArrayList.add(userFromCursor(cursor));
-                }
-                while (cursor.moveToNext());
-            }
-        }
 
-        cursor.close();
+                cursor.close();
+            }
+        });
     }
 
-    public void fetchCollections() {
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+    public void fetchCollections(final Callback<List<Collection>> collectionsList) {
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchCollections");
 
-        final String statement = "Select distinct " + BPUtils.COLLECTION_NAME
-                + " from " + BPUtils.COLLECTION_TABLE
-                + " order by " + BPUtils.COLLECTION_NAME + ";";
+                ArrayList<Collection> collectionArrayList = new ArrayList<Collection>();
 
-        Cursor cursor = database.rawQuery(statement, null);
+                SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
 
-        if(cursor.moveToFirst()) {
-            do {
-                collectionArrayList.add(collectionFromCursor(cursor));
+                final String statement = "Select distinct " + BPUtils.COLLECTION_NAME
+                        + " from " + BPUtils.COLLECTION_TABLE
+                        + " order by " + BPUtils.COLLECTION_NAME + ";";
+
+                Cursor cursor = database.rawQuery(statement, null);
+
+                if (cursor.moveToFirst()) {
+                    do {
+                        collectionArrayList.add(collectionFromCursor(cursor));
+                    }
+                    while (cursor.moveToNext());
+                }
+
+                cursor.close();
+
+                collectionsList.onFetchingComplete(collectionArrayList);
             }
-            while(cursor.moveToNext());
-        }
-
-        cursor.close();
+        });
     }
 
-    public ArrayList<User> fetchCollectionUsers(String collectionName) {
+    public void fetchCollectionUsers(final String collectionName, final Callback<List<User>> usersList) {
+        pullHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "fetchCollectionUsers");
 
-        ArrayList<User> userArrayList = new ArrayList<>();
+                ArrayList<User> userArrayList = new ArrayList<>();
 
-        final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
-                + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "."
-                + BPUtils.USER_PROFILE_ID + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
-                + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '" + collectionName + "';";
+                final String statement = "Select * from " + BPUtils.COLLECTION_TABLE
+                        + " join " + BPUtils.USER_TABLE + " on " + BPUtils.COLLECTION_TABLE + "."
+                        + BPUtils.USER_PROFILE_ID + " = " + BPUtils.USER_TABLE + "." + BPUtils.USER_PROFILE_ID
+                        + " where " + BPUtils.COLLECTION_TABLE + "." + BPUtils.COLLECTION_NAME + " = '"
+                        + collectionName + "';";
 
-        SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
-        Cursor cursor = database.rawQuery(statement, null);
+                SQLiteDatabase database = databaseOpenHelper.getWritableDatabase();
+                Cursor cursor = database.rawQuery(statement, null);
 
-        if(cursor.moveToFirst()) {
-            do {
-                userArrayList.add(userFromCursor(cursor));
+                if (cursor.moveToFirst()) {
+                    do {
+                        userArrayList.add(userFromCursor(cursor));
+                    }
+                    while (cursor.moveToNext());
+                }
+
+                cursor.close();
+
+                usersList.onFetchingComplete(userArrayList);
             }
-            while (cursor.moveToNext());
-        }
-
-        cursor.close();
-
-        return userArrayList;
+        });
     }
 
     // Object from Cursor Methods
@@ -811,27 +829,37 @@ public class DataSource {
                 .insert(databaseOpenHelper.getWritableDatabase());
     }
 
-    public void updatePostItemLike(long postId, boolean isLiked) {
-        BPUtils.logMethod(CLASS_TAG);
+    public void updatePostItemLike(final long postId, final boolean isLiked) {
+        pushHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "updatePostItemLike");
 
-        // watch out if this is going to not work
+                // watch out if this is going to not work
 
-        int isLikedValue = isLiked ? 1 : 0;
+                int isLikedValue = isLiked ? 1 : 0;
 
-        String statement = "Update " + BPUtils.POST_ITEM_TABLE + " set " + BPUtils.IS_POST_LIKED
-                + " = " + isLikedValue + " where " + BPUtils.POST_ID + " = " + String.valueOf(postId);
-        Cursor cursor = databaseOpenHelper.getWritableDatabase().rawQuery(statement, null);
+                String statement = "Update " + BPUtils.POST_ITEM_TABLE + " set " + BPUtils.IS_POST_LIKED
+                        + " = " + isLikedValue + " where " + BPUtils.POST_ID + " = " + String.valueOf(postId);
+                Cursor cursor = databaseOpenHelper.getWritableDatabase().rawQuery(statement, null);
 
-        cursor.close();
+                cursor.close();
+            }
+        });
     }
 
     public void addCollectionToDB(final String name, final String userProfileId) {
-        BPUtils.logMethod(CLASS_TAG);
+        pushHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                BPUtils.logMethod(CLASS_TAG, "addCollectionToDB");
 
-        new CollectionTable.Builder()
-                .setCollectionName(name)
-                .setUserId(Long.parseLong(userProfileId))
-                .insert(databaseOpenHelper.getWritableDatabase());
+                new CollectionTable.Builder()
+                        .setCollectionName(name)
+                        .setUserId(Long.parseLong(userProfileId))
+                        .insert(databaseOpenHelper.getWritableDatabase());
+            }
+        });
     }
 
     public void addUserToDB(final User user) {
