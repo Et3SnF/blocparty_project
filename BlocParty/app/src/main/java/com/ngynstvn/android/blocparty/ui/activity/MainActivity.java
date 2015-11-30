@@ -520,6 +520,7 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     private void restartActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     /**
