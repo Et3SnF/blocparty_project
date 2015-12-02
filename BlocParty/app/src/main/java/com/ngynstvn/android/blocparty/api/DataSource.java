@@ -46,7 +46,6 @@ public class DataSource {
 
     // Handler Variables
     private Handler uiThreadHandler;
-    private Handler databaseHandler;
     private Handler pullHandler;
     private Handler pushHandler;
 
@@ -114,8 +113,6 @@ public class DataSource {
             BPUtils.logMethod(CLASS_TAG, "DatabaseThread");
 
             Looper.prepare();
-
-            databaseHandler = new Handler();
 
             postItemTable = new PostItemTable();
             collectionTable = new CollectionTable();
@@ -498,7 +495,9 @@ public class DataSource {
 
                 if(cursor.moveToFirst() && fetchedItems.size() <= 20) {
                     do {
-                        fetchedItems.add(itemFromCursor(cursor));
+                        PostItem postItem = itemFromCursor(cursor);
+                        fetchedItems.add(postItem);
+                        addUserToDB(postItem);
                     }
                     while(cursor.moveToNext());
                 }
@@ -547,7 +546,9 @@ public class DataSource {
 
                 if(cursor.moveToFirst() && moreFetchedItems.size() <= 20) {
                     do {
-                        moreFetchedItems.add(itemFromCursor(cursor));
+                        PostItem postItem = itemFromCursor(cursor);
+                        moreFetchedItems.add(postItem);
+                        addUserToDB(postItem);
                     }
                     while(cursor.moveToNext());
                 }
@@ -599,7 +600,8 @@ public class DataSource {
 
                 if (cursor.moveToFirst()) {
                     do {
-                        filteredPostItems.add(itemFromCursor(cursor));
+                        PostItem postItem = itemFromCursor(cursor);
+                        filteredPostItems.add(postItem);
                     }
                     while (cursor.moveToNext());
                 }
@@ -654,7 +656,8 @@ public class DataSource {
 
                 if (cursor.moveToFirst()) {
                     do {
-                        moreFilteredPostItems.add(itemFromCursor(cursor));
+                        PostItem postItem = itemFromCursor(cursor);
+                        moreFilteredPostItems.add(postItem);
                     }
                     while (cursor.moveToNext());
                 }
@@ -872,20 +875,40 @@ public class DataSource {
         });
     }
 
-    public void addUserToDB(final User user) {
+    public void addUserToDB(final PostItem postItem) {
+
         pushHandler.post(new Runnable() {
             @Override
             public void run() {
 //                BPUtils.logMethod(CLASS_TAG, "addUserToDB");
 
-                if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", user.getUserFullName()) &&
-                        !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(user.getUserProfileId()))) {
-                    new UserTable.Builder()
-                            .setColumnUserFullName(user.getUserFullName())
-                            .setColumnUserSocialNetwork(user.getUserSocNetwork())
-                            .setColumnUserProfileId(user.getUserProfileId())
-                            .setColumnUserProfilePicUrl(user.getUserProfilePicUrl())
-                            .insert(databaseOpenHelper.getWritableDatabase());
+                if(!isValueInDB(BPUtils.USER_TABLE, "user_full_name", postItem.getOpFullName()) &&
+                        !isValueInDB(BPUtils.USER_TABLE, "user_profile_id", String.valueOf(postItem.getOpProfileId()))) {
+
+                    if (postItem.getPostImageUrl().contains(BPUtils.FB_IMG_BASE_URL)) {
+                        new UserTable.Builder()
+                                .setColumnUserFullName(postItem.getOpFullName())
+                                .setColumnUserSocialNetwork("Facebook")
+                                .setColumnUserProfileId(postItem.getOpProfileId())
+                                .setColumnUserProfilePicUrl(postItem.getOpProfilePicUrl())
+                                .insert(databaseOpenHelper.getWritableDatabase());
+                    }
+                    else if (postItem.getPostImageUrl().contains(BPUtils.TW_IMG_BASE_URL)) {
+                        new UserTable.Builder()
+                                .setColumnUserFullName(postItem.getOpFullName())
+                                .setColumnUserSocialNetwork("Twitter")
+                                .setColumnUserProfileId(postItem.getOpProfileId())
+                                .setColumnUserProfilePicUrl(postItem.getOpProfilePicUrl())
+                                .insert(databaseOpenHelper.getWritableDatabase());
+                    }
+                    else if (postItem.getPostImageUrl().contains(BPUtils.IG_IMG_BASE_URL)) {
+                        new UserTable.Builder()
+                                .setColumnUserFullName(postItem.getOpFullName())
+                                .setColumnUserSocialNetwork("Instagram")
+                                .setColumnUserProfileId(postItem.getOpProfileId())
+                                .setColumnUserProfilePicUrl(postItem.getOpProfilePicUrl())
+                                .insert(databaseOpenHelper.getWritableDatabase());
+                    }
                 }
             }
         });

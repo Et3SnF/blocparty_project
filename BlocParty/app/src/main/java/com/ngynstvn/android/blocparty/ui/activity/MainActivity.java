@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -30,7 +31,6 @@ import com.ngynstvn.android.blocparty.BlocpartyApplication;
 import com.ngynstvn.android.blocparty.R;
 import com.ngynstvn.android.blocparty.api.DataSource;
 import com.ngynstvn.android.blocparty.api.model.PostItem;
-import com.ngynstvn.android.blocparty.api.model.User;
 import com.ngynstvn.android.blocparty.ui.adapter.PostItemAdapter;
 import com.ngynstvn.android.blocparty.ui.fragment.CollectionModeDialog;
 import com.sromku.simple.fb.SimpleFacebook;
@@ -39,11 +39,16 @@ import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -116,12 +121,14 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
     private static int lastItemPosition = 0;
 
     private static PostItem postItem;
-    private static ArrayList<PostItem> currentPostItems = new ArrayList<PostItem>();
+    private static ArrayList<PostItem> currentPostItems;
     private static int fetchingPosition = 0;
     private static int latestListSize = 0;
 
     private boolean isColDialogActive = false;
     private static String currentCollectionName = null;
+
+    private Handler dataHandler;
 
     // ----- Lifecycle Methods ----- //
 
@@ -141,6 +148,9 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             BPUtils.requestPermission(MainActivity.this, Manifest.permission.CAMERA);
             BPUtils.requestPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+
+        DataBackgroundThread dataBackgroundThread = new DataBackgroundThread();
+        dataBackgroundThread.start();
 
         isColDialogActive = getIntent().getBooleanExtra("show_dialog", false);
 
@@ -232,9 +242,15 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
             BlocpartyApplication.getSharedDataSource().fetchPostItems(new DataSource.Callback<ArrayList<PostItem>>() {
                 @Override
-                public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                public void onFetchingComplete(final ArrayList<PostItem> postItems) {
                     if (currentPostItems.size() == 0) {
-                        currentPostItems.addAll(postItems);
+                        dataHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BPUtils.logMethod(CLASS_TAG, "dataHandler");
+                                currentPostItems.addAll(postItems);
+                            }
+                        });
                         latestListSize = currentPostItems.size();
                         fetchingPosition = latestListSize - 1; // Start
                         postItemAdapter.notifyItemRangeInserted(0, latestListSize);
@@ -253,36 +269,19 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                     totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
-//                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
-
-                    if (firstVisibleItem != -1) {
-                        postItem = currentPostItems.get(firstVisibleItem);
-                    }
-
-                    User user = new User(0); // dummy argument. it doesn't matter for DB insertion
-
-                    user.setUserFullName(postItem.getOpFullName());
-                    user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
-                    user.setUserProfileId(postItem.getOpProfileId());
-
-                    if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
-                        user.setUserSocNetwork("Instagram");
-                    } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
-                        user.setUserSocNetwork("Twitter");
-                    } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
-                        user.setUserSocNetwork("Facebook");
-                    }
-
-                    BlocpartyApplication.getSharedDataSource().addUserToDB(user);
-
                     if(firstVisibleItem == fetchingPosition) {
                         BlocpartyApplication.getSharedDataSource().fetchMorePostItems(new DataSource
                                 .Callback<ArrayList<PostItem>>() {
                             @Override
-                            public void onFetchingComplete(ArrayList<PostItem> postItems) {
+                            public void onFetchingComplete(final ArrayList<PostItem> postItems) {
                                 Log.v(CLASS_TAG, "Loading more...");
-                                currentPostItems.addAll(postItems);
+                                dataHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        BPUtils.logMethod(CLASS_TAG, "dataHandler");
+                                        currentPostItems.addAll(postItems);
+                                    }
+                                });
                                 fetchingPosition += postItems.size();
                                 Log.v(CLASS_TAG, "New fetching position: " + fetchingPosition);
                                 postItemAdapter.notifyItemRangeInserted(latestListSize, currentPostItems.size());
@@ -353,32 +352,12 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
-                    visibleItemCount = recyclerView.getChildCount();
-                    totalItemCount = linearLayoutManager.getItemCount();
+//                    visibleItemCount = recyclerView.getChildCount();
+//                    totalItemCount = linearLayoutManager.getItemCount();
                     firstVisibleItem = linearLayoutManager.findFirstVisibleItemPosition();
 
-//                    Log.v(CLASS_TAG, "TotalItemCount: " + totalItemCount);
-//                    Log.v(CLASS_TAG, "Visible Item Position: " + firstVisibleItem);
-
-                    if (firstVisibleItem != -1) {
-                        postItem = currentPostItems.get(firstVisibleItem);
-                    }
-
-                    User user = new User(0); // dummy argument. it doesn't matter for DB insertion
-
-                    user.setUserFullName(postItem.getOpFullName());
-                    user.setUserProfilePicUrl(postItem.getOpProfilePicUrl());
-                    user.setUserProfileId(postItem.getOpProfileId());
-
-                    if (postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
-                        user.setUserSocNetwork("Instagram");
-                    } else if (postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
-                        user.setUserSocNetwork("Twitter");
-                    } else if (postItem.getPostImageUrl().contains("fbcdn.net")) {
-                        user.setUserSocNetwork("Facebook");
-                    }
-
-                    BlocpartyApplication.getSharedDataSource().addUserToDB(user);
+                    // DON'T ADD USERS WHILE SCROLLING. THIS WILL CAUSE AN EXPONENTIAL AMOUNT OF CALLS
+                    // AND TAKE UP ALL MEMORY --> Leading to crash
                 }
             });
 
@@ -601,6 +580,23 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
     /**
      *
+     * Data Background Thread
+     *
+     */
+
+    private class DataBackgroundThread extends Thread {
+        @Override
+        public void run() {
+            BPUtils.logMethod(CLASS_TAG, "DataBackgroundThread");
+            Looper.prepare();
+            dataHandler = new Handler();
+            currentPostItems = new ArrayList<>();
+            Looper.loop();
+        }
+    }
+
+    /**
+     *
      * Post Item Liked Thread
      *
      */
@@ -688,39 +684,42 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
 
                 String urlString = "https://api.instagram.com/v1/media/" + mediaId + "/likes";
 
-//                try {
-//                    URL url = new URL(urlString);
-//                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-//                    httpURLConnection.setRequestMethod("POST");
-//                    httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data");
-//                    httpURLConnection.connect();
-//                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
-//                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-//                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//                    StringBuilder stringContent = new StringBuilder();
-//
-//                    String line = null;
-//
-//                    while((line = bufferedReader.readLine()) != null) {
-//                        stringContent.append(line);
-//                    }
-//
-//                    httpURLConnection.disconnect();
-//                    inputStream.close();
-//                    bufferedReader.close();
-//
-//                    Log.e(CLASS_TAG, stringContent.toString());
-//                }
-//                catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                }
-//                catch(FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                try {
+                    URL url = new URL(urlString);
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestMethod("POST");
+                    httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data");
+                    // Building URI
+                    httpURLConnection.setDoInput(true);
+                    httpURLConnection.setDoOutput(true);
+                    httpURLConnection.connect();
+                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
+                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    StringBuilder stringContent = new StringBuilder();
+
+                    String line = null;
+
+                    while((line = bufferedReader.readLine()) != null) {
+                        stringContent.append(line);
+                    }
+
+                    httpURLConnection.disconnect();
+                    inputStream.close();
+                    bufferedReader.close();
+
+                    Log.e(CLASS_TAG, stringContent.toString());
+                }
+                catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                catch(FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);

@@ -218,15 +218,15 @@ public class PostItemAdapter extends RecyclerView.Adapter<PostItemAdapter.PostIt
 
             // For media text at bottom left corner
 
-            if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
+            if(postItem.getPostImageUrl().contains(BPUtils.IG_IMG_BASE_URL)) {
                 postMediaType.setText(R.string.instagram_text);
                 postMediaType.setTextColor(Color.parseColor("#FF663300"));
             }
-            else if(postItem.getPostImageUrl().contains("http://pbs.twimg.com")) {
+            else if(postItem.getPostImageUrl().contains(BPUtils.TW_IMG_BASE_URL)) {
                 postMediaType.setText(R.string.twitter_text);
                 postMediaType.setTextColor(Color.parseColor("#FF55ACEE"));
             }
-            else if(postItem.getPostImageUrl().contains("fbcdn.net")) {
+            else if(postItem.getPostImageUrl().contains(BPUtils.FB_IMG_BASE_URL)) {
                 postMediaType.setText(R.string.facebook_text);
                 postMediaType.setTextColor(Color.parseColor("#FF3B5998"));
             }

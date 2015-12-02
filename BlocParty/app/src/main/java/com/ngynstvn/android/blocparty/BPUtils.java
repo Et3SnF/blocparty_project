@@ -55,6 +55,7 @@ public class BPUtils {
     public static final String FB_LOGIN = "isFBLoggedIn";
     public static final String FB_POSITION = "fbAdapterPosition";
     public static final String FB_OBJECT = "fb_object";
+    public static final String FB_IMG_BASE_URL = "fbcdn.net";
 
     // Twitter Variables
 
@@ -65,8 +66,8 @@ public class BPUtils {
     public static final String TW_ACCESS_TOKEN_SECRET = "twAccessTokenSecret";
     public static final String TW_CONSUMER_KEY = "twConsumerKey";
     public static final String TW_CONSUMER_SECRET = "twConsumerSecret";
-    public static final String IS_TW_ACCT_REG = "is_tw_account_registered";
     public static final String TW_POST_IMG_URL = "post_image_url";
+    public static final String TW_IMG_BASE_URL = "http://pbs.twimg.com";
 
     // Instagram Variables
 
@@ -75,6 +76,7 @@ public class BPUtils {
     public static final String IG_TOKEN = "ig_token";
     public static final String IG_AUTH_CODE = "ig_auth_code";
     public static final String IG_OBJECT = "ig_object";
+    public static final String IG_IMG_BASE_URL = "https://scontent.cdninstagram.com/hphotos";
 
     // Table Related
 
