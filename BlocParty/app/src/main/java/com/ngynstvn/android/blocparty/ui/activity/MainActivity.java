@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ngynstvn.android.blocparty.BPUtils;
 import com.ngynstvn.android.blocparty.BlocpartyApplication;
@@ -39,16 +38,14 @@ import com.sromku.simple.fb.listeners.OnPublishListener;
 
 import org.jinstagram.Instagram;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -677,52 +674,64 @@ public class MainActivity extends AppCompatActivity implements PostItemAdapter.P
             }
             else if(postItem.getPostImageUrl().contains("https://scontent.cdninstagram.com/hphotos")) {
                 Log.v(CLASS_TAG, "Detected Instagram Heart");
-                Toast.makeText(BlocpartyApplication.getSharedInstance(), "Heart post is not supported " +
-                        "at the moment. Please use Instagram app.", Toast.LENGTH_SHORT).show();
 
-                String mediaId = String.valueOf(postItem.getPostId());
-
+                String mediaId = String.valueOf(postItem.getPostId()) + "_" + String.valueOf(postItem.getOpProfileId());
                 String urlString = "https://api.instagram.com/v1/media/" + mediaId + "/likes";
 
+//                try {
+//                    if(isLiked) {
+//                        instagram.setUserLike(mediaId);
+//                        BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
+//                    }
+//                    else {
+//                        instagram.deleteUserLike(mediaId);
+//                        BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), !isLiked);
+//                    }
+//                }
+//                catch (InstagramException e) {
+//                    e.printStackTrace();
+//                    BPUtils.displayDialog(MainActivity.this, "There was an issue hearting the " +
+//                            "Instagram post. Try again later.");
+//                    BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), !isLiked);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            postItemAdapter.notifyItemChanged(adapterPosition);
+//                        }
+//                    });
+//                }
+
                 try {
+                    // Establish initial connection material
                     URL url = new URL(urlString);
                     HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setReadTimeout(10000);
+                    httpURLConnection.setConnectTimeout(15000);
                     httpURLConnection.setRequestMethod("POST");
-                    httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data");
-                    // Building URI
                     httpURLConnection.setDoInput(true);
                     httpURLConnection.setDoOutput(true);
+
+                    // Access Token argument
+                    Uri.Builder uriBuilder = new Uri.Builder()
+                            .appendQueryParameter("access_token", instagram.getAccessToken().getToken());
+
+                    String query = uriBuilder.build().getEncodedQuery();
+
+                    // Necessary output information before connection
+                    OutputStream outputStream = httpURLConnection.getOutputStream();
+                    BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+                    bufferedWriter.write(query);
+                    bufferedWriter.flush();
+                    bufferedWriter.close();
+                    outputStream.close();
+
+                    // Connect the URL
                     httpURLConnection.connect();
-                    // BufferedInputStream extends from FilteredInputStream, which extends from InputStream
-                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    StringBuilder stringContent = new StringBuilder();
-
-                    String line = null;
-
-                    while((line = bufferedReader.readLine()) != null) {
-                        stringContent.append(line);
-                    }
-
-                    httpURLConnection.disconnect();
-                    inputStream.close();
-                    bufferedReader.close();
-
-                    Log.e(CLASS_TAG, stringContent.toString());
-                }
-                catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                catch(FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-
-            BlocpartyApplication.getSharedDataSource().updatePostItemLike(postItem.getPostId(), isLiked);
 
             Looper.loop();
         }
