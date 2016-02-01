@@ -1,6 +1,6 @@
 # BlocParty
 
-_This is a bloc.io project Android application. (Compatibility: Android 4.4 or higher)_
+_This is a bloc.io project Android application. (Compatibility: Android 4.4 to 6.0)_
 
 #### About: 
 
@@ -19,3 +19,10 @@ _This is a bloc.io project Android application. (Compatibility: Android 4.4 or h
 Would you like to see this on an emulator (Android or Genymotion) or on a physical Android device? Download link is below!
 
 [BlocParty.apk](http://www.droidbin.com/p1aadgo0ae1qmr1r8duue15gvshj3)
+
+***
+
+### Current Issues
+* App crashes randomly when getting out of other parts of application
+* Random crashes when logged into Twitter (library and GSON issue)
+* App works on 6.0.1 but certain areas of the application does not display.
