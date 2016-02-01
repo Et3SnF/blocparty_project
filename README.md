@@ -2,8 +2,8 @@
 
 #### NOTE:
 
-* _This is a Bloc.io project Android application. (Compatibility: Android 4.4 to 6.0)_
-* _This application is not intended to be published into the Google Play Store_
+* This is a Bloc.io project Android application. (Compatibility: Android 4.4 to 6.0)
+* This application is not intended to be published into the Google Play Store
 
 #### About: 
 
