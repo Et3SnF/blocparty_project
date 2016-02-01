@@ -37,7 +37,6 @@ dependencies {
     compile files('libs/Twitter4J/twitter4j-stream-4.0.4.jar')
     compile files('libs/jInstagram/commons-codec-1.8.jar')
     compile files('libs/jInstagram/commons-lang3-3.1.jar')
-    compile files('libs/jInstagram/jInstagram-1.1.4.jar')
     compile files('libs/jInstagram/junit-4.11.jar')
     compile files('libs/jInstagram/mockito-all-1.8.4.jar')
     compile 'com.google.code.gson:gson:2.4'
@@ -46,4 +45,5 @@ dependencies {
     compile 'com.android.support:support-v13:23.1.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'org.solovyev.android.views:linear-layout-manager:0.5@aar'
+    compile 'com.sachinhandiekar:jInstagram:1.1.5'
 }
